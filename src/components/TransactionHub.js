@@ -10,7 +10,6 @@ export default function TransactionHub() {
   return (
     <section style={{ marginTop: 14, border: "1px solid #e5e7eb", borderRadius: 12, padding: 16 }}>
       <h2 style={{ marginTop: 0 }}>Transactions</h2>
-
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <button onClick={() => setTab("quick")} style={{ padding: "8px 10px" }}>Quick</button>
         <button onClick={() => setTab("import")} style={{ padding: "8px 10px" }}>Import</button>
