@@ -1,0 +1,5 @@
+[
+  { "id": "d1", "txn_date": "2025-11-03", "currency": "USD", "description": "Groceries", "amount": -74.22, "category": "Food", "payer": "together", "is_flagged": false, "explanation": null },
+  { "id": "d2", "txn_date": "2025-11-13", "currency": "USD", "description": "Paycheck", "amount": 3402.21, "category": "Extra", "payer": "alex", "is_flagged": true, "explanation": "" },
+  { "id": "d3", "txn_date": "2025-11-17", "currency": "PEN", "description": "Plaza Vea", "amount": -210.00, "category": "Food", "payer": "adriana", "is_flagged": false, "explanation": null }
+]
