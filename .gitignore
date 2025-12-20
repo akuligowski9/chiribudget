@@ -1,0 +1,24 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Local environment variables
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Supabase local dev (if added later)
+.supabase/
