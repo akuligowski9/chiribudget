@@ -22,3 +22,10 @@ Thumbs.db
 
 # Supabase local dev (if added later)
 .supabase/
+
+# Vercel
+.vercel
+
+# Cache files
+.eslintcache
+*.tsbuildinfo
