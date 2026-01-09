@@ -25,23 +25,25 @@ It supports quick daily transaction entry, import preview/verification, CSV expo
 
 ## How Rules Become Requirements (and Features)
 
-| Rule / Guideline | Requirement | Feature |
-|---|---|---|
-| Track saved/lost by person | Attribute transactions to payer | `payer` = alex/adriana/together + Dashboard net totals |
-| Keep categories consistent | Fixed taxonomy | Enforced category list (enum) |
-| Multi-currency (USD/PEN) | Filter views by currency | Currency toggle for import/export/dashboard |
-| Transactions over threshold are special | Flag + override category | Auto-flagging + category override server-side |
-| Avoid forcing notes for everything | Notes only when needed | Flagged items appear on Dashboard; add explanations later |
-| Preserve data integrity | Import verification before write | Paste JSON → preview totals → confirm → persist |
-| Avoid duplicate imports | Dedupe | Fingerprint unique index per household |
-| Monthly discussion ritual | Track progress | Dashboard discussion notes + Draft/Discussed + timestamp |
+| Rule / Guideline                        | Requirement                      | Feature                                                   |
+| --------------------------------------- | -------------------------------- | --------------------------------------------------------- |
+| Track saved/lost by person              | Attribute transactions to payer  | `payer` = alex/adriana/together + Dashboard net totals    |
+| Keep categories consistent              | Fixed taxonomy                   | Enforced category list (enum)                             |
+| Multi-currency (USD/PEN)                | Filter views by currency         | Currency toggle for import/export/dashboard               |
+| Transactions over threshold are special | Flag + override category         | Auto-flagging + category override server-side             |
+| Avoid forcing notes for everything      | Notes only when needed           | Flagged items appear on Dashboard; add explanations later |
+| Preserve data integrity                 | Import verification before write | Paste JSON → preview totals → confirm → persist           |
+| Avoid duplicate imports                 | Dedupe                           | Fingerprint unique index per household                    |
+| Monthly discussion ritual               | Track progress                   | Dashboard discussion notes + Draft/Discussed + timestamp  |
 
 ---
 
 ## App UX
 
 ### Home (Command Center)
+
 Home is for action and context:
+
 - App name + purpose
 - Rules & Guidelines (collapsible)
 - Transactions:
@@ -50,7 +52,9 @@ Home is for action and context:
   - **Export** (CSV by month + currency)
 
 ### Dashboard (Reflection + Discussion)
+
 Dashboard is for reviewing what’s in the database:
+
 - Month selector + currency toggle
 - Totals by category + saved/lost per payer
 - Flagged transactions list (add explanations later)
@@ -62,6 +66,7 @@ Dashboard is for reviewing what’s in the database:
 ## Demo Mode (Portfolio Preview)
 
 ChiriBudget supports **Demo Mode** (“Try Demo”) which uses local JSON sample data and does not require authentication.
+
 - No real database reads/writes
 - Import can parse + preview but will not persist
 
@@ -81,10 +86,12 @@ This is designed to make it safe to showcase publicly in a portfolio.
 ## Setup (Fork-Friendly)
 
 ### 1) Create a Supabase project
+
 - Enable Email authentication (Magic Link)
 - Run the SQL schema from `supabase/schema.sql`
 
 ### 2) Configure environment variables
+
 Create `.env.local` (and set the same vars in Vercel):
 
 - `NEXT_PUBLIC_SUPABASE_URL`
@@ -93,6 +100,8 @@ Create `.env.local` (and set the same vars in Vercel):
 > Note: This app uses RLS for security, so the anon key is safe to use client-side as long as you keep policies enabled.
 
 ### 3) Install & run
+
 ```bash
 npm install
 npm run dev
+```

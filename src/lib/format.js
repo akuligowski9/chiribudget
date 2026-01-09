@@ -1,6 +1,6 @@
 export function yyyyMm(dateStr) {
   // dateStr: YYYY-MM-DD
-  return (dateStr || "").slice(0, 7);
+  return (dateStr || '').slice(0, 7);
 }
 
 export function safeNumber(n) {
@@ -9,7 +9,7 @@ export function safeNumber(n) {
 }
 
 export function normalizeDesc(s) {
-  return (s || "").trim().replace(/\s+/g, " ").toLowerCase();
+  return (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 export function toastId() {
