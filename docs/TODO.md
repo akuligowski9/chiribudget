@@ -32,7 +32,7 @@ This document tracks planned work for the ChiriBudget application.
 
 ### High Priority
 
-- [ ] Add composite database indexes on `(household_id, currency, txn_date)` for query performance
+- [x] Add composite database indexes on `(household_id, currency, txn_date)` for query performance
 - [ ] Add server-side validation for critical fields (amount, category, payer enums)
 
 ### Medium Priority
@@ -77,7 +77,7 @@ This document tracks planned work for the ChiriBudget application.
   - [ ] Unit tests for utilities (`format.js`, `csv.js`, `categories.js`)
   - [ ] Component tests with React Testing Library
   - [ ] E2E tests with Playwright for critical flows
-- [ ] Add `eslint-plugin-jsx-a11y` for accessibility linting
+- [x] Add `eslint-plugin-jsx-a11y` for accessibility linting
 
 ### Medium Priority
 
@@ -118,6 +118,6 @@ This document tracks planned work for the ChiriBudget application.
 | Category   | High | Medium | Low |
 | ---------- | ---- | ------ | --- |
 | Frontend   | 3    | 5      | 2   |
-| Backend    | 2    | 3      | 2   |
+| Backend    | 1    | 3      | 2   |
 | Deployment | 0    | 3      | 2   |
-| Other      | 2    | 3      | 3   |
+| Other      | 1    | 3      | 3   |
