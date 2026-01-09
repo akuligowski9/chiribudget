@@ -1,3 +1,5 @@
+import ErrorBoundary from '@/components/ErrorBoundary';
+
 export const metadata = {
   title: 'ChiriBudget',
   description:
@@ -23,7 +25,7 @@ export default function RootLayout({ children }) {
           fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial',
         }}
       >
-        {children}
+        <ErrorBoundary>{children}</ErrorBoundary>
       </body>
     </html>
   );

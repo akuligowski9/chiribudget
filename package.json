@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint src/",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "prepare": "husky"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.0",
@@ -16,12 +17,23 @@
     "react": "^18",
     "react-dom": "^18"
   },
+  "lint-staged": {
+    "*.{js,jsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
+  },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.3",
     "@eslint/js": "^9.39.2",
     "eslint": "^8.57.1",
     "eslint-config-next": "^14.2.0",
     "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.7.4"
   }
 }

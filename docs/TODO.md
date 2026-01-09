@@ -8,7 +8,7 @@ This document tracks planned work for the ChiriBudget application.
 
 ### High Priority
 
-- [ ] Add error boundaries to catch React render errors gracefully
+- [x] Add error boundaries to catch React render errors gracefully
 - [ ] Add form validation (required fields, future dates, amount limits)
 - [ ] Add ARIA labels and semantic HTML for accessibility
 - [ ] Add visible focus indicators for keyboard navigation
@@ -52,9 +52,9 @@ This document tracks planned work for the ChiriBudget application.
 
 ### High Priority
 
-- [ ] Create `.env.example` documenting required environment variables
-- [ ] Add GitHub Actions workflow for lint + build on PRs
-- [ ] Add husky + lint-staged for pre-commit checks
+- [x] Create `.env.example` documenting required environment variables
+- [x] Add GitHub Actions workflow for lint + build on PRs
+- [x] Add husky + lint-staged for pre-commit checks
 
 ### Medium Priority
 
@@ -115,9 +115,9 @@ This document tracks planned work for the ChiriBudget application.
 
 ## Quick Reference
 
-| Category | High | Medium | Low |
-|----------|------|--------|-----|
-| Frontend | 4 | 5 | 2 |
-| Backend | 2 | 3 | 2 |
-| Deployment | 3 | 3 | 2 |
-| Other | 2 | 3 | 3 |
+| Category   | High | Medium | Low |
+| ---------- | ---- | ------ | --- |
+| Frontend   | 3    | 5      | 2   |
+| Backend    | 2    | 3      | 2   |
+| Deployment | 0    | 3      | 2   |
+| Other      | 2    | 3      | 3   |
