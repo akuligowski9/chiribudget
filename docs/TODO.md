@@ -73,10 +73,10 @@ This document tracks planned work for the ChiriBudget application.
 
 ### High Priority
 
-- [ ] Add test suite:
-  - [ ] Unit tests for utilities (`format.js`, `csv.js`, `categories.js`)
-  - [ ] Component tests with React Testing Library
-  - [ ] E2E tests with Playwright for critical flows
+- [x] Add test suite:
+  - [x] Unit tests for utilities (`format.js`, `csv.js`, `categories.js`)
+  - [x] Component tests with React Testing Library
+  - [ ] E2E tests with Playwright for critical flows (future)
 - [x] Add `eslint-plugin-jsx-a11y` for accessibility linting
 
 ### Medium Priority
@@ -105,11 +105,9 @@ This document tracks planned work for the ChiriBudget application.
 
 ### Areas for Improvement
 
-- No comprehensive error handling
-- Accessibility not prioritized
-- No test coverage
 - Documentation assumes developer knowledge of Supabase
 - No production monitoring
+- E2E tests not yet implemented
 
 ---
 
@@ -120,4 +118,4 @@ This document tracks planned work for the ChiriBudget application.
 | Frontend   | 3    | 5      | 2   |
 | Backend    | 1    | 3      | 2   |
 | Deployment | 0    | 3      | 2   |
-| Other      | 1    | 3      | 3   |
+| Other      | 0    | 3      | 3   |

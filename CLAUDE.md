@@ -15,6 +15,9 @@ npm run start         # Run production build
 npm run lint          # Run ESLint
 npm run format        # Format all files with Prettier
 npm run format:check  # Check formatting without writing
+npm test              # Run Jest tests
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Run tests with coverage report
 ```
 
 ## Architecture
