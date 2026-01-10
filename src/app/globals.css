@@ -1,0 +1,205 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Warm palette */
+  --color-cream: #faf7f2;
+  --color-sand: #e8e0d5;
+  --color-warm-gray: #9c9589;
+  --color-stone: #6b6560;
+  --color-charcoal: #3d3835;
+
+  /* Vibrant slate blue */
+  --color-slate: #4a7c9b;
+  --color-slate-light: #6ba3c7;
+  --color-slate-dark: #345e78;
+
+  /* Accent orange for highlights */
+  --color-accent: #e8945a;
+  --color-accent-light: #f4b88a;
+
+  /* Functional */
+  --color-success: #5a9e6f;
+  --color-error: #d15b4e;
+  --color-warning: #d4a54a;
+  --color-income: #5a9e6f;
+  --color-expense: #d15b4e;
+
+  /* Background - Rich sunset gradient base */
+  --color-bg-primary: #f2c9a8;
+  --color-bg-secondary: #e8b794;
+  --color-bg-card: rgba(255, 255, 255, 0.7);
+
+  /* Shadows - Warm tinted */
+  --shadow-warm-sm: 0 2px 8px rgba(180, 120, 80, 0.12);
+  --shadow-warm-md: 0 8px 24px rgba(180, 120, 80, 0.15);
+  --shadow-warm-lg: 0 16px 48px rgba(180, 120, 80, 0.2);
+  --shadow-glow: 0 0 30px rgba(74, 124, 155, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-slate);
+  color: white;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-slate);
+  outline-offset: 2px;
+}
+
+body {
+  background: linear-gradient(
+    165deg,
+    #f7d4b8 0%,
+    #f0c4a0 30%,
+    #e8b490 70%,
+    #dfaa85 100%
+  );
+  background-attachment: fixed;
+  color: var(--color-charcoal);
+  line-height: 1.6;
+  font-family:
+    'SF Pro Display',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  margin: 0;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* Subtle texture overlay */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image:
+    radial-gradient(
+      circle at 20% 80%,
+      rgba(74, 124, 155, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(232, 148, 90, 0.1) 0%,
+      transparent 50%
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--color-charcoal);
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+h1 {
+  font-size: 1.75rem;
+}
+
+h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* Glass card base */
+.glass {
+  background: rgba(255, 255, 255, 0.65);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    var(--shadow-warm-md),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    var(--color-slate) 0%,
+    var(--color-slate-light) 100%
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Accent border */
+.accent-border {
+  position: relative;
+}
+
+.accent-border::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--color-slate) 0%,
+    var(--color-slate-light) 50%,
+    var(--color-accent) 100%
+  );
+  border-radius: 999px 999px 0 0;
+}
+
+/* Button glow on hover */
+.btn-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-warm-gray);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-stone);
+}
+
+/* Smooth transitions globally */
+* {
+  transition-property:
+    background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Remove transition from inputs while typing */
+input:focus,
+textarea:focus,
+select:focus {
+  transition: none;
+}

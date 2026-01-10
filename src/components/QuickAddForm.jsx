@@ -11,6 +11,8 @@ import {
 } from '@/lib/categories';
 import { getDemoMode } from '@/lib/auth';
 import { normalizeDesc, toastId } from '@/lib/format';
+import { Input, Label, Select } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
 import Toast from './Toast';
 
 function thresholdFor(currency) {
@@ -27,13 +29,12 @@ function computeFingerprint({
   description,
 }) {
   const base = `${household_id}|${currency}|${txn_date}|${Number(amount).toFixed(2)}|${normalizeDesc(description)}`;
-  // lightweight hash-like (not cryptographic)
   let h = 0;
   for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) >>> 0;
   return `fp_${h}`;
 }
 
-export default function QuickAddForm() {
+export default function QuickAddForm({ onSuccess }) {
   const [demoMode, setDemoMode] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -41,7 +42,7 @@ export default function QuickAddForm() {
     new Date().toISOString().slice(0, 10)
   );
   const [currency, setCurrency] = useState('USD');
-  const [kind, setKind] = useState('expense'); // expense | income
+  const [kind, setKind] = useState('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
   const [payer, setPayer] = useState('together');
@@ -115,7 +116,6 @@ export default function QuickAddForm() {
     const { data } = await supabase.auth.getUser();
     const user = data?.user;
 
-    // fingerprint works for manual and import
     const fingerprint = demoMode
       ? `demo_${Date.now()}`
       : computeFingerprint({
@@ -147,10 +147,11 @@ export default function QuickAddForm() {
     };
 
     if (demoMode) {
-      setToast({ id: toastId(), type: 'success', title: 'Saved (demo) ✅' });
+      setToast({ id: toastId(), type: 'success', title: 'Saved (demo)' });
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
+      onSuccess?.();
       return;
     }
 
@@ -158,37 +159,38 @@ export default function QuickAddForm() {
       const { error } = await supabase.from('transactions').insert(row);
       if (error) throw error;
 
-      setToast({ id: toastId(), type: 'success', title: 'Saved ✅' });
+      setToast({ id: toastId(), type: 'success', title: 'Saved' });
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
+      onSuccess?.();
     } catch (err) {
       await logError('save_transaction', err.message || 'Unknown error', row);
       setToast({
         id: toastId(),
         type: 'error',
         title: 'Something went wrong',
-        message: 'Don’t worry — we saved this error for later review.',
+        message: "Don't worry — we saved this error for later review.",
       });
     }
   }
 
   return (
     <div>
-      <form onSubmit={onSubmit} style={{ display: 'grid', gap: 12 }}>
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <label>
-            Date&nbsp;
-            <input
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div className="grid grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <Label>Date</Label>
+            <Input
               type="date"
               value={txn_date}
               onChange={(e) => setTxnDate(e.target.value)}
             />
-          </label>
+          </div>
 
-          <label>
-            Currency&nbsp;
-            <select
+          <div className="space-y-1.5">
+            <Label>Currency</Label>
+            <Select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
             >
@@ -197,75 +199,67 @@ export default function QuickAddForm() {
                   {c}
                 </option>
               ))}
-            </select>
-          </label>
+            </Select>
+          </div>
 
-          <label>
-            Type&nbsp;
-            <select value={kind} onChange={(e) => setKind(e.target.value)}>
+          <div className="space-y-1.5">
+            <Label>Type</Label>
+            <Select value={kind} onChange={(e) => setKind(e.target.value)}>
               <option value="expense">Expense</option>
               <option value="income">Income</option>
-            </select>
-          </label>
+            </Select>
+          </div>
         </div>
 
-        <label>
-          Amount
-          <input
+        <div className="space-y-1.5">
+          <Label>Amount</Label>
+          <Input
             value={amount}
             onChange={(e) => setAmount(e.target.value)}
             inputMode="decimal"
             placeholder="e.g. 75.20"
-            style={{ width: '100%', padding: 10 }}
           />
-          <div style={{ fontSize: 12, opacity: 0.75, marginTop: 4 }}>
-            Threshold flag: {currency} {thr} (flagged items reviewed on
-            Dashboard)
-          </div>
-        </label>
+          <p className="text-xs text-warm-gray">
+            Threshold: {currency} {thr} (flagged items reviewed on Dashboard)
+          </p>
+        </div>
 
-        <label>
-          Category
-          <select
+        <div className="space-y-1.5">
+          <Label>Category</Label>
+          <Select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            style={{ width: '100%', padding: 10 }}
           >
             {ALL_CATEGORIES.map((c) => (
               <option key={c} value={c}>
                 {c}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </div>
 
-        <label>
-          Payer
-          <select
-            value={payer}
-            onChange={(e) => setPayer(e.target.value)}
-            style={{ width: '100%', padding: 10 }}
-          >
+        <div className="space-y-1.5">
+          <Label>Payer</Label>
+          <Select value={payer} onChange={(e) => setPayer(e.target.value)}>
             {PAYERS.map((p) => (
               <option key={p} value={p}>
                 {p}
               </option>
             ))}
-          </select>
-        </label>
+          </Select>
+        </div>
 
-        <label>
-          Description (optional)
-          <input
+        <div className="space-y-1.5">
+          <Label>Description (optional)</Label>
+          <Input
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            style={{ width: '100%', padding: 10 }}
           />
-        </label>
+        </div>
 
-        <button type="submit" style={{ padding: 12, fontWeight: 700 }}>
-          Save
-        </button>
+        <Button type="submit" className="w-full mt-2">
+          Save Transaction
+        </Button>
       </form>
 
       <Toast toast={toast} onClose={() => setToast(null)} />

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { colors } from '@/lib/theme';
 
 export default function Toast({ toast, onClose }) {
   useEffect(() => {
@@ -11,24 +12,32 @@ export default function Toast({ toast, onClose }) {
 
   if (!toast) return null;
 
-  const bg = toast.type === 'error' ? '#fee2e2' : '#dcfce7';
-  const border = toast.type === 'error' ? '#ef4444' : '#22c55e';
+  const isError = toast.type === 'error';
+  const border = isError ? colors.error + '30' : colors.success + '30';
+  const textColor = isError ? colors.error : colors.success;
 
   return (
     <div
       style={{
         position: 'fixed',
-        right: 16,
-        bottom: 16,
-        maxWidth: 360,
-        background: bg,
+        right: 20,
+        bottom: 20,
+        maxWidth: 340,
+        background: colors.bgCard,
         border: `1px solid ${border}`,
         borderRadius: 12,
-        padding: 12,
+        padding: 16,
+        boxShadow: '0 4px 20px rgba(61, 56, 53, 0.12)',
       }}
     >
-      <div style={{ fontWeight: 700 }}>{toast.title}</div>
-      {toast.message && <div style={{ marginTop: 6 }}>{toast.message}</div>}
+      <div style={{ fontWeight: 600, color: textColor }}>{toast.title}</div>
+      {toast.message && (
+        <div
+          style={{ marginTop: 6, color: colors.textSecondary, fontSize: 14 }}
+        >
+          {toast.message}
+        </div>
+      )}
     </div>
   );
 }

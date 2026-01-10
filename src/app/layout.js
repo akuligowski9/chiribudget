@@ -1,4 +1,6 @@
+import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
+import BottomNav from '@/components/BottomNav';
 
 export const metadata = {
   title: 'ChiriBudget',
@@ -8,24 +10,20 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#111827',
+  themeColor: '#F5D4BE',
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <head>
-        {/* iOS add-to-home-screen support */}
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="ChiriBudget" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
-      <body
-        style={{
-          margin: 0,
-          fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, Arial',
-        }}
-      >
+      <body>
         <ErrorBoundary>{children}</ErrorBoundary>
+        <BottomNav />
       </body>
     </html>
   );

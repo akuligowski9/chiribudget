@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { getDemoMode } from '@/lib/auth';
 import { yyyyMm, normalizeDesc, toastId } from '@/lib/format';
+import { colors, styles } from '@/lib/theme';
 import Toast from './Toast';
 import { CURRENCIES, USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 
@@ -233,16 +234,17 @@ export default function ImportPanel() {
       <div
         style={{
           display: 'flex',
-          gap: 10,
+          gap: 12,
           flexWrap: 'wrap',
-          alignItems: 'center',
+          alignItems: 'flex-end',
         }}
       >
-        <label>
-          Currency&nbsp;
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={styles.label}>Currency</span>
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
+            style={{ ...styles.input, cursor: 'pointer' }}
           >
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>
@@ -251,8 +253,11 @@ export default function ImportPanel() {
             ))}
           </select>
         </label>
-        <button onClick={parse} style={{ padding: '8px 10px' }}>
-          Parse
+        <button
+          onClick={parse}
+          style={{ ...styles.button, ...styles.buttonSecondary }}
+        >
+          Parse JSON
         </button>
       </div>
 
@@ -260,50 +265,130 @@ export default function ImportPanel() {
         value={jsonText}
         onChange={(e) => setJsonText(e.target.value)}
         placeholder="Paste JSON export here..."
-        style={{ width: '100%', minHeight: 180, padding: 10, marginTop: 10 }}
+        style={{
+          ...styles.input,
+          width: '100%',
+          minHeight: 180,
+          marginTop: 14,
+          resize: 'vertical',
+        }}
       />
 
       {preview && (
         <div
           style={{
-            marginTop: 12,
-            border: '1px solid #e5e7eb',
+            marginTop: 16,
+            background: colors.bgHover,
             borderRadius: 12,
-            padding: 12,
+            padding: 16,
           }}
         >
-          <div style={{ fontWeight: 700 }}>Import Preview</div>
-          <div style={{ marginTop: 6 }}>
-            Month: <b>{preview.month}</b> • Currency: <b>{currency}</b> • Rows:{' '}
-            <b>{preview.txns.length}</b>
+          <div
+            style={{
+              fontWeight: 600,
+              color: colors.textPrimary,
+              marginBottom: 10,
+            }}
+          >
+            Import Preview
           </div>
-          <div style={{ marginTop: 6 }}>
-            Income: <b>{preview.income.toFixed(2)}</b> • Expenses:{' '}
-            <b>{preview.expenses.toFixed(2)}</b> • Flagged:{' '}
-            <b>{preview.flaggedCount}</b>
+          <div style={{ fontSize: 14, color: colors.textSecondary }}>
+            Month: <b style={{ color: colors.textPrimary }}>{preview.month}</b>{' '}
+            • Currency: <b style={{ color: colors.textPrimary }}>{currency}</b>{' '}
+            • Rows:{' '}
+            <b style={{ color: colors.textPrimary }}>{preview.txns.length}</b>
+          </div>
+          <div
+            style={{ marginTop: 6, fontSize: 14, color: colors.textSecondary }}
+          >
+            Income:{' '}
+            <b style={{ color: colors.income }}>{preview.income.toFixed(2)}</b>{' '}
+            • Expenses:{' '}
+            <b style={{ color: colors.expense }}>
+              {preview.expenses.toFixed(2)}
+            </b>{' '}
+            • Flagged:{' '}
+            <b style={{ color: colors.warning }}>{preview.flaggedCount}</b>
           </div>
 
-          <div style={{ marginTop: 10, maxHeight: 180, overflow: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div
+            style={{
+              marginTop: 12,
+              maxHeight: 180,
+              overflow: 'auto',
+              background: colors.bgCard,
+              borderRadius: 8,
+              padding: 10,
+            }}
+          >
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                fontSize: 13,
+              }}
+            >
               <thead>
-                <tr>
-                  <th align="left">Date</th>
-                  <th align="left">Desc</th>
-                  <th align="right">Amt</th>
-                  <th align="left">Cur</th>
-                  <th align="left">Cat</th>
-                  <th align="left">Payer</th>
+                <tr style={{ color: colors.textSecondary }}>
+                  <th align="left" style={{ padding: '6px 8px' }}>
+                    Date
+                  </th>
+                  <th align="left" style={{ padding: '6px 8px' }}>
+                    Desc
+                  </th>
+                  <th align="right" style={{ padding: '6px 8px' }}>
+                    Amt
+                  </th>
+                  <th align="left" style={{ padding: '6px 8px' }}>
+                    Cur
+                  </th>
+                  <th align="left" style={{ padding: '6px 8px' }}>
+                    Cat
+                  </th>
+                  <th align="left" style={{ padding: '6px 8px' }}>
+                    Payer
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {preview.txns.slice(0, 50).map((t, i) => (
-                  <tr key={i} style={{ borderTop: '1px solid #eee' }}>
-                    <td>{t.txn_date}</td>
-                    <td>{t.description}</td>
-                    <td align="right">{t.amount.toFixed(2)}</td>
-                    <td>{t.currency}</td>
-                    <td>{t.category}</td>
-                    <td>{t.payer}</td>
+                  <tr
+                    key={i}
+                    style={{ borderTop: `1px solid ${colors.borderLight}` }}
+                  >
+                    <td style={{ padding: '6px 8px', color: colors.textMuted }}>
+                      {t.txn_date}
+                    </td>
+                    <td style={{ padding: '6px 8px' }}>{t.description}</td>
+                    <td
+                      align="right"
+                      style={{
+                        padding: '6px 8px',
+                        fontWeight: 500,
+                        color: t.amount < 0 ? colors.expense : colors.income,
+                      }}
+                    >
+                      {t.amount.toFixed(2)}
+                    </td>
+                    <td style={{ padding: '6px 8px', color: colors.textMuted }}>
+                      {t.currency}
+                    </td>
+                    <td
+                      style={{
+                        padding: '6px 8px',
+                        color: colors.textSecondary,
+                      }}
+                    >
+                      {t.category}
+                    </td>
+                    <td
+                      style={{
+                        padding: '6px 8px',
+                        color: colors.textSecondary,
+                      }}
+                    >
+                      {t.payer}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -312,13 +397,15 @@ export default function ImportPanel() {
 
           <button
             onClick={confirm}
-            style={{ padding: '10px 12px', marginTop: 10, fontWeight: 700 }}
+            style={{ ...styles.button, ...styles.buttonPrimary, marginTop: 14 }}
           >
             Confirm & {demoMode ? 'Simulate' : 'Save'}
           </button>
           {demoMode && (
-            <div style={{ marginTop: 6, fontSize: 12, opacity: 0.8 }}>
-              Demo mode doesn’t persist data.
+            <div
+              style={{ marginTop: 8, fontSize: 12, color: colors.textMuted }}
+            >
+              Demo mode does not persist data.
             </div>
           )}
         </div>

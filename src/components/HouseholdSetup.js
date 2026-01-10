@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { colors, styles } from '@/lib/theme';
 
 export default function HouseholdSetup({ onReady }) {
   const [user, setUser] = useState(null);
@@ -58,7 +59,7 @@ export default function HouseholdSetup({ onReady }) {
 
       await upsertProfile(hh.id);
 
-      setStatus(`Household created ✅ Join code: ${hh.join_code}`);
+      setStatus(`Household created! Join code: ${hh.join_code}`);
       onReady?.(hh.id, hh.join_code);
     } catch (e) {
       setStatus(e.message || 'Failed to create household.');
@@ -81,65 +82,96 @@ export default function HouseholdSetup({ onReady }) {
       if (memErr) throw memErr;
 
       await upsertProfile(hh.id);
-      setStatus('Joined ✅');
+      setStatus('Joined successfully!');
       onReady?.(hh.id, hh.join_code);
     } catch (e) {
       setStatus(e.message || 'Failed to join household.');
     }
   }
 
+  const innerCard = {
+    background: colors.bgHover,
+    borderRadius: 12,
+    padding: 16,
+  };
+
   return (
-    <section
-      style={{
-        marginTop: 14,
-        border: '1px solid #e5e7eb',
-        borderRadius: 12,
-        padding: 16,
-      }}
-    >
-      <h2 style={{ marginTop: 0 }}>Setup (first-time)</h2>
-      <p style={{ opacity: 0.8 }}>
+    <section style={{ ...styles.card, marginTop: 14 }}>
+      <h2 style={{ marginTop: 0, marginBottom: 8 }}>Setup (first-time)</h2>
+      <p style={{ color: colors.textSecondary, marginBottom: 16 }}>
         Create a household or join one using a join code. This makes the repo
         fork-friendly.
       </p>
 
-      <div style={{ display: 'grid', gap: 12 }}>
-        <div
-          style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: 12 }}
-        >
-          <div style={{ fontWeight: 700 }}>Create Household</div>
+      <div style={{ display: 'grid', gap: 14 }}>
+        <div style={innerCard}>
+          <div
+            style={{
+              fontWeight: 600,
+              color: colors.textPrimary,
+              marginBottom: 10,
+            }}
+          >
+            Create Household
+          </div>
           <input
             value={householdName}
             onChange={(e) => setHouseholdName(e.target.value)}
-            style={{ width: '100%', padding: 10, marginTop: 8 }}
+            style={{ ...styles.input, width: '100%' }}
           />
           <button
             onClick={createHousehold}
-            style={{ padding: '10px 12px', marginTop: 8 }}
+            style={{ ...styles.button, ...styles.buttonPrimary, marginTop: 10 }}
           >
             Create
           </button>
         </div>
 
-        <div
-          style={{ border: '1px solid #e5e7eb', borderRadius: 12, padding: 12 }}
-        >
-          <div style={{ fontWeight: 700 }}>Join Household</div>
+        <div style={innerCard}>
+          <div
+            style={{
+              fontWeight: 600,
+              color: colors.textPrimary,
+              marginBottom: 10,
+            }}
+          >
+            Join Household
+          </div>
           <input
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value)}
             placeholder="Join code (e.g. a1b2c3d4e5f6)"
-            style={{ width: '100%', padding: 10, marginTop: 8 }}
+            style={{ ...styles.input, width: '100%' }}
           />
           <button
             onClick={joinHousehold}
-            style={{ padding: '10px 12px', marginTop: 8 }}
+            style={{
+              ...styles.button,
+              ...styles.buttonSecondary,
+              marginTop: 10,
+            }}
           >
             Join
           </button>
         </div>
 
-        {status && <div style={{ marginTop: 4 }}>{status}</div>}
+        {status && (
+          <div
+            style={{
+              padding: 12,
+              background: status.includes('!')
+                ? colors.success + '15'
+                : colors.bgHover,
+              borderRadius: 8,
+              color: status.includes('!')
+                ? colors.success
+                : colors.textSecondary,
+              fontWeight: 500,
+            }}
+          >
+            {status}
+          </div>
+        )}
       </div>
     </section>
   );

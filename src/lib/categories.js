@@ -14,7 +14,7 @@ export const INCOME_CATEGORIES = ['Salary', 'Investments', 'Extra'];
 
 export const ALL_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
 
-export const PAYERS = ['alex', 'adriana', 'together'];
+export const PAYERS = ['Alex', 'Adriana', 'Together'];
 
 // Threshold config (v1)
 export const USD_THRESHOLD = 500;

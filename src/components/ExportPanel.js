@@ -6,6 +6,7 @@ import { getDemoMode } from '@/lib/auth';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { toCsv, downloadCsv } from '@/lib/csv';
 import { CURRENCIES } from '@/lib/categories';
+import { styles } from '@/lib/theme';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
 
@@ -100,24 +101,26 @@ export default function ExportPanel() {
       <div
         style={{
           display: 'flex',
-          gap: 10,
+          gap: 12,
           flexWrap: 'wrap',
-          alignItems: 'center',
+          alignItems: 'flex-end',
         }}
       >
-        <label>
-          Month&nbsp;
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={styles.label}>Month</span>
           <input
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
+            style={styles.input}
           />
         </label>
-        <label>
-          Currency&nbsp;
+        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <span style={styles.label}>Currency</span>
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
+            style={{ ...styles.input, cursor: 'pointer' }}
           >
             {CURRENCIES.map((c) => (
               <option key={c} value={c}>
@@ -128,7 +131,7 @@ export default function ExportPanel() {
         </label>
         <button
           onClick={exportCsv}
-          style={{ padding: '10px 12px', fontWeight: 700 }}
+          style={{ ...styles.button, ...styles.buttonPrimary }}
         >
           Download CSV
         </button>
