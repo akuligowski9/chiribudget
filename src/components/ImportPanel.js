@@ -244,10 +244,10 @@ export default function ImportPanel() {
           <select
             value={currency}
             onChange={(e) => setCurrency(e.target.value)}
-            style={{ ...styles.input, cursor: 'pointer' }}
+            className="w-24 h-10 px-3 text-sm font-bold rounded-xl cursor-pointer transition-all duration-200 bg-gradient-to-r from-accent to-accent-light text-white border-2 border-accent/30 shadow-md shadow-accent/25 hover:shadow-lg hover:shadow-accent/35"
           >
             {CURRENCIES.map((c) => (
-              <option key={c} value={c}>
+              <option key={c} value={c} className="bg-white text-charcoal">
                 {c}
               </option>
             ))}

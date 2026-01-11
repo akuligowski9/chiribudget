@@ -7,10 +7,23 @@ import { getDemoTransactions } from '@/lib/demoStore';
 import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { List, Trash2, TrendingUp, TrendingDown, Flag } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  List,
+  Trash2,
+  TrendingUp,
+  TrendingDown,
+  Flag,
+  Search,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
 import { cn } from '@/lib/utils';
+
+const PAGE_SIZE = 20;
 
 export default function TransactionList({ startDate, endDate, currency }) {
   const [demoMode, setDemoMode] = useState(false);
@@ -20,10 +33,25 @@ export default function TransactionList({ startDate, endDate, currency }) {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
 
+  // Search, sort, pagination state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState('txn_date');
+  const [sortAsc, setSortAsc] = useState(false);
+  const [page, setPage] = useState(0);
+  const [totalCount, setTotalCount] = useState(0);
+
   useEffect(() => {
     setDemoMode(getDemoMode());
+  }, []);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(0);
+  }, [startDate, endDate, currency, searchQuery, sortField, sortAsc]);
+
+  useEffect(() => {
     loadTransactions();
-  }, [startDate, endDate, currency]);
+  }, [startDate, endDate, currency, searchQuery, sortField, sortAsc, page]);
 
   async function loadTransactions() {
     setLoading(true);
@@ -31,10 +59,38 @@ export default function TransactionList({ startDate, endDate, currency }) {
     if (getDemoMode()) {
       const month = startDate.slice(0, 7);
       const allTx = getDemoTransactions({ month, currency });
-      const filtered = allTx.filter(
+      let filtered = allTx.filter(
         (t) => t.txn_date >= startDate && t.txn_date <= endDate
       );
-      setRows(filtered);
+
+      // Apply search filter
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        filtered = filtered.filter(
+          (t) =>
+            t.description?.toLowerCase().includes(q) ||
+            t.category?.toLowerCase().includes(q)
+        );
+      }
+
+      // Apply sorting
+      filtered.sort((a, b) => {
+        let cmp = 0;
+        if (sortField === 'txn_date') {
+          cmp = a.txn_date.localeCompare(b.txn_date);
+        } else if (sortField === 'amount') {
+          cmp = Math.abs(a.amount) - Math.abs(b.amount);
+        }
+        return sortAsc ? cmp : -cmp;
+      });
+
+      setTotalCount(filtered.length);
+      // Apply pagination
+      const paginated = filtered.slice(
+        page * PAGE_SIZE,
+        (page + 1) * PAGE_SIZE
+      );
+      setRows(paginated);
       setLoading(false);
       return;
     }
@@ -59,19 +115,33 @@ export default function TransactionList({ startDate, endDate, currency }) {
 
     setHouseholdId(p.household_id);
 
-    const { data: tx, error } = await supabase
+    // Build query
+    let query = supabase
       .from('transactions')
       .select(
-        'id,txn_date,description,amount,currency,category,payer,is_flagged'
+        'id,txn_date,description,amount,currency,category,payer,is_flagged',
+        { count: 'exact' }
       )
       .eq('household_id', p.household_id)
       .eq('currency', currency)
       .gte('txn_date', startDate)
-      .lte('txn_date', endDate)
-      .order('txn_date', { ascending: false });
+      .lte('txn_date', endDate);
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      query = query.ilike('description', `%${searchQuery.trim()}%`);
+    }
+
+    // Apply sorting and pagination
+    query = query
+      .order(sortField, { ascending: sortAsc })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+
+    const { data: tx, error, count } = await query;
 
     if (!error) {
       setRows(tx || []);
+      setTotalCount(count || 0);
     }
     setLoading(false);
   }
@@ -134,12 +204,59 @@ export default function TransactionList({ startDate, endDate, currency }) {
     .filter((r) => r.amount < 0)
     .reduce((s, r) => s + Math.abs(Number(r.amount)), 0);
 
+  function toggleSort(field) {
+    if (sortField === field) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortField(field);
+      setSortAsc(false);
+    }
+  }
+
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <List className="w-5 h-5 text-slate" />
-          <CardTitle>Transactions</CardTitle>
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex items-center gap-2">
+            <List className="w-5 h-5 text-slate" />
+            <CardTitle>Transactions</CardTitle>
+          </div>
+
+          {/* Search input */}
+          <div className="relative flex-1 max-w-xs">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" />
+            <Input
+              type="text"
+              placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-8 h-9"
+            />
+          </div>
+        </div>
+
+        {/* Sort controls */}
+        <div className="flex gap-2 mt-3">
+          <Button
+            variant={sortField === 'txn_date' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => toggleSort('txn_date')}
+            className="text-xs"
+          >
+            <ArrowUpDown className="w-3 h-3 mr-1" />
+            Date {sortField === 'txn_date' && (sortAsc ? '↑' : '↓')}
+          </Button>
+          <Button
+            variant={sortField === 'amount' ? 'secondary' : 'outline'}
+            size="sm"
+            onClick={() => toggleSort('amount')}
+            className="text-xs"
+          >
+            <ArrowUpDown className="w-3 h-3 mr-1" />
+            Amount {sortField === 'amount' && (sortAsc ? '↑' : '↓')}
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
@@ -334,6 +451,35 @@ export default function TransactionList({ startDate, endDate, currency }) {
                 </div>
               ))}
             </div>
+
+            {/* Pagination controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/40">
+                <span className="text-sm text-warm-gray">
+                  Page {page + 1} of {totalPages} ({totalCount} total)
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setPage((p) => Math.min(totalPages - 1, p + 1))
+                    }
+                    disabled={page >= totalPages - 1}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         )}
 

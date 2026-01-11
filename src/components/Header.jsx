@@ -6,14 +6,31 @@ import { supabase } from '@/lib/supabaseClient';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sparkles } from 'lucide-react';
+import { Home, LogOut } from 'lucide-react';
 
 export default function Header() {
   const [demoMode, setDemo] = useState(false);
+  const [user, setUser] = useState(null);
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
 
-  useEffect(() => setDemo(getDemoMode()), []);
+  useEffect(() => {
+    setDemo(getDemoMode());
+
+    // Check current auth state
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data?.user || null);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   async function sendMagicLink(e) {
     e.preventDefault();
@@ -32,13 +49,19 @@ export default function Header() {
     setDemo(false);
   }
 
+  async function logout() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setStatus('');
+  }
+
   return (
     <Card accent className="p-6">
       <div className="flex justify-between gap-4 flex-wrap items-start">
         <div>
           <div className="flex items-center gap-2 mb-1">
             <div className="p-1.5 rounded-lg bg-gradient-to-br from-slate to-slate-light">
-              <Sparkles className="w-4 h-4 text-white" />
+              <Home className="w-4 h-4 text-white" />
             </div>
             <h1 className="text-2xl font-bold gradient-text m-0">
               ChiriBudget
@@ -50,7 +73,21 @@ export default function Header() {
         </div>
 
         <div className="flex gap-2 items-center flex-wrap">
-          {!demoMode ? (
+          {demoMode ? (
+            <Button variant="secondary" onClick={exitDemo}>
+              Exit Demo
+            </Button>
+          ) : user ? (
+            <>
+              <span className="text-sm text-stone truncate max-w-[200px]">
+                {user.email}
+              </span>
+              <Button variant="outline" onClick={logout}>
+                <LogOut className="w-4 h-4 mr-1.5" />
+                Log out
+              </Button>
+            </>
+          ) : (
             <>
               <form onSubmit={sendMagicLink} className="flex gap-2">
                 <Input
@@ -65,10 +102,6 @@ export default function Header() {
                 Try Demo
               </Button>
             </>
-          ) : (
-            <Button variant="secondary" onClick={exitDemo}>
-              Exit Demo
-            </Button>
           )}
         </div>
       </div>

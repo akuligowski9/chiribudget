@@ -60,15 +60,17 @@ describe('Toast', () => {
     const toast = { id: '1', type: 'error', title: 'Error!' };
     render(<Toast toast={toast} onClose={() => {}} />);
 
-    const toastElement = screen.getByText('Error!').parentElement;
-    expect(toastElement).toHaveStyle({ background: '#fee2e2' });
+    const titleElement = screen.getByText('Error!');
+    // Error type uses colors.error (#B5594E) for text
+    expect(titleElement).toHaveStyle({ color: '#B5594E' });
   });
 
   it('applies success styling for success type', () => {
     const toast = { id: '1', type: 'success', title: 'Success!' };
     render(<Toast toast={toast} onClose={() => {}} />);
 
-    const toastElement = screen.getByText('Success!').parentElement;
-    expect(toastElement).toHaveStyle({ background: '#dcfce7' });
+    const titleElement = screen.getByText('Success!');
+    // Success type uses colors.success (#6B8E6B) for text
+    expect(titleElement).toHaveStyle({ color: '#6B8E6B' });
   });
 });

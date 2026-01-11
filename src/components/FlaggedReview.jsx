@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 import { getDemoMode } from '@/lib/auth';
 import { getDemoTransactions } from '@/lib/demoStore';
+import { CURRENCIES } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Flag,
@@ -16,7 +17,7 @@ import Toast from './Toast';
 import { toastId } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
-export default function FlaggedReview({ currency }) {
+export default function FlaggedReview({ currency, onCurrencyChange }) {
   const [demoMode, setDemoMode] = useState(false);
   const [_householdId, setHouseholdId] = useState(null);
   const [rows, setRows] = useState([]);
@@ -122,25 +123,36 @@ export default function FlaggedReview({ currency }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Flag className="w-5 h-5 text-warning" />
             <CardTitle>Flagged for Review</CardTitle>
           </div>
-          <div className="flex items-center gap-2 text-sm">
+          <div className="flex items-center gap-2">
             {unresolved.length > 0 ? (
-              <div className="flex items-center gap-1.5 bg-warning/15 text-warning px-2.5 py-1 rounded-full border border-warning/30">
+              <div className="flex items-center gap-1.5 bg-warning/15 text-warning px-2.5 py-1 rounded-full border border-warning/30 text-sm">
                 <AlertTriangle className="w-3.5 h-3.5" />
                 <span className="font-semibold">
                   {unresolved.length} unresolved
                 </span>
               </div>
             ) : rows.length > 0 ? (
-              <div className="flex items-center gap-1.5 bg-success/15 text-success px-2.5 py-1 rounded-full border border-success/30">
+              <div className="flex items-center gap-1.5 bg-success/15 text-success px-2.5 py-1 rounded-full border border-success/30 text-sm">
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span className="font-semibold">All resolved</span>
               </div>
             ) : null}
+            <select
+              value={currency}
+              onChange={(e) => onCurrencyChange?.(e.target.value)}
+              className="w-20 h-8 px-2 text-xs font-bold rounded-lg cursor-pointer transition-all duration-200 bg-gradient-to-r from-accent to-accent-light text-white border-2 border-accent/30 shadow-sm shadow-accent/25 hover:shadow-md hover:shadow-accent/35"
+            >
+              {CURRENCIES.map((c) => (
+                <option key={c} value={c} className="bg-white text-charcoal">
+                  {c}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </CardHeader>

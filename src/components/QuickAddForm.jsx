@@ -190,16 +190,17 @@ export default function QuickAddForm({ onSuccess }) {
 
           <div className="space-y-1.5">
             <Label>Currency</Label>
-            <Select
+            <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
+              className="w-full h-10 px-3 text-sm font-bold rounded-xl cursor-pointer transition-all duration-200 bg-gradient-to-r from-accent to-accent-light text-white border-2 border-accent/30 shadow-md shadow-accent/25 hover:shadow-lg hover:shadow-accent/35"
             >
               {CURRENCIES.map((c) => (
-                <option key={c} value={c}>
+                <option key={c} value={c} className="bg-white text-charcoal">
                   {c}
                 </option>
               ))}
-            </Select>
+            </select>
           </div>
 
           <div className="space-y-1.5">

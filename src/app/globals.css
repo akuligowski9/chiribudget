@@ -51,13 +51,7 @@
 }
 
 body {
-  background: linear-gradient(
-    165deg,
-    #f7d4b8 0%,
-    #f0c4a0 30%,
-    #e8b490 70%,
-    #dfaa85 100%
-  );
+  background: linear-gradient(165deg, #e4e8e2 0%, #d8ddd4 50%, #cdd4c8 100%);
   background-attachment: fixed;
   color: var(--color-charcoal);
   line-height: 1.6;
@@ -84,12 +78,12 @@ body::before {
   background-image:
     radial-gradient(
       circle at 20% 80%,
-      rgba(74, 124, 155, 0.08) 0%,
+      rgba(125, 132, 113, 0.08) 0%,
       transparent 50%
     ),
     radial-gradient(
       circle at 80% 20%,
-      rgba(232, 148, 90, 0.1) 0%,
+      rgba(74, 124, 155, 0.06) 0%,
       transparent 50%
     );
   pointer-events: none;

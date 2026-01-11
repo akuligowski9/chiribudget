@@ -1,35 +1,155 @@
 [
   {
     "id": "d1",
-    "txn_date": "2025-11-03",
+    "txn_date": "2026-01-02",
     "currency": "USD",
-    "description": "Groceries",
-    "amount": -74.22,
+    "description": "Whole Foods groceries",
+    "amount": -127.43,
     "category": "Food",
     "payer": "together",
-    "is_flagged": false,
-    "explanation": null
+    "is_flagged": false
   },
   {
     "id": "d2",
-    "txn_date": "2025-11-13",
+    "txn_date": "2026-01-03",
     "currency": "USD",
-    "description": "Paycheck",
-    "amount": 3402.21,
-    "category": "Extra",
-    "payer": "alex",
+    "description": "January rent",
+    "amount": -2200.0,
+    "category": "Rent/Mortgages",
+    "payer": "together",
     "is_flagged": true,
-    "explanation": ""
+    "flag_reason": "over_threshold_expense"
   },
   {
     "id": "d3",
-    "txn_date": "2025-11-17",
-    "currency": "PEN",
-    "description": "Plaza Vea",
-    "amount": -210.0,
+    "txn_date": "2026-01-05",
+    "currency": "USD",
+    "description": "Alex paycheck",
+    "amount": 4250.0,
+    "category": "Salary",
+    "payer": "alex",
+    "is_flagged": true,
+    "flag_reason": "over_threshold_income"
+  },
+  {
+    "id": "d4",
+    "txn_date": "2026-01-06",
+    "currency": "USD",
+    "description": "Gas station",
+    "amount": -52.18,
+    "category": "Fixed Expenses",
+    "payer": "alex",
+    "is_flagged": false
+  },
+  {
+    "id": "d5",
+    "txn_date": "2026-01-07",
+    "currency": "USD",
+    "description": "Dog food & supplies",
+    "amount": -89.99,
+    "category": "Dogs",
+    "payer": "adriana",
+    "is_flagged": false
+  },
+  {
+    "id": "d6",
+    "txn_date": "2026-01-08",
+    "currency": "USD",
+    "description": "Dinner out",
+    "amount": -67.5,
+    "category": "Food",
+    "payer": "together",
+    "is_flagged": false
+  },
+  {
+    "id": "d7",
+    "txn_date": "2026-01-09",
+    "currency": "USD",
+    "description": "Netflix + Spotify",
+    "amount": -28.98,
+    "category": "Fixed Expenses",
+    "payer": "alex",
+    "is_flagged": false
+  },
+  {
+    "id": "d8",
+    "txn_date": "2026-01-10",
+    "currency": "USD",
+    "description": "Adriana paycheck",
+    "amount": 3800.0,
+    "category": "Salary",
+    "payer": "adriana",
+    "is_flagged": true,
+    "flag_reason": "over_threshold_income"
+  },
+  {
+    "id": "d9",
+    "txn_date": "2026-01-10",
+    "currency": "USD",
+    "description": "Trader Joe's",
+    "amount": -94.33,
     "category": "Food",
     "payer": "adriana",
-    "is_flagged": false,
-    "explanation": null
+    "is_flagged": false
+  },
+  {
+    "id": "d10",
+    "txn_date": "2026-01-11",
+    "currency": "USD",
+    "description": "Weekend hiking trip",
+    "amount": -156.0,
+    "category": "Adventure",
+    "payer": "together",
+    "is_flagged": false
+  },
+  {
+    "id": "p1",
+    "txn_date": "2026-01-02",
+    "currency": "PEN",
+    "description": "Plaza Vea compras",
+    "amount": -245.5,
+    "category": "Food",
+    "payer": "adriana",
+    "is_flagged": false
+  },
+  {
+    "id": "p2",
+    "txn_date": "2026-01-04",
+    "currency": "PEN",
+    "description": "Veterinario perros",
+    "amount": -380.0,
+    "category": "Dogs",
+    "payer": "adriana",
+    "is_flagged": false
+  },
+  {
+    "id": "p3",
+    "txn_date": "2026-01-06",
+    "currency": "PEN",
+    "description": "Luz y agua",
+    "amount": -420.0,
+    "category": "Fixed Expenses",
+    "payer": "together",
+    "is_flagged": false
+  },
+  {
+    "id": "p4",
+    "txn_date": "2026-01-08",
+    "currency": "PEN",
+    "description": "Cumpleanos mama",
+    "amount": -350.0,
+    "category": "Holidays & Birthdays",
+    "payer": "adriana",
+    "is_flagged": false
+  },
+  {
+    "id": "p5",
+    "txn_date": "2026-01-10",
+    "currency": "PEN",
+    "description": "Freelance project",
+    "amount": 1200.0,
+    "category": "Extra",
+    "payer": "alex",
+    "is_flagged": false
   }
 ]
