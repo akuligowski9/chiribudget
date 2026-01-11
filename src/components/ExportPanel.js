@@ -51,6 +51,13 @@ export default function ExportPanel() {
           });
           return;
         }
+        // Calculate first day of next month for proper date range
+        const [year, mon] = month.split('-').map(Number);
+        const nextMonth =
+          mon === 12
+            ? `${year + 1}-01-01`
+            : `${year}-${String(mon + 1).padStart(2, '0')}-01`;
+
         const { data, error } = await supabase
           .from('transactions')
           .select(
@@ -59,7 +66,7 @@ export default function ExportPanel() {
           .eq('household_id', householdId)
           .eq('currency', currency)
           .gte('txn_date', `${month}-01`)
-          .lt('txn_date', `${month}-31`)
+          .lt('txn_date', nextMonth)
           .order('txn_date', { ascending: true });
 
         if (error) throw error;
