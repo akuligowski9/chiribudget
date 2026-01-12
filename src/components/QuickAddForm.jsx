@@ -28,6 +28,14 @@ function thresholdFor(currency) {
     : Math.round(USD_THRESHOLD * FX_USD_TO_PEN);
 }
 
+// Maximum transaction amounts to prevent typos
+const MAX_AMOUNT_USD = 50000;
+const MAX_AMOUNT_PEN = Math.round(MAX_AMOUNT_USD * FX_USD_TO_PEN);
+
+function maxAmountFor(currency) {
+  return currency === 'USD' ? MAX_AMOUNT_USD : MAX_AMOUNT_PEN;
+}
+
 function computeFingerprint({
   household_id,
   currency,
@@ -57,6 +65,9 @@ export default function QuickAddForm({ onSuccess }) {
 
   const [householdId, setHouseholdId] = useState(null);
 
+  // Field-level validation errors
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     setDemoMode(getDemoMode());
     (async () => {
@@ -75,11 +86,68 @@ export default function QuickAddForm({ onSuccess }) {
   }, []);
 
   const thr = useMemo(() => thresholdFor(currency), [currency]);
+  const maxAmount = useMemo(() => maxAmountFor(currency), [currency]);
   const numericAmount = useMemo(() => {
     const n = Number(amount);
     if (!Number.isFinite(n)) return 0;
     return kind === 'expense' ? -Math.abs(n) : Math.abs(n);
   }, [amount, kind]);
+
+  // Validation functions
+  const validateDate = (date) => {
+    const today = new Date().toISOString().slice(0, 10);
+    if (date > today) {
+      return 'Date cannot be in the future';
+    }
+    return null;
+  };
+
+  const validateAmount = (value, curr) => {
+    if (!value || value.trim() === '') {
+      return 'Amount is required';
+    }
+    const num = Number(value);
+    if (isNaN(num) || !Number.isFinite(num)) {
+      return 'Enter a valid number';
+    }
+    if (num <= 0) {
+      return 'Amount must be greater than 0';
+    }
+    const max = maxAmountFor(curr);
+    if (num > max) {
+      return `Amount cannot exceed ${curr} ${max.toLocaleString()}`;
+    }
+    return null;
+  };
+
+  // Handle date change with validation
+  const handleDateChange = (e) => {
+    const newDate = e.target.value;
+    setTxnDate(newDate);
+    const error = validateDate(newDate);
+    setErrors((prev) => ({ ...prev, date: error }));
+  };
+
+  // Handle amount change with validation
+  const handleAmountChange = (e) => {
+    const newAmount = e.target.value;
+    setAmount(newAmount);
+    // Only validate if user has entered something
+    if (newAmount) {
+      const error = validateAmount(newAmount, currency);
+      setErrors((prev) => ({ ...prev, amount: error }));
+    } else {
+      setErrors((prev) => ({ ...prev, amount: null }));
+    }
+  };
+
+  // Re-validate amount when currency changes (max limit changes)
+  useEffect(() => {
+    if (amount) {
+      const error = validateAmount(amount, currency);
+      setErrors((prev) => ({ ...prev, amount: error }));
+    }
+  }, [currency, amount]);
 
   async function logError(context, message, payload_snapshot) {
     try {
@@ -100,12 +168,24 @@ export default function QuickAddForm({ onSuccess }) {
   async function onSubmit(e) {
     e.preventDefault();
 
-    if (!amount || Number(amount) <= 0) {
+    // Validate all fields
+    const dateError = validateDate(txn_date);
+    const amountError = validateAmount(amount, currency);
+
+    const newErrors = {
+      date: dateError,
+      amount: amountError,
+    };
+
+    setErrors(newErrors);
+
+    // Check if there are any errors
+    if (dateError || amountError) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Invalid amount',
-        message: 'Enter a positive number.',
+        title: 'Please fix errors',
+        message: 'Check the highlighted fields above.',
       });
       return;
     }
@@ -158,6 +238,7 @@ export default function QuickAddForm({ onSuccess }) {
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
+      setErrors({});
       onSuccess?.();
       return;
     }
@@ -170,6 +251,7 @@ export default function QuickAddForm({ onSuccess }) {
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
+      setErrors({});
       onSuccess?.();
     } catch (err) {
       await logError('save_transaction', err.message || 'Unknown error', row);
@@ -191,8 +273,16 @@ export default function QuickAddForm({ onSuccess }) {
             <Input
               type="date"
               value={txn_date}
-              onChange={(e) => setTxnDate(e.target.value)}
+              onChange={handleDateChange}
+              className={
+                errors.date
+                  ? 'border-error focus:border-error focus:ring-error/20'
+                  : ''
+              }
             />
+            {errors.date && (
+              <p className="text-xs text-error mt-1">{errors.date}</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -228,13 +318,23 @@ export default function QuickAddForm({ onSuccess }) {
           <Label>Amount</Label>
           <Input
             value={amount}
-            onChange={(e) => setAmount(e.target.value)}
+            onChange={handleAmountChange}
             inputMode="decimal"
             placeholder="e.g. 75.20"
+            className={
+              errors.amount
+                ? 'border-error focus:border-error focus:ring-error/20'
+                : ''
+            }
           />
-          <p className="text-xs text-warm-gray">
-            Threshold: {currency} {thr} (flagged items reviewed on Dashboard)
-          </p>
+          {errors.amount ? (
+            <p className="text-xs text-error mt-1">{errors.amount}</p>
+          ) : (
+            <p className="text-xs text-warm-gray">
+              Threshold: {currency} {thr} | Max: {currency}{' '}
+              {maxAmount.toLocaleString()}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">

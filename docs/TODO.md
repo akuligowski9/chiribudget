@@ -9,7 +9,7 @@ This document tracks planned work for the ChiriBudget application.
 ### High Priority
 
 - [x] Add error boundaries to catch React render errors gracefully
-- [ ] Add form validation (required fields, future dates, amount limits)
+- [x] Add form validation (required fields, future dates, amount limits)
 - [ ] Add ARIA labels and semantic HTML for accessibility
 - [ ] Add visible focus indicators for keyboard navigation
 
@@ -115,7 +115,7 @@ This document tracks planned work for the ChiriBudget application.
 
 | Category   | High | Medium | Low |
 | ---------- | ---- | ------ | --- |
-| Frontend   | 3    | 3      | 2   |
+| Frontend   | 2    | 3      | 2   |
 | Backend    | 1    | 3      | 2   |
 | Deployment | 0    | 3      | 2   |
 | Other      | 0    | 3      | 3   |
