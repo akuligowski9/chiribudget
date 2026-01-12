@@ -21,19 +21,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from './Toast';
+import { getMaxAmount } from '@/lib/constants';
 
 function thresholdFor(currency) {
   return currency === 'USD'
     ? USD_THRESHOLD
     : Math.round(USD_THRESHOLD * FX_USD_TO_PEN);
-}
-
-// Maximum transaction amounts to prevent typos
-const MAX_AMOUNT_USD = 50000;
-const MAX_AMOUNT_PEN = Math.round(MAX_AMOUNT_USD * FX_USD_TO_PEN);
-
-function maxAmountFor(currency) {
-  return currency === 'USD' ? MAX_AMOUNT_USD : MAX_AMOUNT_PEN;
 }
 
 function computeFingerprint({
@@ -86,7 +79,7 @@ export default function QuickAddForm({ onSuccess }) {
   }, []);
 
   const thr = useMemo(() => thresholdFor(currency), [currency]);
-  const maxAmount = useMemo(() => maxAmountFor(currency), [currency]);
+  const maxAmount = useMemo(() => getMaxAmount(currency), [currency]);
   const numericAmount = useMemo(() => {
     const n = Number(amount);
     if (!Number.isFinite(n)) return 0;
@@ -113,7 +106,7 @@ export default function QuickAddForm({ onSuccess }) {
     if (num <= 0) {
       return 'Amount must be greater than 0';
     }
-    const max = maxAmountFor(curr);
+    const max = getMaxAmount(curr);
     if (num > max) {
       return `Amount cannot exceed ${curr} ${max.toLocaleString()}`;
     }

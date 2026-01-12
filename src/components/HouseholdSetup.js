@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
+import { RELOAD_DELAY_MS, COPY_FEEDBACK_MS } from '@/lib/constants';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -106,7 +107,7 @@ export default function HouseholdSetup({ onReady }) {
       setStatus('Joined successfully! Refreshing...');
       onReady?.(hh.id, hh.join_code);
       // Refresh the page to load the household data
-      setTimeout(() => window.location.reload(), 1000);
+      setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
     } catch (e) {
       setStatus(e.message || 'Failed to join household.');
     }
@@ -115,7 +116,7 @@ export default function HouseholdSetup({ onReady }) {
   async function copyCode() {
     await navigator.clipboard.writeText(createdCode);
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    setTimeout(() => setCopied(false), COPY_FEEDBACK_MS);
   }
 
   function continueToApp() {

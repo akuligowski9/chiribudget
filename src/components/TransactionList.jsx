@@ -29,8 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-
-const PAGE_SIZE = 20;
+import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
 
 export default function TransactionList({
   startDate,
@@ -99,8 +98,8 @@ export default function TransactionList({
       setTotalCount(filtered.length);
       // Apply pagination
       const paginated = filtered.slice(
-        page * PAGE_SIZE,
-        (page + 1) * PAGE_SIZE
+        page * TRANSACTIONS_PER_PAGE,
+        (page + 1) * TRANSACTIONS_PER_PAGE
       );
       setRows(paginated);
       setLoading(false);
@@ -147,7 +146,10 @@ export default function TransactionList({
     // Apply sorting and pagination
     query = query
       .order(sortField, { ascending: sortAsc })
-      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+      .range(
+        page * TRANSACTIONS_PER_PAGE,
+        (page + 1) * TRANSACTIONS_PER_PAGE - 1
+      );
 
     const { data: tx, error, count } = await query;
 
@@ -229,7 +231,7 @@ export default function TransactionList({
     }
   }
 
-  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+  const totalPages = Math.ceil(totalCount / TRANSACTIONS_PER_PAGE);
 
   return (
     <Card>

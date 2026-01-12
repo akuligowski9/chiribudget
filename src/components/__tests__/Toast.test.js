@@ -1,5 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
 import Toast from '../Toast';
+import { TOAST_DURATION_MS } from '@/lib/constants';
 
 describe('Toast', () => {
   beforeEach(() => {
@@ -50,7 +51,7 @@ describe('Toast', () => {
     expect(onClose).not.toHaveBeenCalled();
 
     act(() => {
-      jest.advanceTimersByTime(3200);
+      jest.advanceTimersByTime(TOAST_DURATION_MS);
     });
 
     expect(onClose).toHaveBeenCalledWith('123');

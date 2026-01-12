@@ -2,11 +2,12 @@
 
 import { useEffect } from 'react';
 import { colors } from '@/lib/theme';
+import { TOAST_DURATION_MS } from '@/lib/constants';
 
 export default function Toast({ toast, onClose }) {
   useEffect(() => {
     if (!toast) return;
-    const t = setTimeout(() => onClose?.(toast.id), 3200);
+    const t = setTimeout(() => onClose?.(toast.id), TOAST_DURATION_MS);
     return () => clearTimeout(t);
   }, [toast, onClose]);
 
