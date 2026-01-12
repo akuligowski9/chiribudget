@@ -85,23 +85,86 @@ This is designed to make it safe to showcase publicly in a portfolio.
 
 ## Setup (Fork-Friendly)
 
-### 1) Create a Supabase project
+### 1) Create a Supabase Project
 
-- Enable Email authentication (Magic Link)
-- Run the SQL schema from `supabase/schema.sql`
+1. Go to [supabase.com](https://supabase.com) and sign up/log in
+2. Click **New Project**
+3. Choose a name (e.g., "chiribudget")
+4. Set a strong database password (save it somewhere safe!)
+5. Choose a region close to you
+6. Click **Create new project** (takes ~2 minutes)
 
-### 2) Configure environment variables
+### 2) Run the Database Schema
 
-Create `.env.local` (and set the same vars in Vercel):
+1. In your Supabase dashboard, go to **SQL Editor** (left sidebar)
+2. Click **New query**
+3. Copy the entire contents of `supabase/schema.sql` and paste it
+4. Click **Run** — you should see "Success"
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+After running, you'll have:
 
-> Note: This app uses RLS for security, so the anon key is safe to use client-side as long as you keep policies enabled.
+- 8 tables: households, household_members, profiles, budget_config, transactions, month_status, import_batches, errors
+- RLS policies for secure multi-tenant access
+- Helper functions for budget rules
+- Performance indexes
 
-### 3) Install & run
+### 3) Enable Email Auth
+
+1. Go to **Authentication** → **Providers**
+2. Ensure **Email** is enabled (it should be by default)
+3. (Optional) For easier testing, go to **Authentication** → **Settings** and disable "Enable email confirmations"
+
+### 4) Get Your API Keys
+
+1. Go to **Settings** → **API** (left sidebar)
+2. Copy these two values:
+   - **Project URL** (e.g., `https://abc123.supabase.co`)
+   - **anon public** key (long string starting with `eyJ...`)
+
+### 5) Configure Environment Variables
+
+Create `.env.local` in your project root:
+
+```bash
+cp .env.example .env.local
+```
+
+Edit `.env.local` with your actual values:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+```
+
+> **Note:** The anon key is safe to expose client-side because RLS policies protect all data.
+
+For production (Vercel), add these same variables in your project's Environment Variables settings.
+
+### 6) Install & Run
 
 ```bash
 npm install
 npm run dev
 ```
+
+Open [http://localhost:3000](http://localhost:3000)
+
+### 7) Create Your Household
+
+1. Click **Sign Up** and create an account
+2. After signing in, create a new household
+3. Share the **Join Code** with your partner so they can join
+4. Start adding transactions!
+
+---
+
+## Deployment (Vercel)
+
+1. Push your code to GitHub
+2. Import the repo in [Vercel](https://vercel.com)
+3. Add environment variables:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+4. Deploy!
+
+The app will auto-deploy on every push to main.

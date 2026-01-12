@@ -2,20 +2,29 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { colors, styles } from '@/lib/theme';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input, Label } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Home, Users, Copy, Check } from 'lucide-react';
 
 export default function HouseholdSetup({ onReady }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
-  const [householdName, setHouseholdName] = useState('Alex & Adriana');
+  const [loading, setLoading] = useState(true);
+  const [householdName, setHouseholdName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [status, setStatus] = useState('');
+  const [createdCode, setCreatedCode] = useState('');
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.auth.getUser();
       setUser(data?.user ?? null);
-      if (!data?.user) return;
+      if (!data?.user) {
+        setLoading(false);
+        return;
+      }
 
       const { data: p } = await supabase
         .from('profiles')
@@ -23,9 +32,11 @@ export default function HouseholdSetup({ onReady }) {
         .eq('user_id', data.user.id)
         .maybeSingle();
       setProfile(p || null);
+      setLoading(false);
     })();
   }, []);
 
+  if (loading) return null;
   if (!user) return null;
   if (profile?.household_id) return null;
 
@@ -39,11 +50,15 @@ export default function HouseholdSetup({ onReady }) {
   }
 
   async function createHousehold() {
+    if (!householdName.trim()) {
+      setStatus('Please enter a household name');
+      return;
+    }
     setStatus('Creating household...');
     try {
       const { data: hh, error: hhErr } = await supabase
         .from('households')
-        .insert({ name: householdName })
+        .insert({ name: householdName.trim() })
         .select('*')
         .single();
       if (hhErr) throw hhErr;
@@ -59,7 +74,8 @@ export default function HouseholdSetup({ onReady }) {
 
       await upsertProfile(hh.id);
 
-      setStatus(`Household created! Join code: ${hh.join_code}`);
+      setCreatedCode(hh.join_code);
+      setStatus('Household created! Share the code below with your partner.');
       onReady?.(hh.id, hh.join_code);
     } catch (e) {
       setStatus(e.message || 'Failed to create household.');
@@ -67,14 +83,19 @@ export default function HouseholdSetup({ onReady }) {
   }
 
   async function joinHousehold() {
+    if (!joinCode.trim()) {
+      setStatus('Please enter a join code');
+      return;
+    }
     setStatus('Joining household...');
     try {
       const { data: hh, error: findErr } = await supabase
         .from('households')
         .select('*')
-        .eq('join_code', joinCode.trim())
+        .eq('join_code', joinCode.trim().toLowerCase())
         .single();
-      if (findErr) throw findErr;
+      if (findErr)
+        throw new Error('Invalid join code. Please check and try again.');
 
       const { error: memErr } = await supabase
         .from('household_members')
@@ -82,97 +103,133 @@ export default function HouseholdSetup({ onReady }) {
       if (memErr) throw memErr;
 
       await upsertProfile(hh.id);
-      setStatus('Joined successfully!');
+      setStatus('Joined successfully! Refreshing...');
       onReady?.(hh.id, hh.join_code);
+      // Refresh the page to load the household data
+      setTimeout(() => window.location.reload(), 1000);
     } catch (e) {
       setStatus(e.message || 'Failed to join household.');
     }
   }
 
-  const innerCard = {
-    background: colors.bgHover,
-    borderRadius: 12,
-    padding: 16,
-  };
+  async function copyCode() {
+    await navigator.clipboard.writeText(createdCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  function continueToApp() {
+    window.location.reload();
+  }
 
   return (
-    <section style={{ ...styles.card, marginTop: 14 }}>
-      <h2 style={{ marginTop: 0, marginBottom: 8 }}>Setup (first-time)</h2>
-      <p style={{ color: colors.textSecondary, marginBottom: 16 }}>
-        Create a household or join one using a join code. This makes the repo
-        fork-friendly.
-      </p>
-
-      <div style={{ display: 'grid', gap: 14 }}>
-        <div style={innerCard}>
-          <div
-            style={{
-              fontWeight: 600,
-              color: colors.textPrimary,
-              marginBottom: 10,
-            }}
-          >
-            Create Household
-          </div>
-          <input
-            value={householdName}
-            onChange={(e) => setHouseholdName(e.target.value)}
-            style={{ ...styles.input, width: '100%' }}
-          />
-          <button
-            onClick={createHousehold}
-            style={{ ...styles.button, ...styles.buttonPrimary, marginTop: 10 }}
-          >
-            Create
-          </button>
+    <Card>
+      <CardHeader>
+        <div className="flex items-center gap-2">
+          <Home className="w-5 h-5 text-slate" />
+          <CardTitle>Welcome! Set Up Your Household</CardTitle>
         </div>
-
-        <div style={innerCard}>
-          <div
-            style={{
-              fontWeight: 600,
-              color: colors.textPrimary,
-              marginBottom: 10,
-            }}
-          >
-            Join Household
+        <p className="text-sm text-warm-gray mt-1">
+          Create a household or join an existing one to start tracking your
+          budget together.
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {/* Success state with join code */}
+        {createdCode && (
+          <div className="bg-success/10 border border-success/30 rounded-xl p-4">
+            <div className="font-semibold text-success mb-2">
+              Household Created!
+            </div>
+            <p className="text-sm text-charcoal/80 mb-3">
+              Share this code with your partner so they can join:
+            </p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 bg-white/80 px-4 py-2 rounded-lg font-mono text-lg tracking-wider text-charcoal">
+                {createdCode}
+              </code>
+              <Button variant="outline" size="sm" onClick={copyCode}>
+                {copied ? (
+                  <Check className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4" />
+                )}
+              </Button>
+            </div>
+            <Button className="w-full mt-4" onClick={continueToApp}>
+              Continue to App
+            </Button>
           </div>
-          <input
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value)}
-            placeholder="Join code (e.g. a1b2c3d4e5f6)"
-            style={{ ...styles.input, width: '100%' }}
-          />
-          <button
-            onClick={joinHousehold}
-            style={{
-              ...styles.button,
-              ...styles.buttonSecondary,
-              marginTop: 10,
-            }}
-          >
-            Join
-          </button>
-        </div>
+        )}
 
-        {status && (
+        {/* Create/Join forms - hide after success */}
+        {!createdCode && (
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Create Household */}
+            <div className="bg-white/40 rounded-xl p-4 border border-white/60">
+              <div className="flex items-center gap-2 mb-3">
+                <Home className="w-4 h-4 text-slate" />
+                <span className="font-semibold text-charcoal">Create New</span>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Household Name</Label>
+                  <Input
+                    value={householdName}
+                    onChange={(e) => setHouseholdName(e.target.value)}
+                    placeholder="e.g., Alex & Adriana"
+                  />
+                </div>
+                <Button onClick={createHousehold} className="w-full">
+                  Create Household
+                </Button>
+              </div>
+            </div>
+
+            {/* Join Household */}
+            <div className="bg-white/40 rounded-xl p-4 border border-white/60">
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="w-4 h-4 text-slate" />
+                <span className="font-semibold text-charcoal">
+                  Join Existing
+                </span>
+              </div>
+              <div className="space-y-3">
+                <div className="space-y-1.5">
+                  <Label>Join Code</Label>
+                  <Input
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value)}
+                    placeholder="e.g., a1b2c3d4e5f6"
+                  />
+                </div>
+                <Button
+                  variant="secondary"
+                  onClick={joinHousehold}
+                  className="w-full"
+                >
+                  Join Household
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Status message */}
+        {status && !createdCode && (
           <div
-            style={{
-              padding: 12,
-              background: status.includes('!')
-                ? colors.success + '15'
-                : colors.bgHover,
-              borderRadius: 8,
-              color: status.includes('!')
-                ? colors.success
-                : colors.textSecondary,
-              fontWeight: 500,
-            }}
+            className={`p-3 rounded-lg text-sm font-medium ${
+              status.includes('!')
+                ? 'bg-success/10 text-success border border-success/20'
+                : status.includes('...')
+                  ? 'bg-slate/10 text-slate border border-slate/20'
+                  : 'bg-error/10 text-error border border-error/20'
+            }`}
           >
             {status}
           </div>
         )}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }
