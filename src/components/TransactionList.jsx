@@ -22,10 +22,22 @@ import {
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const PAGE_SIZE = 20;
 
-export default function TransactionList({ startDate, endDate, currency }) {
+export default function TransactionList({
+  startDate,
+  endDate,
+  currency,
+  onTransactionUpdate,
+}) {
   const [demoMode, setDemoMode] = useState(false);
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
@@ -152,6 +164,7 @@ export default function TransactionList({ startDate, endDate, currency }) {
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
       setToast({ id: toastId(), type: 'success', title: 'Updated (demo)' });
+      onTransactionUpdate?.();
       return;
     }
 
@@ -172,6 +185,7 @@ export default function TransactionList({ startDate, endDate, currency }) {
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
       setToast({ id: toastId(), type: 'success', title: 'Updated' });
+      onTransactionUpdate?.();
     }
   }
 
@@ -179,6 +193,7 @@ export default function TransactionList({ startDate, endDate, currency }) {
     if (demoMode) {
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({ id: toastId(), type: 'success', title: 'Deleted (demo)' });
+      onTransactionUpdate?.();
       return;
     }
 
@@ -194,6 +209,7 @@ export default function TransactionList({ startDate, endDate, currency }) {
     } else {
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({ id: toastId(), type: 'success', title: 'Deleted' });
+      onTransactionUpdate?.();
     }
   }
 
@@ -385,33 +401,45 @@ export default function TransactionList({ startDate, endDate, currency }) {
 
                       {/* Controls row */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <select
+                        <Select
                           value={r.category}
-                          onChange={(e) =>
-                            updateTransaction(r.id, 'category', e.target.value)
+                          onValueChange={(value) =>
+                            updateTransaction(r.id, 'category', value)
                           }
-                          className="h-8 px-2 text-xs rounded-lg border border-white/60 bg-white/70 text-charcoal cursor-pointer"
                         >
-                          {ALL_CATEGORIES.map((c) => (
-                            <option key={c} value={c}>
-                              {c}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ALL_CATEGORIES.map((c) => (
+                              <SelectItem key={c} value={c} className="text-xs">
+                                {c}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                        <select
+                        <Select
                           value={r.payer}
-                          onChange={(e) =>
-                            updateTransaction(r.id, 'payer', e.target.value)
+                          onValueChange={(value) =>
+                            updateTransaction(r.id, 'payer', value)
                           }
-                          className="h-8 px-2 text-xs rounded-lg border border-white/60 bg-white/70 text-charcoal cursor-pointer capitalize"
                         >
-                          {PAYERS.map((p) => (
-                            <option key={p} value={p}>
-                              {p}
-                            </option>
-                          ))}
-                        </select>
+                          <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs capitalize">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {PAYERS.map((p) => (
+                              <SelectItem
+                                key={p}
+                                value={p}
+                                className="text-xs capitalize"
+                              >
+                                {p}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
                         <button
                           onClick={() =>

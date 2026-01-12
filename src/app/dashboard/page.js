@@ -5,7 +5,7 @@ import TransactionList from '@/components/TransactionList';
 import DashboardSummary from '@/components/DashboardSummary';
 import { CURRENCIES } from '@/lib/categories';
 import { Card, CardContent } from '@/components/ui/card';
-import { Select, Input } from '@/components/ui/input';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Calendar, BarChart3 } from 'lucide-react';
 
@@ -66,11 +66,17 @@ export default function DashboardPage() {
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
   const [currency, setCurrency] = useState('USD');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const { startDate, endDate } = useMemo(
     () => getDateRange(rangePreset, customStart, customEnd),
     [rangePreset, customStart, customEnd]
   );
+
+  // Trigger refresh when transactions are updated
+  const handleTransactionUpdate = () => {
+    setRefreshKey((k) => k + 1);
+  };
 
   return (
     <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
@@ -163,11 +169,13 @@ export default function DashboardPage() {
           startDate={startDate}
           endDate={endDate}
           currency={currency}
+          refreshKey={refreshKey}
         />
         <TransactionList
           startDate={startDate}
           endDate={endDate}
           currency={currency}
+          onTransactionUpdate={handleTransactionUpdate}
         />
       </div>
     </main>

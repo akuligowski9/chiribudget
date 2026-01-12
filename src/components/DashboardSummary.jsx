@@ -40,7 +40,12 @@ function sum(list) {
   return list.reduce((s, x) => s + Number(x || 0), 0);
 }
 
-export default function DashboardSummary({ startDate, endDate, currency }) {
+export default function DashboardSummary({
+  startDate,
+  endDate,
+  currency,
+  refreshKey,
+}) {
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
   const [rows, setRows] = useState([]);
@@ -81,7 +86,7 @@ export default function DashboardSummary({ startDate, endDate, currency }) {
 
       if (!error) setRows(tx || []);
     })();
-  }, [startDate, endDate, currency]);
+  }, [startDate, endDate, currency, refreshKey]);
 
   const incomeRows = rows.filter((r) => r.amount > 0);
   const expenseRows = rows.filter((r) => r.amount < 0);

@@ -11,8 +11,15 @@ import {
 } from '@/lib/categories';
 import { getDemoMode } from '@/lib/auth';
 import { normalizeDesc, toastId } from '@/lib/format';
-import { Input, Label, Select } from '@/components/ui/input';
+import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import Toast from './Toast';
 
 function thresholdFor(currency) {
@@ -205,9 +212,14 @@ export default function QuickAddForm({ onSuccess }) {
 
           <div className="space-y-1.5">
             <Label>Type</Label>
-            <Select value={kind} onChange={(e) => setKind(e.target.value)}>
-              <option value="expense">Expense</option>
-              <option value="income">Income</option>
+            <Select value={kind} onValueChange={setKind}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="expense">Expense</SelectItem>
+                <SelectItem value="income">Income</SelectItem>
+              </SelectContent>
             </Select>
           </div>
         </div>
@@ -227,26 +239,33 @@ export default function QuickAddForm({ onSuccess }) {
 
         <div className="space-y-1.5">
           <Label>Category</Label>
-          <Select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {ALL_CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ALL_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {c}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
 
         <div className="space-y-1.5">
           <Label>Payer</Label>
-          <Select value={payer} onChange={(e) => setPayer(e.target.value)}>
-            {PAYERS.map((p) => (
-              <option key={p} value={p}>
-                {p}
-              </option>
-            ))}
+          <Select value={payer} onValueChange={setPayer}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAYERS.map((p) => (
+                <SelectItem key={p} value={p} className="capitalize">
+                  {p}
+                </SelectItem>
+              ))}
+            </SelectContent>
           </Select>
         </div>
 
