@@ -15,8 +15,8 @@ This document tracks planned work for the ChiriBudget application.
 
 ### Medium Priority
 
-- [ ] Create Budget Settings UI to edit thresholds per household (DB table exists, no UI)
-- [ ] Add transaction list/history view (can add transactions but can't browse/edit them)
+- [x] Create Budget Settings UI to edit thresholds per household (DB table exists, no UI)
+- [x] Add transaction list/history view (can add transactions but can't browse/edit them)
 - [ ] Add household member management UI (view/remove members)
 - [ ] Improve "Mark Discussed" blocking UX when flagged items unresolved
 - [ ] Test and fix mobile responsiveness on small screens (<360px)
@@ -115,7 +115,7 @@ This document tracks planned work for the ChiriBudget application.
 
 | Category   | High | Medium | Low |
 | ---------- | ---- | ------ | --- |
-| Frontend   | 3    | 5      | 2   |
+| Frontend   | 3    | 3      | 2   |
 | Backend    | 1    | 3      | 2   |
 | Deployment | 0    | 3      | 2   |
 | Other      | 0    | 3      | 3   |
