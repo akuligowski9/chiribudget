@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabaseClient';
 import { getDemoMode } from '@/lib/auth';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { Flag, FlagOff, TrendingUp, TrendingDown } from 'lucide-react';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
@@ -113,10 +114,7 @@ export default function TodayTransactions({ refreshKey }) {
           <CardTitle>Today&apos;s Activity</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2 text-warm-gray">
-            <div className="w-4 h-4 rounded-full bg-slate/20 animate-pulse" />
-            <span className="text-sm">Loading...</span>
-          </div>
+          <SkeletonTransactionList rows={3} />
         </CardContent>
       </Card>
     );

@@ -6,6 +6,7 @@ import { getDemoMode } from '@/lib/auth';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
@@ -279,10 +280,7 @@ export default function TransactionList({
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex items-center gap-2 text-warm-gray">
-            <div className="w-4 h-4 rounded-full bg-slate/20 animate-pulse" />
-            <span className="text-sm">Loading...</span>
-          </div>
+          <SkeletonTransactionList rows={5} />
         ) : rows.length === 0 ? (
           <p className="text-warm-gray text-sm">
             No transactions for this period.

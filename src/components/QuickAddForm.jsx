@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import Toast from './Toast';
-import { getMaxAmount } from '@/lib/constants';
+import { getMaxAmount, MAX_DESCRIPTION_LENGTH } from '@/lib/constants';
 
 function thresholdFor(currency) {
   return currency === 'USD'
@@ -113,6 +113,13 @@ export default function QuickAddForm({ onSuccess }) {
     return null;
   };
 
+  const validateDescription = (value) => {
+    if (value && value.length > MAX_DESCRIPTION_LENGTH) {
+      return `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`;
+    }
+    return null;
+  };
+
   // Handle date change with validation
   const handleDateChange = (e) => {
     const newDate = e.target.value;
@@ -132,6 +139,14 @@ export default function QuickAddForm({ onSuccess }) {
     } else {
       setErrors((prev) => ({ ...prev, amount: null }));
     }
+  };
+
+  // Handle description change with validation
+  const handleDescriptionChange = (e) => {
+    const newDesc = e.target.value;
+    setDescription(newDesc);
+    const error = validateDescription(newDesc);
+    setErrors((prev) => ({ ...prev, description: error }));
   };
 
   // Re-validate amount when currency changes (max limit changes)
@@ -164,16 +179,18 @@ export default function QuickAddForm({ onSuccess }) {
     // Validate all fields
     const dateError = validateDate(txn_date);
     const amountError = validateAmount(amount, currency);
+    const descriptionError = validateDescription(description);
 
     const newErrors = {
       date: dateError,
       amount: amountError,
+      description: descriptionError,
     };
 
     setErrors(newErrors);
 
     // Check if there are any errors
-    if (dateError || amountError) {
+    if (dateError || amountError || descriptionError) {
       setToast({
         id: toastId(),
         type: 'error',
@@ -366,8 +383,21 @@ export default function QuickAddForm({ onSuccess }) {
           <Label>Description (optional)</Label>
           <Input
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleDescriptionChange}
+            maxLength={MAX_DESCRIPTION_LENGTH + 10}
+            className={
+              errors.description
+                ? 'border-error focus:border-error focus:ring-error/20'
+                : ''
+            }
           />
+          {errors.description ? (
+            <p className="text-xs text-error mt-1">{errors.description}</p>
+          ) : (
+            <p className="text-xs text-warm-gray">
+              {description.length}/{MAX_DESCRIPTION_LENGTH}
+            </p>
+          )}
         </div>
 
         <Button type="submit" className="w-full mt-2">
