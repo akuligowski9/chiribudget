@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, Home, MessageCircle, Settings } from 'lucide-react';
+import { BarChart3, FileUp, Home, MessageCircle, Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 const NAV_ITEMS = [
   { href: '/', labelKey: 'nav.home', icon: Home },
   { href: '/dashboard', labelKey: 'nav.dashboard', icon: BarChart3 },
+  { href: '/unsorted', labelKey: 'nav.unsorted', icon: FileUp },
   { href: '/discussion', labelKey: 'nav.discussion', icon: MessageCircle },
   { href: '/settings', labelKey: 'nav.settings', icon: Settings },
 ];

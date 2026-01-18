@@ -19,7 +19,19 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create type import_status_t as enum ('staged', 'confirmed');
+  create type import_status_t as enum ('processing', 'staged', 'confirmed');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type transaction_status_t as enum ('pending', 'confirmed');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type source_bank_t as enum ('interbank', 'bcp', 'bbva', 'scotiabank', 'pnc', 'other');
+exception when duplicate_object then null; end $$;
+
+do $$ begin
+  create type source_type_t as enum ('screenshot', 'pdf', 'csv', 'manual');
 exception when duplicate_object then null; end $$;
 
 do $$ begin
@@ -61,6 +73,7 @@ create table if not exists profiles (
   household_id uuid references households(id) on delete set null,
   display_name text,
   default_currency currency_t not null default 'USD',
+  preferred_language text not null default 'es', -- 'en' or 'es'
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -127,6 +140,9 @@ create table if not exists transactions (
   source text not null default 'manual', -- manual | import
   import_batch_id uuid,
 
+  -- Status for unsorted transactions flow
+  status transaction_status_t not null default 'confirmed', -- pending = needs categorization
+
   -- Dedupe
   fingerprint text not null,
 
@@ -162,6 +178,10 @@ on transactions (household_id, fingerprint);
 -- Index for efficient filtering of non-deleted rows (CB-012)
 create index if not exists idx_txn_deleted_at on transactions (deleted_at)
 where deleted_at is null;
+
+-- Index for filtering pending (unsorted) transactions
+create index if not exists idx_txn_pending on transactions (household_id, status)
+where status = 'pending';
 
 -- Soft delete function (CB-012)
 create or replace function soft_delete_transaction(p_transaction_id uuid)
@@ -245,6 +265,17 @@ create table if not exists import_batches (
   raw_payload jsonb not null,
   parsed_preview jsonb,
   status import_status_t not null default 'staged',
+
+  -- Source document tracking
+  source_file_url text, -- URL to file in Supabase Storage
+  source_type source_type_t default 'screenshot',
+  source_bank source_bank_t default 'other',
+  default_payer payer_t default 'adriana',
+  txn_year integer, -- Year when dates don't include it
+  date_range_start date,
+  date_range_end date,
+  display_name text, -- Human-readable name for UI
+
   created_by uuid not null,
   created_at timestamptz not null default now(),
   confirmed_at timestamptz
@@ -574,3 +605,13 @@ grant execute on function batch_insert_transactions(jsonb) to authenticated;
 
 comment on function batch_insert_transactions is
   'Inserts transactions in batch, skipping duplicates. Returns { inserted, skipped, failed_at, error }';
+
+-- -------------------------
+-- User Language Preference (CB-030)
+-- -------------------------
+
+-- Add preferred_language to profiles for existing databases
+ALTER TABLE profiles
+ADD COLUMN IF NOT EXISTS preferred_language text NOT NULL DEFAULT 'es';
+
+COMMENT ON COLUMN profiles.preferred_language IS 'User preferred language code (en or es)';
