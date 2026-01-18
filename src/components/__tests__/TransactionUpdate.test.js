@@ -9,6 +9,17 @@ jest.mock('@/hooks/useDemo', () => ({
   useDemo: () => ({ isDemoMode: true }),
 }));
 
+// Mock useAuth hook
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    conversionRate: 3.25,
+    user: null,
+    profile: null,
+    household: null,
+    loading: false,
+  }),
+}));
+
 jest.mock('@/lib/supabaseClient', () => ({
   supabase: {
     auth: {
@@ -17,7 +28,7 @@ jest.mock('@/lib/supabaseClient', () => ({
   },
 }));
 
-const mockTransactions = [
+let mockTransactionsUSD = [
   {
     id: 'tx-1',
     txn_date: '2024-01-15',
@@ -39,9 +50,14 @@ const mockTransactions = [
     is_flagged: false,
   },
 ];
+let mockTransactionsPEN = [];
 
 jest.mock('@/lib/demoStore', () => ({
-  getDemoTransactions: jest.fn(() => mockTransactions),
+  getDemoTransactions: jest.fn(({ currency }) => {
+    if (currency === 'USD') return mockTransactionsUSD;
+    if (currency === 'PEN') return mockTransactionsPEN;
+    return [];
+  }),
 }));
 
 // Mock Radix Select portal to render inline for testing

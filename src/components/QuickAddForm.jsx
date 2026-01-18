@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
 import {
@@ -25,6 +26,20 @@ import { normalizeDesc, toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
 
+// Map category values to translation keys
+const CATEGORY_KEYS = {
+  'Fixed Expenses': 'fixedExpenses',
+  'Rent/Mortgages': 'rentMortgages',
+  Food: 'food',
+  Dogs: 'dogs',
+  'Holidays & Birthdays': 'holidaysBirthdays',
+  Adventure: 'adventure',
+  Unexpected: 'unexpected',
+  Salary: 'salary',
+  Investments: 'investments',
+  Extra: 'extra',
+};
+
 function computeFingerprint({
   household_id,
   currency,
@@ -39,6 +54,7 @@ function computeFingerprint({
 }
 
 export default function QuickAddForm({ onSuccess }) {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const { user, profile } = useAuth();
   const [toast, setToast] = useState(null);
@@ -113,32 +129,35 @@ export default function QuickAddForm({ onSuccess }) {
   const validateDate = (date) => {
     const today = new Date().toISOString().slice(0, 10);
     if (date > today) {
-      return 'Date cannot be in the future';
+      return t('errors.futureDateNotAllowed');
     }
     return null;
   };
 
   const validateAmount = (value, curr) => {
     if (!value || value.trim() === '') {
-      return 'Amount is required';
+      return t('errors.amountRequired');
     }
     const num = Number(value);
     if (isNaN(num) || !Number.isFinite(num)) {
-      return 'Enter a valid number';
+      return t('errors.invalidAmount');
     }
     if (num <= 0) {
-      return 'Amount must be greater than 0';
+      return t('errors.amountPositive');
     }
     const max = getMaxAmount(curr);
     if (num > max) {
-      return `Amount cannot exceed ${curr} ${max.toLocaleString()}`;
+      return t('errors.amountMax', {
+        currency: curr,
+        max: max.toLocaleString(),
+      });
     }
     return null;
   };
 
   const validateDescription = (value) => {
     if (value && value.length > MAX_DESCRIPTION_LENGTH) {
-      return `Description cannot exceed ${MAX_DESCRIPTION_LENGTH} characters`;
+      return t('errors.descriptionTooLong', { max: MAX_DESCRIPTION_LENGTH });
     }
     return null;
   };
@@ -215,8 +234,8 @@ export default function QuickAddForm({ onSuccess }) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Please fix errors',
-        message: 'Check the highlighted fields above.',
+        title: t('errors.pleaseFixErrors'),
+        message: t('errors.checkFieldsAbove'),
       });
       return;
     }
@@ -225,8 +244,8 @@ export default function QuickAddForm({ onSuccess }) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Setup required',
-        message: 'Create or join a household first.',
+        title: t('errors.setupRequired'),
+        message: t('errors.createHouseholdFirst'),
       });
       return;
     }
@@ -262,7 +281,11 @@ export default function QuickAddForm({ onSuccess }) {
     };
 
     if (isDemoMode) {
-      setToast({ id: toastId(), type: 'success', title: 'Saved (demo)' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: `${t('common.success')} (demo)`,
+      });
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
@@ -275,7 +298,7 @@ export default function QuickAddForm({ onSuccess }) {
       const { error } = await supabase.from('transactions').insert(row);
       if (error) throw error;
 
-      setToast({ id: toastId(), type: 'success', title: 'Saved' });
+      setToast({ id: toastId(), type: 'success', title: t('common.success') });
       setAmount('');
       setDescription('');
       setCategory(kind === 'expense' ? 'Food' : 'Salary');
@@ -286,8 +309,8 @@ export default function QuickAddForm({ onSuccess }) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Something went wrong',
-        message: "Don't worry — we saved this error for later review.",
+        title: t('errors.somethingWentWrong'),
+        message: t('errors.savedForReview'),
       });
     }
   }
@@ -301,7 +324,7 @@ export default function QuickAddForm({ onSuccess }) {
       >
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="space-y-1.5">
-            <Label htmlFor="txn-date">Date</Label>
+            <Label htmlFor="txn-date">{t('transaction.date')}</Label>
             <Input
               id="txn-date"
               type="date"
@@ -327,7 +350,7 @@ export default function QuickAddForm({ onSuccess }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="currency-select">Currency</Label>
+            <Label htmlFor="currency-select">{t('transaction.currency')}</Label>
             <select
               id="currency-select"
               value={currency}
@@ -344,21 +367,25 @@ export default function QuickAddForm({ onSuccess }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label id="type-label">Type</Label>
+            <Label id="type-label">{t('transaction.type')}</Label>
             <Select value={kind} onValueChange={setKind}>
               <SelectTrigger aria-labelledby="type-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="expense">Expense</SelectItem>
-                <SelectItem value="income">Income</SelectItem>
+                <SelectItem value="expense">
+                  {t('transaction.expense')}
+                </SelectItem>
+                <SelectItem value="income">
+                  {t('transaction.income')}
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="amount-input">Amount</Label>
+          <Label htmlFor="amount-input">{t('transaction.amount')}</Label>
           <Input
             id="amount-input"
             value={amount}
@@ -383,14 +410,14 @@ export default function QuickAddForm({ onSuccess }) {
             </p>
           ) : (
             <p id="amount-hint" className="text-xs text-warm-gray">
-              Threshold: {currency} {thr} | Max: {currency}{' '}
-              {maxAmount.toLocaleString()}
+              {t('transaction.threshold')}: {currency} {thr} |{' '}
+              {t('transaction.max')}: {currency} {maxAmount.toLocaleString()}
             </p>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <Label id="category-label">Category</Label>
+          <Label id="category-label">{t('transaction.category')}</Label>
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger aria-labelledby="category-label">
               <SelectValue />
@@ -398,7 +425,7 @@ export default function QuickAddForm({ onSuccess }) {
             <SelectContent>
               {ALL_CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {c}
+                  {t(`categories.${CATEGORY_KEYS[c]}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -406,7 +433,7 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label id="payer-label">Payer</Label>
+          <Label id="payer-label">{t('transaction.payer')}</Label>
           <Select value={payer} onValueChange={setPayer}>
             <SelectTrigger aria-labelledby="payer-label">
               <SelectValue />
@@ -414,7 +441,7 @@ export default function QuickAddForm({ onSuccess }) {
             <SelectContent>
               {PAYERS.map((p) => (
                 <SelectItem key={p} value={p} className="capitalize">
-                  {p}
+                  {t(`payers.${p.toLowerCase()}`)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -422,7 +449,9 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="description-input">Description (optional)</Label>
+          <Label htmlFor="description-input">
+            {t('transaction.descriptionOptional')}
+          </Label>
           <Input
             id="description-input"
             value={description}
@@ -448,7 +477,7 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <Button type="submit" className="w-full mt-2">
-          Save Transaction
+          {t('transaction.saveTransaction')}
         </Button>
       </form>
 

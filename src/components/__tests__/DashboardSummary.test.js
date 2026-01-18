@@ -8,6 +8,16 @@ jest.mock('@/lib/auth', () => ({
   getDemoMode: jest.fn(() => true),
 }));
 
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    conversionRate: 3.25,
+    user: null,
+    profile: null,
+    household: null,
+    loading: false,
+  }),
+}));
+
 jest.mock('@/lib/supabaseClient', () => ({
   supabase: {
     auth: {
@@ -16,7 +26,7 @@ jest.mock('@/lib/supabaseClient', () => ({
   },
 }));
 
-let mockTransactions = [
+let mockTransactionsUSD = [
   {
     id: 'tx-1',
     txn_date: '2024-01-15',
@@ -38,8 +48,13 @@ let mockTransactions = [
     is_flagged: false,
   },
 ];
+let mockTransactionsPEN = [];
 
-const getDemoTransactionsMock = jest.fn(() => mockTransactions);
+const getDemoTransactionsMock = jest.fn(({ currency }) => {
+  if (currency === 'USD') return mockTransactionsUSD;
+  if (currency === 'PEN') return mockTransactionsPEN;
+  return [];
+});
 
 jest.mock('@/lib/demoStore', () => ({
   getDemoTransactions: (...args) => getDemoTransactionsMock(...args),
@@ -61,7 +76,7 @@ describe('DashboardSummary', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockTransactions = [
+    mockTransactionsUSD = [
       {
         id: 'tx-1',
         txn_date: '2024-01-15',
@@ -83,6 +98,7 @@ describe('DashboardSummary', () => {
         is_flagged: false,
       },
     ];
+    mockTransactionsPEN = [];
   });
 
   it('renders summary section', async () => {
@@ -120,7 +136,8 @@ describe('DashboardSummary', () => {
     );
 
     await waitFor(() => {
-      expect(getDemoTransactionsMock).toHaveBeenCalledTimes(1);
+      // Called twice: once for USD, once for PEN
+      expect(getDemoTransactionsMock).toHaveBeenCalledTimes(2);
     });
 
     // Clear the mock call count
@@ -130,7 +147,8 @@ describe('DashboardSummary', () => {
     rerender(<DashboardSummary {...defaultProps} refreshKey={1} />);
 
     await waitFor(() => {
-      expect(getDemoTransactionsMock).toHaveBeenCalledTimes(1);
+      // Called twice again: once for USD, once for PEN
+      expect(getDemoTransactionsMock).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -145,7 +163,7 @@ describe('DashboardSummary', () => {
     });
 
     // Simulate changing a transaction's payer from 'alex' to 'adriana'
-    mockTransactions = [
+    mockTransactionsUSD = [
       {
         id: 'tx-1',
         txn_date: '2024-01-15',

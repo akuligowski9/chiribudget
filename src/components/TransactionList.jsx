@@ -12,6 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -35,12 +36,27 @@ import { cn } from '@/lib/utils';
 import Toast from './Toast';
 import { ConfirmDialog } from './ui/confirm-dialog';
 
+// Map category values to translation keys
+const CATEGORY_KEYS = {
+  'Fixed Expenses': 'fixedExpenses',
+  'Rent/Mortgages': 'rentMortgages',
+  Food: 'food',
+  Dogs: 'dogs',
+  'Holidays & Birthdays': 'holidaysBirthdays',
+  Adventure: 'adventure',
+  Unexpected: 'unexpected',
+  Salary: 'salary',
+  Investments: 'investments',
+  Extra: 'extra',
+};
+
 export default function TransactionList({
   startDate,
   endDate,
   currency, // Display currency (for conversion)
   onTransactionUpdate,
 }) {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const { conversionRate } = useAuth();
   const [toast, setToast] = useState(null);
@@ -176,7 +192,11 @@ export default function TransactionList({
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
-      setToast({ id: toastId(), type: 'success', title: 'Updated (demo)' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('transaction.updatedDemo'),
+      });
       onTransactionUpdate?.();
       return;
     }
@@ -190,14 +210,18 @@ export default function TransactionList({
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Update failed',
+        title: t('transaction.updateFailed'),
         message: error.message,
       });
     } else {
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
-      setToast({ id: toastId(), type: 'success', title: 'Updated' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('transaction.updated'),
+      });
       onTransactionUpdate?.();
     }
   }
@@ -205,7 +229,11 @@ export default function TransactionList({
   async function deleteTransaction(id) {
     if (isDemoMode) {
       setRows((prev) => prev.filter((r) => r.id !== id));
-      setToast({ id: toastId(), type: 'success', title: 'Deleted (demo)' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('transaction.deletedDemo'),
+      });
       onTransactionUpdate?.();
       return;
     }
@@ -219,23 +247,23 @@ export default function TransactionList({
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Delete failed',
+        title: t('transaction.deleteFailed'),
         message: error.message,
       });
     } else if (!data) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Delete failed',
-        message: 'Transaction not found or already deleted',
+        title: t('transaction.deleteFailed'),
+        message: t('transaction.notFoundOrDeleted'),
       });
     } else {
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),
         type: 'success',
-        title: 'Moved to trash',
-        message: 'Transaction can be restored within 30 days',
+        title: t('transaction.movedToTrash'),
+        message: t('transaction.canRestore30Days'),
       });
       onTransactionUpdate?.();
     }
@@ -278,7 +306,7 @@ export default function TransactionList({
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex items-center gap-2">
             <List className="w-5 h-5 text-slate" />
-            <CardTitle>Transactions</CardTitle>
+            <CardTitle>{t('transaction.title')}</CardTitle>
           </div>
 
           {/* Search input */}
@@ -289,7 +317,7 @@ export default function TransactionList({
             />
             <Input
               type="text"
-              placeholder="Search..."
+              placeholder={t('common.search')}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9"
@@ -313,7 +341,8 @@ export default function TransactionList({
             aria-label={`Sort by date ${sortField === 'txn_date' ? (sortAsc ? 'ascending' : 'descending') : ''}`}
           >
             <ArrowUpDown className="w-3 h-3 mr-1" aria-hidden="true" />
-            Date {sortField === 'txn_date' && (sortAsc ? '↑' : '↓')}
+            {t('transaction.date')}{' '}
+            {sortField === 'txn_date' && (sortAsc ? '↑' : '↓')}
           </Button>
           <Button
             variant={sortField === 'amount' ? 'secondary' : 'outline'}
@@ -324,7 +353,8 @@ export default function TransactionList({
             aria-label={`Sort by amount ${sortField === 'amount' ? (sortAsc ? 'ascending' : 'descending') : ''}`}
           >
             <ArrowUpDown className="w-3 h-3 mr-1" aria-hidden="true" />
-            Amount {sortField === 'amount' && (sortAsc ? '↑' : '↓')}
+            {t('transaction.amount')}{' '}
+            {sortField === 'amount' && (sortAsc ? '↑' : '↓')}
           </Button>
         </div>
       </CardHeader>
@@ -333,7 +363,7 @@ export default function TransactionList({
           <SkeletonTransactionList rows={5} />
         ) : rows.length === 0 ? (
           <p className="text-warm-gray text-sm">
-            No transactions for this period.
+            {t('transaction.noTransactions')}
           </p>
         ) : (
           <>
@@ -341,7 +371,11 @@ export default function TransactionList({
             <div className="flex flex-wrap gap-4 mb-4 text-sm">
               <div className="bg-white/50 rounded-lg px-3 py-1.5 border border-white/60">
                 <span className="text-stone">
-                  {rows.length} transaction{rows.length !== 1 && 's'}
+                  {rows.length === 1
+                    ? t('transaction.transactionCountSingular', {
+                        count: rows.length,
+                      })
+                    : t('transaction.transactionCount', { count: rows.length })}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 bg-success/10 rounded-lg px-3 py-1.5 border border-success/20">
@@ -433,9 +467,9 @@ export default function TransactionList({
                                   ? 'text-charcoal'
                                   : 'text-warm-gray'
                               )}
-                              title="Click to edit"
+                              title={t('transaction.clickToEdit')}
                             >
-                              {r.description || '(no description)'}
+                              {r.description || t('transaction.noDescription')}
                             </button>
                           )}
                           <div className="text-xs text-warm-gray mt-0.5">
@@ -444,12 +478,12 @@ export default function TransactionList({
                               <span className="ml-1.5">
                                 •{' '}
                                 {r.created_by === currentUserId
-                                  ? 'by you'
-                                  : 'by partner'}
+                                  ? t('transaction.byYou')
+                                  : t('transaction.byPartner')}
                                 {r.updated_at && r.updated_by && (
                                   <span className="text-stone/60">
                                     {' '}
-                                    (edited)
+                                    ({t('transaction.edited')})
                                   </span>
                                 )}
                               </span>
@@ -495,12 +529,15 @@ export default function TransactionList({
                           }
                         >
                           <SelectTrigger className="h-8 w-auto min-w-[120px] text-xs">
-                            <SelectValue />
+                            <SelectValue>
+                              {r.category &&
+                                t(`categories.${CATEGORY_KEYS[r.category]}`)}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {ALL_CATEGORIES.map((c) => (
                               <SelectItem key={c} value={c} className="text-xs">
-                                {c}
+                                {t(`categories.${CATEGORY_KEYS[c]}`)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -513,7 +550,9 @@ export default function TransactionList({
                           }
                         >
                           <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs capitalize">
-                            <SelectValue />
+                            <SelectValue>
+                              {r.payer && t(`payers.${r.payer.toLowerCase()}`)}
+                            </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
                             {PAYERS.map((p) => (
@@ -522,7 +561,7 @@ export default function TransactionList({
                                 value={p}
                                 className="text-xs capitalize"
                               >
-                                {p}
+                                {t(`payers.${p.toLowerCase()}`)}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -557,12 +596,14 @@ export default function TransactionList({
                               : 'bg-white/50 text-warm-gray border-white/60 hover:text-warning hover:bg-warning/10 opacity-60 group-hover:opacity-100'
                           )}
                           title={
-                            r.is_flagged ? 'Remove flag' : 'Flag for discussion'
+                            r.is_flagged
+                              ? t('flags.removeFlag')
+                              : t('flags.flagForDiscussion')
                           }
                           aria-label={
                             r.is_flagged
-                              ? 'Remove flag from this transaction'
-                              : 'Flag this transaction for discussion'
+                              ? t('flags.removeFlag')
+                              : t('flags.flagForDiscussion')
                           }
                           aria-pressed={r.is_flagged}
                         >
@@ -599,7 +640,11 @@ export default function TransactionList({
                 aria-label="Transaction pagination"
               >
                 <span className="text-sm text-warm-gray" aria-live="polite">
-                  Page {page + 1} of {totalPages} ({totalCount} total)
+                  {t('transaction.pageOfTotal', {
+                    current: page + 1,
+                    total: totalPages,
+                    count: totalCount,
+                  })}
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -641,10 +686,10 @@ export default function TransactionList({
               deleteTransaction(deleteTargetId);
             }
           }}
-          title="Delete Transaction"
-          message="Move this transaction to trash? You can restore it within 30 days."
-          confirmText="Move to Trash"
-          cancelText="Cancel"
+          title={t('transaction.deleteTransaction')}
+          message={t('transaction.deleteConfirmMessage')}
+          confirmText={t('transaction.moveToTrash')}
+          cancelText={t('common.cancel')}
           variant="danger"
         />
       </CardContent>

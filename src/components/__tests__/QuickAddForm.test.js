@@ -383,7 +383,7 @@ describe('QuickAddForm', () => {
 
       await waitFor(() => {
         expect(onSuccess).toHaveBeenCalled();
-        expect(screen.getByText('Saved (demo)')).toBeInTheDocument();
+        expect(screen.getByText('Success (demo)')).toBeInTheDocument();
       });
     });
 

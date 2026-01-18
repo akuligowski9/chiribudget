@@ -60,6 +60,7 @@
     "saveTransaction": "Save Transaction",
     "noTransactions": "No transactions for this period.",
     "transactionCount": "{count} transactions",
+    "transactionCountSingular": "{count} transaction",
     "threshold": "Threshold",
     "max": "Max",
     "moveToTrash": "Move to Trash",
@@ -68,7 +69,18 @@
     "byYou": "by you",
     "byPartner": "by partner",
     "edited": "edited",
-    "clickToEdit": "Click to edit"
+    "clickToEdit": "Click to edit",
+    "noDescription": "(no description)",
+    "updated": "Updated",
+    "updatedDemo": "Updated (demo)",
+    "updateFailed": "Update failed",
+    "deleted": "Deleted",
+    "deletedDemo": "Deleted (demo)",
+    "deleteFailed": "Delete failed",
+    "notFoundOrDeleted": "Transaction not found or already deleted",
+    "movedToTrash": "Moved to trash",
+    "canRestore30Days": "Transaction can be restored within 30 days",
+    "pageOfTotal": "Page {current} of {total} ({count} total)"
   },
   "categories": {
     "fixedExpenses": "Fixed Expenses",
@@ -101,7 +113,24 @@
     "thisMonth": "This Month",
     "lastMonth": "Last Month",
     "last3Months": "Last 3 Months",
-    "thisYear": "This Year"
+    "thisYear": "This Year",
+    "day": "Day",
+    "week": "Week",
+    "month": "Month",
+    "quarter": "Quarter",
+    "year": "Year",
+    "custom": "Custom",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "to": "to",
+    "loadingChart": "Loading chart...",
+    "loginForData": "Log in and set up a household to see live data.",
+    "income": "Income",
+    "expenses": "Expenses",
+    "net": "Net",
+    "incomeByCategory": "Income by Category",
+    "expensesByCategory": "Expenses by Category",
+    "netByPayer": "Net by Payer"
   },
   "flags": {
     "flagged": "Flagged",
@@ -171,7 +200,9 @@
     "amountPositive": "Amount must be greater than 0",
     "amountMax": "Amount cannot exceed {currency} {max}",
     "futureDateNotAllowed": "Date cannot be in the future",
-    "descriptionTooLong": "Description cannot exceed {max} characters"
+    "descriptionTooLong": "Description cannot exceed {max} characters",
+    "pleaseFixErrors": "Please fix errors",
+    "checkFieldsAbove": "Check the highlighted fields above."
   },
   "demo": {
     "demoMode": "Demo Mode",

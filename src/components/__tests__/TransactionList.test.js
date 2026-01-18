@@ -9,6 +9,17 @@ jest.mock('@/hooks/useDemo', () => ({
   useDemo: () => ({ isDemoMode: true }),
 }));
 
+// Mock useAuth hook
+jest.mock('@/contexts/AuthContext', () => ({
+  useAuth: () => ({
+    conversionRate: 3.25,
+    user: null,
+    profile: null,
+    household: null,
+    loading: false,
+  }),
+}));
+
 // Mock supabase client
 jest.mock('@/lib/supabaseClient', () => ({
   supabase: {
@@ -25,10 +36,16 @@ jest.mock('@/lib/supabaseClient', () => ({
   },
 }));
 
-let mockTransactions = [];
+let mockTransactionsUSD = [];
+let mockTransactionsPEN = [];
 
 jest.mock('@/lib/demoStore', () => ({
-  getDemoTransactions: jest.fn(() => mockTransactions),
+  getDemoTransactions: jest.fn(({ currency }) => {
+    // Component now fetches both currencies
+    if (currency === 'USD') return mockTransactionsUSD;
+    if (currency === 'PEN') return mockTransactionsPEN;
+    return [];
+  }),
 }));
 
 describe('TransactionList', () => {
@@ -41,7 +58,7 @@ describe('TransactionList', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockTransactions = [
+    mockTransactionsUSD = [
       {
         id: 'tx-1',
         txn_date: '2026-01-15',
@@ -74,6 +91,7 @@ describe('TransactionList', () => {
         is_flagged: false,
       },
     ];
+    mockTransactionsPEN = [];
   });
 
   it('renders transactions title', async () => {
@@ -322,7 +340,8 @@ describe('TransactionList', () => {
 
   describe('Empty state', () => {
     it('shows empty message when no transactions', async () => {
-      mockTransactions = [];
+      mockTransactionsUSD = [];
+      mockTransactionsPEN = [];
 
       render(<TransactionList {...defaultProps} />);
 

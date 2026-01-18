@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { TrendingUp, TrendingDown, Wallet, PieChart } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
@@ -15,6 +16,20 @@ import { convertAmount } from '@/lib/currency';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
+
+// Map category values to translation keys
+const CATEGORY_KEYS = {
+  'Fixed Expenses': 'fixedExpenses',
+  'Rent/Mortgages': 'rentMortgages',
+  Food: 'food',
+  Dogs: 'dogs',
+  'Holidays & Birthdays': 'holidaysBirthdays',
+  Adventure: 'adventure',
+  Unexpected: 'unexpected',
+  Salary: 'salary',
+  Investments: 'investments',
+  Extra: 'extra',
+};
 
 // Dynamic import to avoid SSR issues with Recharts
 const ExpenseDonutChart = dynamic(
@@ -48,6 +63,7 @@ export default function DashboardSummary({
   currency, // Display currency (for conversion)
   refreshKey,
 }) {
+  const t = useTranslations();
   const { conversionRate } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);

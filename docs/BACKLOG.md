@@ -801,8 +801,8 @@ Add basic usage analytics while respecting user privacy. No PII, no third-party 
 
 ### CB-029: Spanish Language Support
 
-**Priority:** v2
-**Status:** Todo
+**Priority:** Medium
+**Status:** In Progress
 **Assignee:** Terminal B
 **Tech Spec Reference:** N/A (i18n)
 
@@ -814,25 +814,69 @@ Add Spanish language support for the app. The user's wife prefers Spanish, so th
 
 - Replace all English UI text with Spanish (labels, buttons, menus, messages)
 - Language toggle in Settings
-- Consider auto-translation for transaction descriptions (requires translation API)
+- Default to Spanish (user lives in Peru)
 
-#### Implementation Options
+#### Implementation
 
-1. **Spanish-only**: Simply replace all English strings with Spanish throughout the app (simpler)
-2. **Full i18n**: Use next-intl or react-i18next library with translation files for both languages (more flexible)
+Using `next-intl` library with:
+
+- Translation files in `messages/en.json` and `messages/es.json`
+- LanguageContext for managing language preference (saved to localStorage)
+- IntlProvider wrapper for next-intl
 
 #### Acceptance Criteria
 
-- [ ] All UI text available in Spanish
-- [ ] Language preference saved to user profile
-- [ ] App loads in preferred language
-- [ ] Transaction descriptions optionally translatable (if using API)
+- [x] next-intl installed and configured
+- [x] Translation files created for English and Spanish
+- [x] Language preference saved to localStorage
+- [x] Language toggle in Settings
+- [x] Header and BottomNav translated
+- [x] TransactionHub and QuickAddForm translated
+- [ ] TransactionList translated
+- [ ] Dashboard components translated
+- [ ] Settings components translated
+- [ ] All remaining components translated
 
-#### Why v2
+---
 
-- App is functional in English
-- i18n adds complexity
-- Can be done as focused sprint later
+### CB-030: Auto-Translate Transaction Descriptions
+
+**Priority:** v2
+**Status:** Deferred
+**Assignee:** Unassigned
+**Tech Spec Reference:** N/A (i18n)
+
+#### Description
+
+Optionally auto-translate user-entered transaction descriptions based on language preference. Would require a translation API (Google Translate, DeepL, etc.).
+
+#### Implementation Options
+
+1. **Google Translate API** - Most accurate, costs per character
+2. **DeepL API** - High quality, costs per character
+3. **Libre Translate** - Self-hosted option, free but less accurate
+
+#### Challenges
+
+- API costs per translation request
+- Latency on every transaction list load
+- Need to cache translations to avoid repeated API calls
+- Short phrases may not translate well
+- Proper nouns (store names) may get mangled
+
+#### Acceptance Criteria
+
+- [ ] Translation API integrated
+- [ ] Translations cached to reduce API calls
+- [ ] Toggle to enable/disable auto-translation
+- [ ] Graceful fallback if API fails
+
+#### Why Deferred
+
+- Ongoing API costs
+- Added latency and complexity
+- Both household members likely understand both languages
+- Core functionality works without it
 
 ---
 
@@ -894,34 +938,35 @@ PWA installs but requires internet. Full offline support would require significa
 
 ## Summary Table
 
-| ID     | Title                           | Priority  | Status     | Assignee   |
-| ------ | ------------------------------- | --------- | ---------- | ---------- |
-| CB-001 | Dead Code Removal               | High      | Done       | Terminal A |
-| CB-002 | Multi-User Integration Tests    | High      | Done       | Terminal B |
-| CB-003 | Security Headers                | High      | Done       | Terminal A |
-| CB-004 | Production Verification         | High      | Done       | Terminal B |
-| CB-005 | ARIA Accessibility Labels       | Medium    | Done       | Terminal A |
-| CB-006 | Remove Unused UI Exports        | Medium    | Done       | Terminal B |
-| CB-007 | Focus Indicators                | Medium    | Done       | Terminal A |
-| CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
-| CB-018 | Mobile Responsiveness Testing   | Medium    | Done       | Terminal A |
-| CB-020 | Add Audit Columns               | Medium    | Done       | Terminal A |
-| CB-021 | Document/Remove `rejected` Enum | Medium    | Done       | Terminal A |
-| CB-022 | Auto-Deploy Workflow            | Medium    | Done       | Terminal A |
-| CB-024 | Constants File                  | Medium    | Done       | Terminal B |
-| CB-026 | Deployment Documentation        | Medium    | Done       | Terminal A |
-| CB-008 | Server-Side Enum Validation     | Low       | Done       | Terminal B |
-| CB-009 | Household Member Management UI  | Low       | Done       | Terminal A |
-| CB-010 | E2E Tests with Playwright       | Low       | Done       | Terminal B |
-| CB-011 | Batch Insert with Rollback      | Low       | Done       | Terminal B |
-| CB-012 | Soft Deletes                    | Low       | Done       | Terminal B |
-| CB-013 | Error Monitoring (Sentry)       | Low       | Todo       | Unassigned |
-| CB-019 | Extract Large Components        | Low       | Todo       | Unassigned |
-| CB-023 | Database Backup Documentation   | Low       | Done       | Terminal B |
-| CB-025 | Import Sorting Plugin           | Low       | Done       | Terminal A |
-| CB-027 | Migrate to TypeScript           | v2        | Deferred   | Unassigned |
-| CB-028 | Privacy-Respecting Analytics    | v2        | Deferred   | Unassigned |
-| CB-029 | Spanish Language Support        | v2        | Todo       | Terminal B |
-| CB-014 | Rate Limiting                   | Won't Fix | Documented | N/A        |
-| CB-015 | Two-Factor Auth                 | Won't Fix | Documented | N/A        |
-| CB-016 | Offline Support                 | Won't Fix | Documented | N/A        |
+| ID     | Title                           | Priority  | Status      | Assignee   |
+| ------ | ------------------------------- | --------- | ----------- | ---------- |
+| CB-001 | Dead Code Removal               | High      | Done        | Terminal A |
+| CB-002 | Multi-User Integration Tests    | High      | Done        | Terminal B |
+| CB-003 | Security Headers                | High      | Done        | Terminal A |
+| CB-004 | Production Verification         | High      | Done        | Terminal B |
+| CB-005 | ARIA Accessibility Labels       | Medium    | Done        | Terminal A |
+| CB-006 | Remove Unused UI Exports        | Medium    | Done        | Terminal B |
+| CB-007 | Focus Indicators                | Medium    | Done        | Terminal A |
+| CB-017 | Improve "Mark Discussed" UX     | Medium    | Done        | Terminal A |
+| CB-018 | Mobile Responsiveness Testing   | Medium    | Done        | Terminal A |
+| CB-020 | Add Audit Columns               | Medium    | Done        | Terminal A |
+| CB-021 | Document/Remove `rejected` Enum | Medium    | Done        | Terminal A |
+| CB-022 | Auto-Deploy Workflow            | Medium    | Done        | Terminal A |
+| CB-024 | Constants File                  | Medium    | Done        | Terminal B |
+| CB-026 | Deployment Documentation        | Medium    | Done        | Terminal A |
+| CB-008 | Server-Side Enum Validation     | Low       | Done        | Terminal B |
+| CB-009 | Household Member Management UI  | Low       | Done        | Terminal A |
+| CB-010 | E2E Tests with Playwright       | Low       | Done        | Terminal B |
+| CB-011 | Batch Insert with Rollback      | Low       | Done        | Terminal B |
+| CB-012 | Soft Deletes                    | Low       | Done        | Terminal B |
+| CB-013 | Error Monitoring (Sentry)       | Low       | Todo        | Unassigned |
+| CB-019 | Extract Large Components        | Low       | Todo        | Unassigned |
+| CB-023 | Database Backup Documentation   | Low       | Done        | Terminal B |
+| CB-025 | Import Sorting Plugin           | Low       | Done        | Terminal A |
+| CB-027 | Migrate to TypeScript           | v2        | Deferred    | Unassigned |
+| CB-028 | Privacy-Respecting Analytics    | v2        | Deferred    | Unassigned |
+| CB-029 | Spanish Language Support        | Medium    | In Progress | Terminal B |
+| CB-030 | Auto-Translate Descriptions     | v2        | Deferred    | Unassigned |
+| CB-014 | Rate Limiting                   | Won't Fix | Documented  | N/A        |
+| CB-015 | Two-Factor Auth                 | Won't Fix | Documented  | N/A        |
+| CB-016 | Offline Support                 | Won't Fix | Documented  | N/A        |

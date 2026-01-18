@@ -17,6 +17,8 @@ const customJestConfig = {
     '<rootDir>/node_modules/',
     '<rootDir>/e2e/',
   ],
+  // Transform ESM modules from next-intl
+  transformIgnorePatterns: ['/node_modules/(?!(next-intl|use-intl)/)'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx}',
     '!src/**/*.test.{js,jsx}',

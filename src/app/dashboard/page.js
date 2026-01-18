@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Calendar, BarChart3 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import DashboardSummary from '@/components/DashboardSummary';
 import LoginScreen from '@/components/LoginScreen';
 import TransactionList from '@/components/TransactionList';
@@ -13,14 +14,7 @@ import { useDemo } from '@/hooks/useDemo';
 import { CURRENCIES } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 
-const RANGE_PRESETS = [
-  { label: 'Day', value: 'day' },
-  { label: 'Week', value: 'week' },
-  { label: 'Month', value: 'month' },
-  { label: 'Quarter', value: 'quarter' },
-  { label: 'Year', value: 'year' },
-  { label: 'Custom', value: 'custom' },
-];
+const RANGE_PRESETS = ['day', 'week', 'month', 'quarter', 'year', 'custom'];
 
 function getDateRange(preset, customStart, customEnd) {
   const today = new Date();
@@ -66,6 +60,7 @@ function getDateRange(preset, customStart, customEnd) {
 }
 
 export default function DashboardPage() {
+  const t = useTranslations();
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
   const [rangePreset, setRangePreset] = useState('month');
@@ -114,7 +109,9 @@ export default function DashboardPage() {
         <div className="p-2 rounded-xl bg-gradient-to-br from-slate to-slate-light">
           <BarChart3 className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-2xl font-bold gradient-text m-0">Dashboard</h1>
+        <h1 className="text-2xl font-bold gradient-text m-0">
+          {t('dashboard.title')}
+        </h1>
       </div>
 
       <Card className="mb-5">
@@ -122,17 +119,17 @@ export default function DashboardPage() {
           <div className="flex flex-wrap gap-2 items-center">
             {RANGE_PRESETS.map((preset) => (
               <button
-                key={preset.value}
-                onClick={() => setRangePreset(preset.value)}
+                key={preset}
+                onClick={() => setRangePreset(preset)}
                 className={cn(
                   'min-h-[44px] px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200',
-                  rangePreset === preset.value
+                  rangePreset === preset
                     ? 'bg-gradient-to-r from-slate to-slate-light text-white shadow-md shadow-slate/20'
                     : 'bg-white/50 text-stone hover:bg-white/80 hover:text-charcoal border border-white/60'
                 )}
-                aria-pressed={rangePreset === preset.value}
+                aria-pressed={rangePreset === preset}
               >
-                {preset.label}
+                {t(`dashboard.${preset}`)}
               </button>
             ))}
 
@@ -158,7 +155,7 @@ export default function DashboardPage() {
                   htmlFor="custom-start"
                   className="text-xs font-semibold text-charcoal/70"
                 >
-                  Start Date
+                  {t('dashboard.startDate')}
                 </label>
                 <Input
                   id="custom-start"
@@ -173,7 +170,7 @@ export default function DashboardPage() {
                   htmlFor="custom-end"
                   className="text-xs font-semibold text-charcoal/70"
                 >
-                  End Date
+                  {t('dashboard.endDate')}
                 </label>
                 <Input
                   id="custom-end"
@@ -189,7 +186,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2 mt-4 text-sm text-stone">
             <Calendar className="w-4 h-4 text-slate" />
             <span className="font-medium">{startDate}</span>
-            <span className="text-warm-gray">to</span>
+            <span className="text-warm-gray">{t('dashboard.to')}</span>
             <span className="font-medium">{endDate}</span>
           </div>
         </CardContent>
