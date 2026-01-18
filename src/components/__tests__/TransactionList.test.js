@@ -188,7 +188,7 @@ describe('TransactionList', () => {
       await waitFor(() => {
         expect(screen.getByText('Delete Transaction')).toBeInTheDocument();
         expect(
-          screen.getByText(/Are you sure you want to delete/)
+          screen.getByText(/Move this transaction to trash/)
         ).toBeInTheDocument();
       });
     });
@@ -244,8 +244,10 @@ describe('TransactionList', () => {
         expect(screen.getByText('Delete Transaction')).toBeInTheDocument();
       });
 
-      // Click delete
-      const confirmButton = screen.getByRole('button', { name: 'Delete' });
+      // Click confirm (Move to Trash)
+      const confirmButton = screen.getByRole('button', {
+        name: 'Move to Trash',
+      });
       await user.click(confirmButton);
 
       // Dialog should close and callback should be called

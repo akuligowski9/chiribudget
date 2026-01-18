@@ -3,8 +3,10 @@
 import { Settings } from 'lucide-react';
 import BudgetSettings from '@/components/BudgetSettings';
 import Guidelines from '@/components/Guidelines';
+import HouseholdMembers from '@/components/HouseholdMembers';
 import LoginScreen from '@/components/LoginScreen';
 import ProfileSettings from '@/components/ProfileSettings';
+import TrashView from '@/components/TrashView';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
@@ -48,8 +50,10 @@ export default function SettingsPage() {
 
       <div className="space-y-4">
         <ProfileSettings />
+        <HouseholdMembers />
         <BudgetSettings />
         <Guidelines />
+        <TrashView />
       </div>
     </main>
   );

@@ -235,8 +235,8 @@ describe('TransactionList', () => {
       expect(screen.getByText('Delete Transaction')).toBeInTheDocument();
     });
 
-    // Click the confirm/delete button in the dialog
-    const confirmButton = screen.getByRole('button', { name: 'Delete' });
+    // Click the confirm button in the dialog (soft delete)
+    const confirmButton = screen.getByRole('button', { name: 'Move to Trash' });
     await user.click(confirmButton);
 
     await waitFor(() => {

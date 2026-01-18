@@ -1,14 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useDemo } from '@/hooks/useDemo';
-import { getDemoTransactions } from '@/lib/demoStore';
-import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { SkeletonTransactionList } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   List,
   Trash2,
@@ -20,10 +12,9 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
-import Toast from './Toast';
-import { ConfirmDialog } from './ui/confirm-dialog';
-import { toastId } from '@/lib/format';
-import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -31,7 +22,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { SkeletonTransactionList } from '@/components/ui/skeleton';
+import { useDemo } from '@/hooks/useDemo';
+import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
+import { getDemoTransactions } from '@/lib/demoStore';
+import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
+import Toast from './Toast';
+import { ConfirmDialog } from './ui/confirm-dialog';
+import { toastId } from '@/lib/format';
 
 export default function TransactionList({
   startDate,
@@ -204,7 +204,10 @@ export default function TransactionList({
       return;
     }
 
-    const { error } = await supabase.from('transactions').delete().eq('id', id);
+    // Use soft delete instead of hard delete
+    const { data, error } = await supabase.rpc('soft_delete_transaction', {
+      p_transaction_id: id,
+    });
 
     if (error) {
       setToast({
@@ -213,9 +216,21 @@ export default function TransactionList({
         title: 'Delete failed',
         message: error.message,
       });
+    } else if (!data) {
+      setToast({
+        id: toastId(),
+        type: 'error',
+        title: 'Delete failed',
+        message: 'Transaction not found or already deleted',
+      });
     } else {
       setRows((prev) => prev.filter((r) => r.id !== id));
-      setToast({ id: toastId(), type: 'success', title: 'Deleted' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: 'Moved to trash',
+        message: 'Transaction can be restored within 30 days',
+      });
       onTransactionUpdate?.();
     }
   }
@@ -573,8 +588,8 @@ export default function TransactionList({
             }
           }}
           title="Delete Transaction"
-          message="Are you sure you want to delete this transaction? This action cannot be undone."
-          confirmText="Delete"
+          message="Move this transaction to trash? You can restore it within 30 days."
+          confirmText="Move to Trash"
           cancelText="Cancel"
           variant="danger"
         />

@@ -133,7 +133,11 @@ create table if not exists transactions (
   created_by uuid not null,
   created_at timestamptz not null default now(),
   updated_by uuid,
-  updated_at timestamptz
+  updated_at timestamptz,
+
+  -- Soft delete support (CB-012)
+  deleted_at timestamptz,
+  deleted_by uuid
 );
 
 -- Trigger to auto-populate updated_by and updated_at on transaction updates
@@ -154,6 +158,47 @@ for each row execute function set_transaction_updated();
 -- Unique fingerprint per household prevents duplicate imports
 create unique index if not exists idx_txn_fingerprint_unique
 on transactions (household_id, fingerprint);
+
+-- Index for efficient filtering of non-deleted rows (CB-012)
+create index if not exists idx_txn_deleted_at on transactions (deleted_at)
+where deleted_at is null;
+
+-- Soft delete function (CB-012)
+create or replace function soft_delete_transaction(p_transaction_id uuid)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  update transactions
+  set deleted_at = now(),
+      deleted_by = auth.uid()
+  where id = p_transaction_id
+    and is_household_member(household_id)
+    and deleted_at is null;
+  return found;
+end;
+$$;
+
+-- Restore function (CB-012)
+create or replace function restore_transaction(p_transaction_id uuid)
+returns boolean
+language plpgsql
+security definer
+as $$
+begin
+  update transactions
+  set deleted_at = null,
+      deleted_by = null
+  where id = p_transaction_id
+    and is_household_member(household_id)
+    and deleted_at is not null;
+  return found;
+end;
+$$;
+
+grant execute on function soft_delete_transaction(uuid) to authenticated;
+grant execute on function restore_transaction(uuid) to authenticated;
 
 -- Link import_batch_id after import_batches exists (later via FK)
 -- We'll add FK after import_batches table.
@@ -323,6 +368,14 @@ drop policy if exists members_insert on household_members;
 create policy members_insert on household_members
 for insert with check (auth.uid() = user_id);
 
+-- Members can remove other members from their household (but not themselves)
+drop policy if exists members_delete on household_members;
+create policy members_delete on household_members
+for delete using (
+  is_household_member(household_id)
+  and auth.uid() != user_id
+);
+
 -- Profiles: user can read/write their own
 drop policy if exists profiles_self on profiles;
 create policy profiles_self on profiles
@@ -352,7 +405,10 @@ for update using (is_household_member(household_id)) with check (is_household_me
 -- Transactions: members CRUD
 drop policy if exists tx_read on transactions;
 create policy tx_read on transactions
-for select using (is_household_member(household_id));
+for select using (
+  is_household_member(household_id)
+  AND (deleted_at IS NULL OR deleted_at > now() - interval '30 days')
+);
 
 drop policy if exists tx_insert on transactions;
 create policy tx_insert on transactions
