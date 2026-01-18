@@ -42,6 +42,7 @@ export default function TransactionList({
   const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState(null);
@@ -115,6 +116,8 @@ export default function TransactionList({
       return;
     }
 
+    setCurrentUserId(user.id);
+
     const { data: p } = await supabase
       .from('profiles')
       .select('household_id')
@@ -128,11 +131,11 @@ export default function TransactionList({
 
     setHouseholdId(p.household_id);
 
-    // Build query
+    // Build query - include audit columns
     let query = supabase
       .from('transactions')
       .select(
-        'id,txn_date,description,amount,currency,category,payer,is_flagged',
+        'id,txn_date,description,amount,currency,category,payer,is_flagged,created_by,updated_at,updated_by',
         { count: 'exact' }
       )
       .eq('household_id', p.household_id)
@@ -403,6 +406,20 @@ export default function TransactionList({
                           )}
                           <div className="text-xs text-warm-gray mt-0.5">
                             {r.txn_date}
+                            {!isDemoMode && r.created_by && (
+                              <span className="ml-1.5">
+                                •{' '}
+                                {r.created_by === currentUserId
+                                  ? 'by you'
+                                  : 'by partner'}
+                                {r.updated_at && r.updated_by && (
+                                  <span className="text-stone/60">
+                                    {' '}
+                                    (edited)
+                                  </span>
+                                )}
+                              </span>
+                            )}
                           </div>
                         </div>
 

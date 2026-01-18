@@ -131,8 +131,25 @@ create table if not exists transactions (
   fingerprint text not null,
 
   created_by uuid not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_by uuid,
+  updated_at timestamptz
 );
+
+-- Trigger to auto-populate updated_by and updated_at on transaction updates
+create or replace function set_transaction_updated()
+returns trigger language plpgsql as $$
+begin
+  new.updated_at := now();
+  new.updated_by := auth.uid();
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_transaction_updated on transactions;
+create trigger trg_transaction_updated
+before update on transactions
+for each row execute function set_transaction_updated();
 
 -- Unique fingerprint per household prevents duplicate imports
 create unique index if not exists idx_txn_fingerprint_unique

@@ -288,7 +288,7 @@ Test and fix mobile responsiveness on small screens (<360px width). Some users h
 ### CB-020: Add Audit Columns
 
 **Priority:** Medium
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal A
 **Tech Spec Reference:** TECH_SPEC.md#data-model
 
@@ -298,17 +298,24 @@ Add `created_by` and `updated_by` audit columns to track who made changes. Usefu
 
 #### Implementation
 
-- Add `created_by UUID` column to transactions
+- Add `created_by UUID` column to transactions (already existed)
 - Add `updated_by UUID` column to transactions
-- Add database triggers to auto-populate from auth.uid()
-- Update UI to show creator/editor
+- Add `updated_at timestamptz` column to transactions
+- Add database trigger to auto-populate `updated_by` and `updated_at` on update
+- Update UI to show "by you" / "by partner" and "(edited)" indicator
+
+#### Changes Made
+
+- `supabase/schema.sql`: Added `updated_by`, `updated_at` columns and `trg_transaction_updated` trigger
+- `supabase/migrations/001_add_audit_columns.sql`: Created migration for existing databases
+- `src/components/TransactionList.jsx`: Shows who created each transaction and edit indicator
 
 #### Acceptance Criteria
 
-- [ ] New transactions have `created_by` set automatically
-- [ ] Edited transactions have `updated_by` set
-- [ ] UI shows who added each transaction
-- [ ] Migration doesn't break existing data
+- [x] New transactions have `created_by` set automatically
+- [x] Edited transactions have `updated_by` set via trigger
+- [x] UI shows who added each transaction ("by you" / "by partner")
+- [x] Migration is idempotent and doesn't break existing data
 
 ---
 
@@ -807,7 +814,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-007 | Focus Indicators                | Medium    | Todo       | Unassigned |
 | CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
 | CB-018 | Mobile Responsiveness Testing   | Medium    | Done       | Terminal A |
-| CB-020 | Add Audit Columns               | Medium    | Todo       | Terminal A |
+| CB-020 | Add Audit Columns               | Medium    | Done       | Terminal A |
 | CB-021 | Document/Remove `rejected` Enum | Medium    | Todo       | Terminal A |
 | CB-022 | Auto-Deploy Workflow            | Medium    | Done       | Terminal A |
 | CB-024 | Constants File                  | Medium    | Done       | Terminal B |
