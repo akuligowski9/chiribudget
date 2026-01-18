@@ -6,10 +6,10 @@ import { IntlProvider } from '@/i18n/IntlProvider';
 
 export default function Providers({ children }) {
   return (
-    <LanguageProvider>
-      <IntlProvider>
-        <AuthProvider>{children}</AuthProvider>
-      </IntlProvider>
-    </LanguageProvider>
+    <AuthProvider>
+      <LanguageProvider>
+        <IntlProvider>{children}</IntlProvider>
+      </LanguageProvider>
+    </AuthProvider>
   );
 }
