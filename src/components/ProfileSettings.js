@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
@@ -13,6 +14,7 @@ import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
 
 export default function ProfileSettings() {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -73,14 +75,22 @@ export default function ProfileSettings() {
 
   async function saveProfile() {
     if (!hasChanges) {
-      setToast({ id: toastId(), type: 'success', title: 'No changes to save' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('settings.noChanges'),
+      });
       return;
     }
 
     if (isDemoMode) {
       setOriginalDisplayName(displayName);
       setOriginalCurrency(defaultCurrency);
-      setToast({ id: toastId(), type: 'success', title: 'Saved (demo)' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: `${t('common.success')} (demo)`,
+      });
       return;
     }
 
@@ -88,8 +98,8 @@ export default function ProfileSettings() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Not logged in',
-        message: 'Please log in first.',
+        title: t('settings.notLoggedIn'),
+        message: t('settings.pleaseLogIn'),
       });
       return;
     }
@@ -106,7 +116,7 @@ export default function ProfileSettings() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Save failed',
+        title: t('settings.saveFailed'),
         message: error.message,
       });
       return;
@@ -114,7 +124,11 @@ export default function ProfileSettings() {
 
     setOriginalDisplayName(displayName);
     setOriginalCurrency(defaultCurrency);
-    setToast({ id: toastId(), type: 'success', title: 'Profile updated' });
+    setToast({
+      id: toastId(),
+      type: 'success',
+      title: t('settings.profileUpdated'),
+    });
   }
 
   return (
@@ -122,10 +136,10 @@ export default function ProfileSettings() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <User className="w-5 h-5 text-slate" />
-          <CardTitle>Your Profile</CardTitle>
+          <CardTitle>{t('settings.yourProfile')}</CardTitle>
         </div>
         <p className="text-sm text-stone mt-1">
-          Personal settings for your account
+          {t('settings.personalSettings')}
         </p>
       </CardHeader>
       <CardContent>
@@ -149,32 +163,32 @@ export default function ProfileSettings() {
           </div>
         ) : !isDemoMode && !userId ? (
           <p className="text-sm text-warm-gray">
-            Log in to configure your profile settings.
+            {t('settings.loginToConfigureProfile')}
           </p>
         ) : (
           <div className="space-y-4 max-w-sm">
             {/* Email (read-only) */}
             <div className="space-y-1.5">
-              <Label>Email</Label>
+              <Label>{t('settings.email')}</Label>
               <Input value={userEmail} disabled className="bg-sand/30" />
             </div>
 
             {/* Display Name */}
             <div className="space-y-1.5">
-              <Label>Display Name</Label>
+              <Label>{t('settings.displayName')}</Label>
               <Input
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Your name"
+                placeholder={t('settings.yourNamePlaceholder')}
               />
               <p className="text-xs text-warm-gray">
-                Shown when you edit guidelines or transactions
+                {t('settings.displayNameHelp')}
               </p>
             </div>
 
             {/* Default Currency */}
             <div className="space-y-1.5">
-              <Label>Default Currency</Label>
+              <Label>{t('settings.defaultCurrency')}</Label>
               <select
                 value={defaultCurrency}
                 onChange={(e) => setDefaultCurrency(e.target.value)}
@@ -187,7 +201,7 @@ export default function ProfileSettings() {
                 ))}
               </select>
               <p className="text-xs text-warm-gray">
-                Pre-selected when adding new transactions
+                {t('settings.preSelectedCurrency')}
               </p>
             </div>
 
@@ -196,7 +210,7 @@ export default function ProfileSettings() {
               disabled={!hasChanges}
               className="mt-2"
             >
-              Save Profile
+              {t('settings.saveProfile')}
             </Button>
           </div>
         )}

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Sliders, Calculator } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
@@ -21,6 +22,7 @@ import ThresholdChangeModal from './ThresholdChangeModal';
 import Toast from './Toast';
 
 export default function BudgetSettings() {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const { refreshConversionRate } = useAuth();
   const [toast, setToast] = useState(null);
@@ -131,7 +133,11 @@ export default function BudgetSettings() {
   // Preview changes before saving
   async function handleSaveClick() {
     if (!hasChanges) {
-      setToast({ id: toastId(), type: 'success', title: 'No changes to save' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('settings.noChanges'),
+      });
       return;
     }
 
@@ -147,8 +153,8 @@ export default function BudgetSettings() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'No household',
-        message: 'Create or join a household first.',
+        title: t('settings.noHousehold'),
+        message: t('errors.createHouseholdFirst'),
       });
       return;
     }
@@ -225,13 +231,15 @@ export default function BudgetSettings() {
       setSaving(false);
 
       const messages = [];
-      if (flaggedCount > 0) messages.push(`${flaggedCount} flagged`);
-      if (unflaggedCount > 0) messages.push(`${unflaggedCount} unflagged`);
+      if (flaggedCount > 0)
+        messages.push(t('settings.flagged', { count: flaggedCount }));
+      if (unflaggedCount > 0)
+        messages.push(t('settings.unflagged', { count: unflaggedCount }));
 
       setToast({
         id: toastId(),
         type: 'success',
-        title: 'Saved (demo)',
+        title: `${t('common.success')} (demo)`,
         message: messages.length > 0 ? messages.join(', ') : undefined,
       });
       return;
@@ -253,7 +261,7 @@ export default function BudgetSettings() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Save failed',
+        title: t('settings.saveFailed'),
         message: error.message,
       });
       return;
@@ -294,13 +302,15 @@ export default function BudgetSettings() {
     refreshConversionRate();
 
     const messages = [];
-    if (flaggedCount > 0) messages.push(`${flaggedCount} flagged`);
-    if (unflaggedCount > 0) messages.push(`${unflaggedCount} unflagged`);
+    if (flaggedCount > 0)
+      messages.push(t('settings.flagged', { count: flaggedCount }));
+    if (unflaggedCount > 0)
+      messages.push(t('settings.unflagged', { count: unflaggedCount }));
 
     setToast({
       id: toastId(),
       type: 'success',
-      title: 'Settings saved',
+      title: t('settings.saved'),
       message: messages.length > 0 ? messages.join(', ') : undefined,
     });
   }
@@ -311,10 +321,10 @@ export default function BudgetSettings() {
         <CardHeader>
           <div className="flex items-center gap-2">
             <Sliders className="w-5 h-5 text-slate" />
-            <CardTitle>Budget Thresholds</CardTitle>
+            <CardTitle>{t('settings.budgetThresholds')}</CardTitle>
           </div>
           <p className="text-sm text-stone mt-1">
-            Transactions over the threshold are automatically flagged for review
+            {t('settings.thresholdsDescription')}
           </p>
         </CardHeader>
         <CardContent>
@@ -337,7 +347,7 @@ export default function BudgetSettings() {
             <div className="space-y-4 max-w-sm">
               {/* USD Threshold */}
               <div className="space-y-1.5">
-                <Label>USD Threshold ($)</Label>
+                <Label>{t('settings.usdThreshold')}</Label>
                 <Input
                   type="text"
                   inputMode="decimal"
@@ -348,13 +358,13 @@ export default function BudgetSettings() {
                   placeholder="500"
                 />
                 <p className="text-xs text-warm-gray">
-                  Transactions above this amount are flagged
+                  {t('settings.thresholdHelp')}
                 </p>
               </div>
 
               {/* Conversion Rate */}
               <div className="space-y-1.5">
-                <Label>Conversion Rate</Label>
+                <Label>{t('settings.conversionRate')}</Label>
                 <Input
                   type="text"
                   inputMode="decimal"
@@ -365,7 +375,7 @@ export default function BudgetSettings() {
                   placeholder="3.25"
                 />
                 <p className="text-xs text-warm-gray">
-                  1 USD = {fxRateInput || '?'} PEN
+                  {t('settings.oneUsdEquals', { rate: fxRateInput || '?' })}
                 </p>
               </div>
 
@@ -374,20 +384,23 @@ export default function BudgetSettings() {
                 <div className="flex items-center gap-2 text-slate mb-1">
                   <Calculator className="w-4 h-4" />
                   <span className="text-xs font-semibold uppercase tracking-wide">
-                    PEN Threshold
+                    {t('settings.penThreshold')}
                   </span>
                 </div>
                 <div className="text-xl font-bold text-slate">
                   S/. {penThreshold.toLocaleString()}
                 </div>
                 <p className="text-xs text-warm-gray mt-1">
-                  Calculated as ${usdThreshold} × {fxRate}
+                  {t('settings.calculatedAs', {
+                    usd: usdThreshold,
+                    rate: fxRate,
+                  })}
                 </p>
               </div>
 
               {!isDemoMode && !householdId ? (
                 <p className="text-xs text-warm-gray italic">
-                  Log in to customize these settings
+                  {t('settings.loginToCustomize')}
                 </p>
               ) : (
                 <Button
@@ -395,7 +408,7 @@ export default function BudgetSettings() {
                   disabled={!hasChanges || saving}
                   className="mt-2"
                 >
-                  {saving ? 'Saving...' : 'Save Settings'}
+                  {saving ? t('settings.saving') : t('settings.saveSettings')}
                 </Button>
               )}
             </div>

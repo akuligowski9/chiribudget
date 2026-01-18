@@ -802,7 +802,7 @@ Add basic usage analytics while respecting user privacy. No PII, no third-party 
 ### CB-029: Spanish Language Support
 
 **Priority:** Medium
-**Status:** In Progress
+**Status:** Done
 **Assignee:** Terminal B
 **Tech Spec Reference:** N/A (i18n)
 
@@ -832,10 +832,10 @@ Using `next-intl` library with:
 - [x] Language toggle in Settings
 - [x] Header and BottomNav translated
 - [x] TransactionHub and QuickAddForm translated
-- [ ] TransactionList translated
-- [ ] Dashboard components translated
-- [ ] Settings components translated
-- [ ] All remaining components translated
+- [x] TransactionList translated
+- [x] Dashboard components translated
+- [x] Settings components translated
+- [x] All remaining components translated
 
 ---
 
@@ -938,35 +938,35 @@ PWA installs but requires internet. Full offline support would require significa
 
 ## Summary Table
 
-| ID     | Title                           | Priority  | Status      | Assignee   |
-| ------ | ------------------------------- | --------- | ----------- | ---------- |
-| CB-001 | Dead Code Removal               | High      | Done        | Terminal A |
-| CB-002 | Multi-User Integration Tests    | High      | Done        | Terminal B |
-| CB-003 | Security Headers                | High      | Done        | Terminal A |
-| CB-004 | Production Verification         | High      | Done        | Terminal B |
-| CB-005 | ARIA Accessibility Labels       | Medium    | Done        | Terminal A |
-| CB-006 | Remove Unused UI Exports        | Medium    | Done        | Terminal B |
-| CB-007 | Focus Indicators                | Medium    | Done        | Terminal A |
-| CB-017 | Improve "Mark Discussed" UX     | Medium    | Done        | Terminal A |
-| CB-018 | Mobile Responsiveness Testing   | Medium    | Done        | Terminal A |
-| CB-020 | Add Audit Columns               | Medium    | Done        | Terminal A |
-| CB-021 | Document/Remove `rejected` Enum | Medium    | Done        | Terminal A |
-| CB-022 | Auto-Deploy Workflow            | Medium    | Done        | Terminal A |
-| CB-024 | Constants File                  | Medium    | Done        | Terminal B |
-| CB-026 | Deployment Documentation        | Medium    | Done        | Terminal A |
-| CB-008 | Server-Side Enum Validation     | Low       | Done        | Terminal B |
-| CB-009 | Household Member Management UI  | Low       | Done        | Terminal A |
-| CB-010 | E2E Tests with Playwright       | Low       | Done        | Terminal B |
-| CB-011 | Batch Insert with Rollback      | Low       | Done        | Terminal B |
-| CB-012 | Soft Deletes                    | Low       | Done        | Terminal B |
-| CB-013 | Error Monitoring (Sentry)       | Low       | Todo        | Unassigned |
-| CB-019 | Extract Large Components        | Low       | Todo        | Unassigned |
-| CB-023 | Database Backup Documentation   | Low       | Done        | Terminal B |
-| CB-025 | Import Sorting Plugin           | Low       | Done        | Terminal A |
-| CB-027 | Migrate to TypeScript           | v2        | Deferred    | Unassigned |
-| CB-028 | Privacy-Respecting Analytics    | v2        | Deferred    | Unassigned |
-| CB-029 | Spanish Language Support        | Medium    | In Progress | Terminal B |
-| CB-030 | Auto-Translate Descriptions     | v2        | Deferred    | Unassigned |
-| CB-014 | Rate Limiting                   | Won't Fix | Documented  | N/A        |
-| CB-015 | Two-Factor Auth                 | Won't Fix | Documented  | N/A        |
-| CB-016 | Offline Support                 | Won't Fix | Documented  | N/A        |
+| ID     | Title                           | Priority  | Status     | Assignee   |
+| ------ | ------------------------------- | --------- | ---------- | ---------- |
+| CB-001 | Dead Code Removal               | High      | Done       | Terminal A |
+| CB-002 | Multi-User Integration Tests    | High      | Done       | Terminal B |
+| CB-003 | Security Headers                | High      | Done       | Terminal A |
+| CB-004 | Production Verification         | High      | Done       | Terminal B |
+| CB-005 | ARIA Accessibility Labels       | Medium    | Done       | Terminal A |
+| CB-006 | Remove Unused UI Exports        | Medium    | Done       | Terminal B |
+| CB-007 | Focus Indicators                | Medium    | Done       | Terminal A |
+| CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
+| CB-018 | Mobile Responsiveness Testing   | Medium    | Done       | Terminal A |
+| CB-020 | Add Audit Columns               | Medium    | Done       | Terminal A |
+| CB-021 | Document/Remove `rejected` Enum | Medium    | Done       | Terminal A |
+| CB-022 | Auto-Deploy Workflow            | Medium    | Done       | Terminal A |
+| CB-024 | Constants File                  | Medium    | Done       | Terminal B |
+| CB-026 | Deployment Documentation        | Medium    | Done       | Terminal A |
+| CB-008 | Server-Side Enum Validation     | Low       | Done       | Terminal B |
+| CB-009 | Household Member Management UI  | Low       | Done       | Terminal A |
+| CB-010 | E2E Tests with Playwright       | Low       | Done       | Terminal B |
+| CB-011 | Batch Insert with Rollback      | Low       | Done       | Terminal B |
+| CB-012 | Soft Deletes                    | Low       | Done       | Terminal B |
+| CB-013 | Error Monitoring (Sentry)       | Low       | Todo       | Unassigned |
+| CB-019 | Extract Large Components        | Low       | Todo       | Unassigned |
+| CB-023 | Database Backup Documentation   | Low       | Done       | Terminal B |
+| CB-025 | Import Sorting Plugin           | Low       | Done       | Terminal A |
+| CB-027 | Migrate to TypeScript           | v2        | Deferred   | Unassigned |
+| CB-028 | Privacy-Respecting Analytics    | v2        | Deferred   | Unassigned |
+| CB-029 | Spanish Language Support        | Medium    | Done       | Terminal B |
+| CB-030 | Auto-Translate Descriptions     | v2        | Deferred   | Unassigned |
+| CB-014 | Rate Limiting                   | Won't Fix | Documented | N/A        |
+| CB-015 | Two-Factor Auth                 | Won't Fix | Documented | N/A        |
+| CB-016 | Offline Support                 | Won't Fix | Documented | N/A        |

@@ -1,6 +1,7 @@
 'use client';
 
 import { Settings } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import BudgetSettings from '@/components/BudgetSettings';
 import Guidelines from '@/components/Guidelines';
 import HouseholdMembers from '@/components/HouseholdMembers';
@@ -13,6 +14,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 
 export default function SettingsPage() {
+  const t = useTranslations();
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
 
@@ -46,7 +48,9 @@ export default function SettingsPage() {
         <div className="p-2 rounded-xl bg-gradient-to-br from-slate to-slate-light">
           <Settings className="w-5 h-5 text-white" />
         </div>
-        <h1 className="text-2xl font-bold gradient-text m-0">Settings</h1>
+        <h1 className="text-2xl font-bold gradient-text m-0">
+          {t('settings.title')}
+        </h1>
       </div>
 
       <div className="space-y-4">

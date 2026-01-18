@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Check, Copy, Trash2, Users } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import Toast from '@/components/Toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +15,7 @@ import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function HouseholdMembers() {
+  const t = useTranslations();
   const { user, profile, refreshProfile } = useAuth();
   const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
@@ -108,7 +110,7 @@ export default function HouseholdMembers() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Failed to load',
+        title: t('household.failedToLoad'),
         message: e.message,
       });
     } finally {
@@ -134,8 +136,8 @@ export default function HouseholdMembers() {
         setToast({
           id: toastId(),
           type: 'error',
-          title: 'Demo mode',
-          message: 'Cannot remove members in demo mode.',
+          title: t('household.demoMode'),
+          message: t('household.cannotRemoveDemo'),
         });
       }
       return;
@@ -162,8 +164,10 @@ export default function HouseholdMembers() {
       setToast({
         id: toastId(),
         type: 'success',
-        title: 'Member removed',
-        message: `${memberToRemove.display_name} has been removed from the household.`,
+        title: t('household.memberRemoved'),
+        message: t('household.memberRemovedMessage', {
+          name: memberToRemove.display_name,
+        }),
       });
 
       // Refresh member list
@@ -172,7 +176,7 @@ export default function HouseholdMembers() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Failed to remove',
+        title: t('household.failedToRemove'),
         message: e.message,
       });
     }
@@ -191,7 +195,7 @@ export default function HouseholdMembers() {
       <CardHeader>
         <div className="flex items-center gap-2">
           <Users className="w-5 h-5 text-slate" />
-          <CardTitle>Household Members</CardTitle>
+          <CardTitle>{t('household.householdMembers')}</CardTitle>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -204,7 +208,7 @@ export default function HouseholdMembers() {
         <div className="flex items-center gap-2 p-3 bg-white/50 rounded-xl border border-white/60">
           <div className="flex-1 min-w-0">
             <div className="text-xs text-warm-gray mb-1">
-              Share this code to invite someone:
+              {t('household.shareCodePrompt')}
             </div>
             <code className="font-mono text-sm tracking-wider text-charcoal">
               {household.join_code}
@@ -215,7 +219,9 @@ export default function HouseholdMembers() {
             size="sm"
             onClick={copyJoinCode}
             className="shrink-0"
-            aria-label={copied ? 'Code copied' : 'Copy join code'}
+            aria-label={
+              copied ? t('household.codeCopied') : t('household.copyCode')
+            }
           >
             {copied ? (
               <Check className="w-4 h-4 text-success" aria-hidden="true" />
@@ -228,7 +234,7 @@ export default function HouseholdMembers() {
         {/* Members list */}
         <div className="space-y-2">
           <div className="text-xs font-semibold text-warm-gray uppercase tracking-wide">
-            Members ({members.length})
+            {t('household.members')} ({members.length})
           </div>
           {members.map((member) => (
             <div
@@ -242,11 +248,15 @@ export default function HouseholdMembers() {
                 <div className="font-medium text-charcoal text-sm">
                   {member.display_name}
                   {member.is_current_user && (
-                    <span className="ml-2 text-xs text-slate">(you)</span>
+                    <span className="ml-2 text-xs text-slate">
+                      {t('household.youTag')}
+                    </span>
                   )}
                 </div>
                 <div className="text-xs text-warm-gray">
-                  Joined {new Date(member.created_at).toLocaleDateString()}
+                  {t('household.joined', {
+                    date: new Date(member.created_at).toLocaleDateString(),
+                  })}
                 </div>
               </div>
               {!member.is_current_user && (
@@ -255,7 +265,7 @@ export default function HouseholdMembers() {
                   size="sm"
                   onClick={() => handleRemoveClick(member)}
                   className="shrink-0 text-error hover:text-error hover:bg-error/10"
-                  aria-label={`Remove ${member.display_name} from household`}
+                  aria-label={t('household.removeMember')}
                 >
                   <Trash2 className="w-4 h-4" aria-hidden="true" />
                 </Button>
@@ -266,8 +276,7 @@ export default function HouseholdMembers() {
 
         {/* Note about self-removal */}
         <p className="text-xs text-warm-gray">
-          You cannot remove yourself from the household. To leave, contact
-          another member to remove you.
+          {t('household.selfRemovalNote')}
         </p>
       </CardContent>
 
@@ -278,10 +287,12 @@ export default function HouseholdMembers() {
           setMemberToRemove(null);
         }}
         onConfirm={removeMember}
-        title="Remove Member"
-        message={`Are you sure you want to remove ${memberToRemove?.display_name} from the household? They will need to rejoin with the code.`}
-        confirmText="Remove"
-        cancelText="Cancel"
+        title={t('household.removeMemberTitle')}
+        message={t('household.removeMemberConfirm', {
+          name: memberToRemove?.display_name || '',
+        })}
+        confirmText={t('household.removeMember')}
+        cancelText={t('common.cancel')}
         variant="danger"
       />
 

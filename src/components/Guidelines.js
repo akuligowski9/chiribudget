@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Pencil, Save, X, BookOpen } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +26,7 @@ const DEFAULT_GUIDELINES = `• For all income and losses, track how much is sav
 • Notify each other before new recurring costs or spending over the threshold`;
 
 export default function Guidelines() {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -118,7 +120,11 @@ export default function Guidelines() {
     // Only save if content actually changed
     if (editValue.trim() === originalGuidelines.trim()) {
       setEditing(false);
-      setToast({ id: toastId(), type: 'success', title: 'No changes made' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('settings.noChangesMade'),
+      });
       return;
     }
 
@@ -128,7 +134,11 @@ export default function Guidelines() {
       setUpdatedAt(new Date());
       setUpdatedByName('You (demo)');
       setEditing(false);
-      setToast({ id: toastId(), type: 'success', title: 'Updated (demo)' });
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: `${t('common.success')} (demo)`,
+      });
       return;
     }
 
@@ -136,8 +146,8 @@ export default function Guidelines() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'No household',
-        message: 'Create or join a household first.',
+        title: t('settings.noHousehold'),
+        message: t('errors.createHouseholdFirst'),
       });
       return;
     }
@@ -159,7 +169,7 @@ export default function Guidelines() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Save failed',
+        title: t('settings.saveFailed'),
         message: error.message,
       });
       return;
@@ -170,12 +180,19 @@ export default function Guidelines() {
     setUpdatedAt(new Date());
     setUpdatedByName('You');
     setEditing(false);
-    setToast({ id: toastId(), type: 'success', title: 'Guidelines updated' });
+    setToast({
+      id: toastId(),
+      type: 'success',
+      title: t('settings.guidelinesUpdated'),
+    });
   }
 
   function formatDate(date) {
-    if (!date) return 'Never';
-    return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    if (!date) return t('settings.never');
+    return date.toLocaleDateString(undefined, {
+      month: 'long',
+      year: 'numeric',
+    });
   }
 
   // Convert markdown-like formatting to styled elements
@@ -222,18 +239,22 @@ export default function Guidelines() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-slate" />
-            <CardTitle>Rules & Guidelines</CardTitle>
+            <CardTitle>{t('settings.rulesGuidelines')}</CardTitle>
           </div>
           {!editing && (
             <Button variant="outline" size="sm" onClick={startEditing}>
               <Pencil className="w-4 h-4 mr-1.5" />
-              Edit
+              {t('common.edit')}
             </Button>
           )}
         </div>
         <p className="text-xs text-warm-gray mt-1">
-          Last Updated: {formatDate(updatedAt)}
-          {updatedByName && ` by ${updatedByName}`}
+          {updatedByName
+            ? t('settings.lastUpdatedBy', {
+                date: formatDate(updatedAt),
+                name: updatedByName,
+              })
+            : t('settings.lastUpdated', { date: formatDate(updatedAt) })}
         </p>
       </CardHeader>
       <CardContent>
@@ -254,20 +275,19 @@ export default function Guidelines() {
               value={editValue}
               onChange={(e) => setEditValue(e.target.value)}
               className="w-full min-h-[280px] p-3 text-sm rounded-xl border border-sand bg-white/70 focus:border-slate focus:outline-none resize-y"
-              placeholder="Enter your household rules and guidelines..."
+              placeholder={t('settings.guidelinesPlaceholder')}
             />
             <p className="text-xs text-warm-gray">
-              Formatting: Start lines with • or - for bullets, use **text** for
-              bold
+              {t('settings.formattingHelp')}
             </p>
             <div className="flex gap-2">
               <Button onClick={saveGuidelines}>
                 <Save className="w-4 h-4 mr-1.5" />
-                Save
+                {t('common.save')}
               </Button>
               <Button variant="outline" onClick={cancelEditing}>
                 <X className="w-4 h-4 mr-1.5" />
-                Cancel
+                {t('common.cancel')}
               </Button>
             </div>
           </div>

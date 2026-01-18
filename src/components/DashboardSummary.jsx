@@ -157,13 +157,13 @@ export default function DashboardSummary({
         <CardHeader>
           <div className="flex items-center gap-2">
             <PieChart className="w-5 h-5 text-slate" />
-            <CardTitle>Summary</CardTitle>
+            <CardTitle>{t('dashboard.summary')}</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           {!demoMode && !householdId && (
             <p className="text-warm-gray text-sm">
-              Log in and set up a household to see live data.
+              {t('dashboard.loginForData')}
             </p>
           )}
 
@@ -173,11 +173,11 @@ export default function DashboardSummary({
               <div className="flex items-center gap-2 text-success mb-1">
                 <TrendingUp className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Income
+                  {t('dashboard.income')}
                 </span>
               </div>
               <div className="text-xl font-bold text-success">
-                {currency} {totalIncome.toFixed(0)}
+                {currency} {totalIncome.toFixed(2)}
               </div>
             </div>
 
@@ -185,11 +185,11 @@ export default function DashboardSummary({
               <div className="flex items-center gap-2 text-error mb-1">
                 <TrendingDown className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Expenses
+                  {t('dashboard.expenses')}
                 </span>
               </div>
               <div className="text-xl font-bold text-error">
-                {currency} {totalExpenses.toFixed(0)}
+                {currency} {totalExpenses.toFixed(2)}
               </div>
             </div>
 
@@ -209,7 +209,7 @@ export default function DashboardSummary({
               >
                 <Wallet className="w-4 h-4" />
                 <span className="text-xs font-semibold uppercase tracking-wide">
-                  Net
+                  {t('dashboard.net')}
                 </span>
               </div>
               <div
@@ -218,7 +218,7 @@ export default function DashboardSummary({
                   net >= 0 ? 'text-slate' : 'text-warning'
                 )}
               >
-                {currency} {net.toFixed(0)}
+                {currency} {net.toFixed(2)}
               </div>
             </div>
           </div>
@@ -228,7 +228,7 @@ export default function DashboardSummary({
             <div className="bg-white/40 rounded-xl p-4 border border-white/60">
               <div className="font-semibold text-charcoal mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-success" />
-                Income by Category
+                {t('dashboard.incomeByCategory')}
               </div>
               <div className="space-y-2">
                 {INCOME_CATEGORIES.map((c) => {
@@ -237,9 +237,11 @@ export default function DashboardSummary({
                   return (
                     <div key={c}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-stone">{c}</span>
+                        <span className="text-stone">
+                          {t(`categories.${CATEGORY_KEYS[c]}`)}
+                        </span>
                         <span className="font-semibold text-success">
-                          {currency} {val.toFixed(0)}
+                          {currency} {val.toFixed(2)}
                         </span>
                       </div>
                       <div className="h-1.5 bg-success/10 rounded-full overflow-hidden">
@@ -257,7 +259,7 @@ export default function DashboardSummary({
             <div className="bg-white/40 rounded-xl p-4 border border-white/60">
               <div className="font-semibold text-charcoal mb-3 flex items-center gap-2">
                 <div className="w-2 h-2 rounded-full bg-error" />
-                Expenses by Category
+                {t('dashboard.expensesByCategory')}
               </div>
               <div className="space-y-2">
                 {EXPENSE_CATEGORIES.map((c) => {
@@ -267,9 +269,11 @@ export default function DashboardSummary({
                   return (
                     <div key={c}>
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="text-stone">{c}</span>
+                        <span className="text-stone">
+                          {t(`categories.${CATEGORY_KEYS[c]}`)}
+                        </span>
                         <span className="font-semibold text-error">
-                          {currency} {val.toFixed(0)}
+                          {currency} {val.toFixed(2)}
                         </span>
                       </div>
                       <div className="h-1.5 bg-error/10 rounded-full overflow-hidden">
@@ -287,7 +291,9 @@ export default function DashboardSummary({
 
           {/* Net by Payer */}
           <div className="bg-white/40 rounded-xl p-4 border border-white/60">
-            <div className="font-semibold text-charcoal mb-3">Net by Payer</div>
+            <div className="font-semibold text-charcoal mb-3">
+              {t('dashboard.netByPayer')}
+            </div>
             <div className="grid grid-cols-3 gap-3">
               {PAYERS.map((p) => {
                 const val = Number(netByPayer[p] || 0);
@@ -302,7 +308,7 @@ export default function DashboardSummary({
                     )}
                   >
                     <div className="text-xs text-stone font-medium mb-1 capitalize">
-                      {p}
+                      {t(`payers.${p.toLowerCase()}`)}
                     </div>
                     <div
                       className={cn(
@@ -310,7 +316,7 @@ export default function DashboardSummary({
                         val >= 0 ? 'text-success' : 'text-error'
                       )}
                     >
-                      {currency} {val.toFixed(0)}
+                      {currency} {val.toFixed(2)}
                     </div>
                   </div>
                 );

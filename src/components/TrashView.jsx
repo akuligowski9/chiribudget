@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Trash2, RotateCcw } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
@@ -11,6 +12,7 @@ import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
 
 export default function TrashView() {
+  const t = useTranslations();
   const { isDemoMode } = useDemo();
   const { profile } = useAuth();
   const [deletedRows, setDeletedRows] = useState([]);
@@ -59,7 +61,7 @@ export default function TrashView() {
       setToast({
         id: toastId(),
         type: 'info',
-        title: 'Demo mode - no restore',
+        title: t('settings.demoNoRestore'),
       });
       return;
     }
@@ -72,23 +74,23 @@ export default function TrashView() {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Restore failed',
+        title: t('settings.restoreFailed'),
         message: error.message,
       });
     } else if (!data) {
       setToast({
         id: toastId(),
         type: 'error',
-        title: 'Restore failed',
-        message: 'Transaction not found',
+        title: t('settings.restoreFailed'),
+        message: t('settings.transactionNotFound'),
       });
     } else {
       setDeletedRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),
         type: 'success',
-        title: 'Restored',
-        message: 'Transaction restored successfully',
+        title: t('settings.restored'),
+        message: t('settings.restoreSuccess'),
       });
     }
   }
@@ -114,12 +116,12 @@ export default function TrashView() {
         <CardHeader>
           <CardTitle gradient className="flex items-center gap-2">
             <Trash2 className="w-5 h-5" />
-            Trash
+            {t('settings.trash')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-warm-gray text-sm">
-            Trash is not available in demo mode.
+            {t('demo.trashNotAvailable')}
           </p>
         </CardContent>
       </Card>
@@ -131,17 +133,19 @@ export default function TrashView() {
       <CardHeader>
         <CardTitle gradient className="flex items-center gap-2">
           <Trash2 className="w-5 h-5" />
-          Trash
+          {t('settings.trash')}
         </CardTitle>
         <p className="text-sm text-warm-gray mt-1">
-          Deleted transactions are kept for 30 days before permanent removal.
+          {t('settings.trashDescription')}
         </p>
       </CardHeader>
       <CardContent>
         {loading ? (
-          <p className="text-warm-gray text-sm">Loading...</p>
+          <p className="text-warm-gray text-sm">{t('common.loading')}</p>
         ) : deletedRows.length === 0 ? (
-          <p className="text-warm-gray text-sm">No deleted transactions.</p>
+          <p className="text-warm-gray text-sm">
+            {t('settings.noDeletedItems')}
+          </p>
         ) : (
           <div className="space-y-3">
             {deletedRows.map((row) => (
@@ -157,7 +161,9 @@ export default function TrashView() {
                     <span
                       className={`text-xs ${row.amount < 0 ? 'text-error' : 'text-success'}`}
                     >
-                      {row.amount < 0 ? 'expense' : 'income'}
+                      {row.amount < 0
+                        ? t('transaction.expense')
+                        : t('transaction.income')}
                     </span>
                   </div>
                   <div className="text-xs text-warm-gray mt-0.5">
@@ -165,8 +171,9 @@ export default function TrashView() {
                     {row.description && ` · ${row.description}`}
                   </div>
                   <div className="text-xs text-stone mt-1">
-                    {daysUntilPurge(row.deleted_at)} days until permanent
-                    deletion
+                    {t('settings.daysUntilDelete', {
+                      days: daysUntilPurge(row.deleted_at),
+                    })}
                   </div>
                 </div>
                 <Button
@@ -176,7 +183,7 @@ export default function TrashView() {
                   className="flex items-center gap-1"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  Restore
+                  {t('settings.restore')}
                 </Button>
               </div>
             ))}

@@ -381,13 +381,13 @@ export default function TransactionList({
               <div className="flex items-center gap-1.5 bg-success/10 rounded-lg px-3 py-1.5 border border-success/20">
                 <TrendingUp className="w-3.5 h-3.5 text-success" />
                 <span className="font-semibold text-success">
-                  +{currency} {totalIncome.toFixed(0)}
+                  +{currency} {totalIncome.toFixed(2)}
                 </span>
               </div>
               <div className="flex items-center gap-1.5 bg-error/10 rounded-lg px-3 py-1.5 border border-error/20">
                 <TrendingDown className="w-3.5 h-3.5 text-error" />
                 <span className="font-semibold text-error">
-                  -{currency} {totalExpenses.toFixed(0)}
+                  -{currency} {totalExpenses.toFixed(2)}
                 </span>
               </div>
             </div>
