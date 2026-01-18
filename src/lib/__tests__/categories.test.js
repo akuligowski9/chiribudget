@@ -66,8 +66,8 @@ describe('ALL_CATEGORIES', () => {
 
 describe('PAYERS', () => {
   it('includes expected payers', () => {
-    expect(PAYERS).toContain('Alex');
-    expect(PAYERS).toContain('Adriana');
+    expect(PAYERS).toContain('Partner 1');
+    expect(PAYERS).toContain('Partner 2');
     expect(PAYERS).toContain('Together');
   });
 

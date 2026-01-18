@@ -146,7 +146,7 @@ export default function ImportUpload({ onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState(null);
   const [bank, setBank] = useState('interbank');
-  const [defaultPayer, setDefaultPayer] = useState('adriana');
+  const [defaultPayer, setDefaultPayer] = useState('Partner 1');
   const [year, setYear] = useState(CURRENT_YEAR.toString());
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);

@@ -168,11 +168,11 @@ describe('Enum validation (Server-Side Defense)', () => {
     });
 
     it('accepts valid payers (case-insensitive)', () => {
-      expect(validatePayer('Alex')).toBeNull();
-      expect(validatePayer('Adriana')).toBeNull();
+      expect(validatePayer('Partner 1')).toBeNull();
+      expect(validatePayer('Partner 2')).toBeNull();
       expect(validatePayer('Together')).toBeNull();
-      expect(validatePayer('alex')).toBeNull();
-      expect(validatePayer('ADRIANA')).toBeNull();
+      expect(validatePayer('partner 1')).toBeNull();
+      expect(validatePayer('PARTNER 2')).toBeNull();
       expect(validatePayer('together')).toBeNull();
     });
 
@@ -190,7 +190,7 @@ describe('Full transaction validation', () => {
     amount: -50,
     currency: 'USD',
     category: 'Food',
-    payer: 'Alex',
+    payer: 'Partner 1',
     description: 'Groceries',
   };
 
@@ -248,7 +248,7 @@ describe('getFirstError helper', () => {
       amount: -50,
       currency: 'USD',
       category: 'Food',
-      payer: 'Alex',
+      payer: 'Partner 1',
     });
     expect(getFirstError(result)).toBeNull();
   });
@@ -259,7 +259,7 @@ describe('getFirstError helper', () => {
       amount: -50,
       currency: 'USD',
       category: 'Food',
-      payer: 'Alex',
+      payer: 'Partner 1',
     });
     expect(getFirstError(result)).toBe('Date is required');
   });

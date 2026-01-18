@@ -27,6 +27,18 @@ export function updateDemoTransaction(id, updates) {
   );
 }
 
+// Delete a demo transaction
+export function deleteDemoTransaction(id) {
+  demoTransactions = demoTransactions.filter((t) => t.id !== id);
+}
+
+// Add a new demo transaction
+export function addDemoTransaction(transaction) {
+  const id = `demo_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  demoTransactions = [{ ...transaction, id }, ...demoTransactions];
+  return id;
+}
+
 // Get current demo thresholds
 export function getDemoThresholds() {
   return { ...demoThresholds };

@@ -29,7 +29,11 @@ import { useDemo } from '@/hooks/useDemo';
 import { ALL_CATEGORIES, CURRENCIES, PAYERS } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
 import { convertAmount } from '@/lib/currency';
-import { getDemoTransactions } from '@/lib/demoStore';
+import {
+  getDemoTransactions,
+  updateDemoTransaction,
+  deleteDemoTransaction,
+} from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
@@ -189,6 +193,8 @@ export default function TransactionList({
 
   async function updateTransaction(id, field, value) {
     if (isDemoMode) {
+      // Update the demoStore so other components see the change
+      updateDemoTransaction(id, { [field]: value });
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
@@ -228,6 +234,8 @@ export default function TransactionList({
 
   async function deleteTransaction(id) {
     if (isDemoMode) {
+      // Delete from demoStore so other components see the change
+      deleteDemoTransaction(id);
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),

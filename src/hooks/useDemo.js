@@ -4,10 +4,11 @@ import { useState, useEffect, useCallback } from 'react';
 import { getDemoMode, setDemoMode as setDemoModeStorage } from '@/lib/auth';
 
 export function useDemo() {
-  const [isDemoMode, setIsDemoMode] = useState(false);
+  // Initialize with actual localStorage value (works client-side)
+  const [isDemoMode, setIsDemoMode] = useState(() => getDemoMode());
 
   useEffect(() => {
-    // Check initial state on mount
+    // Re-check on mount in case of SSR mismatch
     setIsDemoMode(getDemoMode());
 
     // Listen for storage changes (for cross-tab sync)
@@ -28,10 +29,14 @@ export function useDemo() {
 
   const enterDemo = useCallback(() => {
     setDemoMode(true);
+    // Reload to ensure all components pick up the new state
+    window.location.reload();
   }, [setDemoMode]);
 
   const exitDemo = useCallback(() => {
     setDemoMode(false);
+    // Reload to ensure all components pick up the new state
+    window.location.reload();
   }, [setDemoMode]);
 
   return {

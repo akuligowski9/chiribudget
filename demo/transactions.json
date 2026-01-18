@@ -27,17 +27,17 @@
     "description": "Internet bill - Xfinity",
     "amount": -79.99,
     "category": "Fixed Expenses",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
     "id": "d4",
     "txn_date": "2026-01-05",
     "currency": "USD",
-    "description": "Alex paycheck",
+    "description": "Paycheck - Partner 1",
     "amount": 4250.0,
     "category": "Salary",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": true,
     "flag_reason": "over_threshold_income"
   },
@@ -48,7 +48,7 @@
     "description": "Coffee beans - Blue Bottle",
     "amount": -24.5,
     "category": "Food",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -58,7 +58,7 @@
     "description": "Shell gas station",
     "amount": -52.18,
     "category": "Fixed Expenses",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -68,7 +68,7 @@
     "description": "Chewy - dog food & treats",
     "amount": -89.99,
     "category": "Dogs",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -98,17 +98,17 @@
     "description": "Netflix + Spotify subscriptions",
     "amount": -28.98,
     "category": "Fixed Expenses",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
     "id": "d11",
     "txn_date": "2026-01-10",
     "currency": "USD",
-    "description": "Adriana paycheck",
+    "description": "Paycheck - Partner 2",
     "amount": 3800.0,
     "category": "Salary",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": true,
     "flag_reason": "over_threshold_income"
   },
@@ -119,7 +119,7 @@
     "description": "Trader Joe's weekly groceries",
     "amount": -94.33,
     "category": "Food",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -159,7 +159,7 @@
     "description": "Vet checkup - Luna",
     "amount": -185.0,
     "category": "Dogs",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -169,7 +169,7 @@
     "description": "Amazon - books & household",
     "amount": -56.43,
     "category": "Fixed Expenses",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -209,7 +209,7 @@
     "description": "Brunch with friends",
     "amount": -45.0,
     "category": "Food",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -229,7 +229,7 @@
     "description": "Unexpected car repair",
     "amount": -487.5,
     "category": "Unexpected",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -239,7 +239,7 @@
     "description": "Safeway groceries",
     "amount": -68.92,
     "category": "Food",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -249,7 +249,7 @@
     "description": "Morning coffee - Starbucks",
     "amount": -7.45,
     "category": "Food",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -259,7 +259,7 @@
     "description": "Lunch takeout - Chipotle",
     "amount": -14.25,
     "category": "Food",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -269,7 +269,7 @@
     "description": "Plaza Vea - compras semanales",
     "amount": -245.5,
     "category": "Food",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -290,7 +290,7 @@
     "description": "Veterinario - vacunas perros",
     "amount": -380.0,
     "category": "Dogs",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -310,7 +310,7 @@
     "description": "Regalo cumpleanos mama",
     "amount": -350.0,
     "category": "Holidays & Birthdays",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -320,7 +320,7 @@
     "description": "Freelance web project",
     "amount": 1800.0,
     "category": "Extra",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": true,
     "flag_reason": "over_threshold_income"
   },
@@ -351,7 +351,7 @@
     "description": "Gasolina - Primax",
     "amount": -180.0,
     "category": "Fixed Expenses",
-    "payer": "Alex",
+    "payer": "Partner 1",
     "is_flagged": false
   },
   {
@@ -371,7 +371,7 @@
     "description": "Comida perros - Pet Shop",
     "amount": -145.0,
     "category": "Dogs",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -391,7 +391,7 @@
     "description": "Farmacia - medicinas",
     "amount": -95.5,
     "category": "Fixed Expenses",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   },
   {
@@ -411,7 +411,7 @@
     "description": "Uber - trabajo",
     "amount": -25.5,
     "category": "Fixed Expenses",
-    "payer": "Adriana",
+    "payer": "Partner 2",
     "is_flagged": false
   }
 ]
