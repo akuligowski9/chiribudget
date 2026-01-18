@@ -251,7 +251,7 @@ export default function DiscussionPanel({ currency, onScrollToFlagged }) {
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
           placeholder="What we agreed on, next month's focus, action items..."
-          className="w-full min-h-[120px] rounded-xl border-2 border-white/60 bg-white/70 backdrop-blur-sm px-4 py-3 text-sm text-charcoal placeholder:text-warm-gray/70 focus:border-slate focus:bg-white/90 focus:outline-none resize-none"
+          className="w-full min-h-[120px] rounded-xl border-2 border-white/60 bg-white/70 backdrop-blur-sm px-4 py-3 text-sm text-charcoal placeholder:text-warm-gray/70 focus-visible:border-slate focus-visible:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate/50 focus-visible:ring-offset-1 resize-none"
         />
 
         <div className="flex gap-3 mt-4">
@@ -334,7 +334,7 @@ export default function DiscussionPanel({ currency, onScrollToFlagged }) {
                 </Button>
                 <button
                   onClick={() => setShowWarningDialog(false)}
-                  className="text-sm text-warm-gray hover:text-charcoal mt-1"
+                  className="text-sm text-warm-gray hover:text-charcoal mt-1 rounded-lg px-3 py-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate focus-visible:ring-offset-1"
                 >
                   Cancel
                 </button>

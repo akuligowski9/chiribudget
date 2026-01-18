@@ -227,7 +227,7 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
                     <textarea
                       defaultValue={r.explanation || ''}
                       placeholder="Add explanation..."
-                      className="w-full min-h-[60px] rounded-xl border-2 border-white/60 bg-white/70 backdrop-blur-sm px-3 py-2 text-sm text-charcoal placeholder:text-warm-gray/70 focus:border-slate focus:bg-white/90 focus:outline-none resize-none"
+                      className="w-full min-h-[60px] rounded-xl border-2 border-white/60 bg-white/70 backdrop-blur-sm px-3 py-2 text-sm text-charcoal placeholder:text-warm-gray/70 focus-visible:border-slate focus-visible:bg-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate/50 focus-visible:ring-offset-1 resize-none"
                       onBlur={(e) => saveExplanation(r.id, e.target.value)}
                     />
                     <div className="flex items-center justify-between mt-2 gap-2">
@@ -236,7 +236,7 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
                       </span>
                       <button
                         onClick={() => unflag(r.id)}
-                        className="min-h-[44px] px-3 text-xs text-slate hover:text-slate-dark hover:bg-slate/10 font-medium rounded-lg transition-colors"
+                        className="min-h-[44px] px-3 text-xs text-slate hover:text-slate-dark hover:bg-slate/10 font-medium rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate focus-visible:ring-offset-1"
                         aria-label={`Remove flag from transaction: ${r.description || 'no description'}`}
                       >
                         Remove flag

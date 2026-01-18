@@ -201,8 +201,8 @@ Remove exports for components that are never imported. Prevents confusion and po
 ### CB-007: Focus Indicators
 
 **Priority:** Medium
-**Status:** Todo
-**Assignee:** Unassigned
+**Status:** Done
+**Assignee:** Terminal A
 **Tech Spec Reference:** TECH_SPEC.md#feature-specifications
 
 #### Description
@@ -215,12 +215,23 @@ Add visible focus indicators for keyboard navigation. Essential for users who na
 - Ensure sufficient contrast (3:1 minimum)
 - Don't rely solely on color
 
+#### Changes Made
+
+- `globals.css`: Base `:focus-visible` style already present (slate outline)
+- `input.jsx`: Changed from `focus:` to `focus-visible:`, increased ring opacity to 50%
+- `select.jsx`: Changed to `focus-visible:` with offset-2
+- `button.jsx`: Already had `focus-visible:ring-2` (no change needed)
+- `BottomNav.jsx`: Added focus-visible ring to nav links
+- `TransactionList.jsx`: Added focus styles to flag and delete buttons
+- `FlaggedReview.jsx`: Added focus styles to textarea and Remove flag button
+- `DiscussionPanel.jsx`: Added focus styles to textarea and Cancel button
+
 #### Acceptance Criteria
 
-- [ ] All buttons show focus ring when tabbed to
-- [ ] All inputs show focus state
-- [ ] Focus is visible on both light backgrounds
-- [ ] Tab order is logical
+- [x] All buttons show focus ring when tabbed to
+- [x] All inputs show focus state
+- [x] Focus is visible on both light backgrounds
+- [x] Tab order is logical (DOM order)
 
 ---
 
@@ -821,7 +832,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-004 | Production Verification         | High      | Done       | Terminal B |
 | CB-005 | ARIA Accessibility Labels       | Medium    | Done       | Terminal A |
 | CB-006 | Remove Unused UI Exports        | Medium    | Done       | Terminal B |
-| CB-007 | Focus Indicators                | Medium    | Todo       | Unassigned |
+| CB-007 | Focus Indicators                | Medium    | Done       | Terminal A |
 | CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
 | CB-018 | Mobile Responsiveness Testing   | Medium    | Done       | Terminal A |
 | CB-020 | Add Audit Columns               | Medium    | Done       | Terminal A |

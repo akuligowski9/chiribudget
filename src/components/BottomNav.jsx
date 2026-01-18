@@ -37,6 +37,7 @@ export default function BottomNav() {
                 href={item.href}
                 className={cn(
                   'flex flex-col items-center gap-0.5 px-6 py-2 rounded-xl transition-all duration-200',
+                  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate focus-visible:ring-offset-2',
                   isActive ? 'text-slate' : 'text-warm-gray hover:text-stone'
                 )}
               >

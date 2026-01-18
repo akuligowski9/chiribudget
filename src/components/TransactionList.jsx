@@ -482,7 +482,7 @@ export default function TransactionList({
                             updateTransaction(r.id, 'is_flagged', !r.is_flagged)
                           }
                           className={cn(
-                            'h-8 px-2 rounded-lg border transition-all ml-auto',
+                            'h-8 px-2 rounded-lg border transition-all ml-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate focus-visible:ring-offset-1',
                             r.is_flagged
                               ? 'bg-warning/20 text-warning border-warning/30 hover:bg-warning/30'
                               : 'bg-white/50 text-warm-gray border-white/60 hover:text-warning hover:bg-warning/10 opacity-60 group-hover:opacity-100'
@@ -511,7 +511,7 @@ export default function TransactionList({
                             setDeleteTargetId(r.id);
                             setConfirmOpen(true);
                           }}
-                          className="h-8 px-2 rounded-lg bg-error/10 text-error hover:bg-error/20 border border-error/20 opacity-60 group-hover:opacity-100 transition-all"
+                          className="h-8 px-2 rounded-lg bg-error/10 text-error hover:bg-error/20 border border-error/20 opacity-60 group-hover:opacity-100 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate focus-visible:ring-offset-1"
                           aria-label="Delete this transaction"
                         >
                           <Trash2 className="w-4 h-4" aria-hidden="true" />
