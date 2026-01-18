@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 import {
@@ -21,6 +22,7 @@ import Toast from './Toast';
 
 export default function BudgetSettings() {
   const { isDemoMode } = useDemo();
+  const { refreshConversionRate } = useAuth();
   const [toast, setToast] = useState(null);
   const [householdId, setHouseholdId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -288,6 +290,9 @@ export default function BudgetSettings() {
     setFxRateInput(String(fxRate));
     setSaving(false);
 
+    // Update conversion rate in context so all components refresh
+    refreshConversionRate();
+
     const messages = [];
     if (flaggedCount > 0) messages.push(`${flaggedCount} flagged`);
     if (unflaggedCount > 0) messages.push(`${unflaggedCount} unflagged`);
@@ -347,9 +352,9 @@ export default function BudgetSettings() {
                 </p>
               </div>
 
-              {/* FX Rate */}
+              {/* Conversion Rate */}
               <div className="space-y-1.5">
-                <Label>FX Rate (USD to PEN)</Label>
+                <Label>Conversion Rate</Label>
                 <Input
                   type="text"
                   inputMode="decimal"
@@ -360,7 +365,7 @@ export default function BudgetSettings() {
                   placeholder="3.25"
                 />
                 <p className="text-xs text-warm-gray">
-                  Used to calculate the PEN threshold
+                  1 USD = {fxRateInput || '?'} PEN
                 </p>
               </div>
 

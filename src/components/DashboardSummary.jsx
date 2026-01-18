@@ -1,18 +1,20 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import dynamic from 'next/dynamic';
+import { TrendingUp, TrendingDown, Wallet, PieChart } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
-import { getDemoTransactions } from '@/lib/demoStore';
 import {
   EXPENSE_CATEGORIES,
   INCOME_CATEGORIES,
   PAYERS,
 } from '@/lib/categories';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { TrendingUp, TrendingDown, Wallet, PieChart } from 'lucide-react';
+import { convertAmount } from '@/lib/currency';
+import { getDemoTransactions } from '@/lib/demoStore';
+import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
-import dynamic from 'next/dynamic';
 
 // Dynamic import to avoid SSR issues with Recharts
 const ExpenseDonutChart = dynamic(
@@ -43,24 +45,27 @@ function sum(list) {
 export default function DashboardSummary({
   startDate,
   endDate,
-  currency,
+  currency, // Display currency (for conversion)
   refreshKey,
 }) {
+  const { conversionRate } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
-  const [rows, setRows] = useState([]);
+  const [rawRows, setRawRows] = useState([]);
 
   useEffect(() => {
     setDemoMode(getDemoMode());
     (async () => {
       if (getDemoMode()) {
-        // Filter demo transactions by date range
+        // Get ALL demo transactions (both currencies) for date range
         const month = startDate.slice(0, 7);
-        const allTx = getDemoTransactions({ month, currency });
+        const usdTx = getDemoTransactions({ month, currency: 'USD' });
+        const penTx = getDemoTransactions({ month, currency: 'PEN' });
+        const allTx = [...usdTx, ...penTx];
         const filtered = allTx.filter(
           (t) => t.txn_date >= startDate && t.txn_date <= endDate
         );
-        setRows(filtered);
+        setRawRows(filtered);
         return;
       }
 
@@ -76,38 +81,53 @@ export default function DashboardSummary({
       if (!p?.household_id) return;
       setHouseholdId(p.household_id);
 
+      // Fetch ALL transactions (both currencies) for date range
       const { data: tx, error } = await supabase
         .from('transactions')
         .select('txn_date,amount,category,payer,currency,is_flagged')
         .eq('household_id', p.household_id)
-        .eq('currency', currency)
         .gte('txn_date', startDate)
-        .lte('txn_date', endDate);
+        .lte('txn_date', endDate)
+        .is('deleted_at', null);
 
-      if (!error) setRows(tx || []);
+      if (!error) setRawRows(tx || []);
     })();
-  }, [startDate, endDate, currency, refreshKey]);
+  }, [startDate, endDate, refreshKey]);
 
-  const incomeRows = rows.filter((r) => r.amount > 0);
-  const expenseRows = rows.filter((r) => r.amount < 0);
+  // Convert all amounts to display currency
+  const rows = useMemo(() => {
+    return rawRows.map((r) => ({
+      ...r,
+      displayAmount: convertAmount(
+        Number(r.amount),
+        r.currency,
+        currency,
+        conversionRate
+      ),
+    }));
+  }, [rawRows, currency, conversionRate]);
+
+  // Use displayAmount (converted) for all calculations
+  const incomeRows = rows.filter((r) => r.displayAmount > 0);
+  const expenseRows = rows.filter((r) => r.displayAmount < 0);
 
   const incomeByCat = useMemo(() => {
     const m = Object.fromEntries(INCOME_CATEGORIES.map((c) => [c, 0]));
     for (const r of incomeRows)
-      m[r.category] = (m[r.category] || 0) + Number(r.amount);
+      m[r.category] = (m[r.category] || 0) + r.displayAmount;
     return m;
   }, [incomeRows]);
 
   const expenseByCat = useMemo(() => {
     const m = Object.fromEntries(EXPENSE_CATEGORIES.map((c) => [c, 0]));
     for (const r of expenseRows)
-      m[r.category] = (m[r.category] || 0) + Math.abs(Number(r.amount));
+      m[r.category] = (m[r.category] || 0) + Math.abs(r.displayAmount);
     return m;
   }, [expenseRows]);
 
   const netByPayer = useMemo(() => {
     const m = Object.fromEntries(PAYERS.map((p) => [p, 0]));
-    for (const r of rows) m[r.payer] = (m[r.payer] || 0) + Number(r.amount);
+    for (const r of rows) m[r.payer] = (m[r.payer] || 0) + r.displayAmount;
     return m;
   }, [rows]);
 

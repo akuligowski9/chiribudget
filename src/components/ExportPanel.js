@@ -1,9 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
 import { CURRENCIES } from '@/lib/categories';
 import { toCsv, downloadCsv } from '@/lib/csv';
+import { convertAmount } from '@/lib/currency';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,6 +13,7 @@ import { styles } from '@/lib/theme';
 import Toast from './Toast';
 
 export default function ExportPanel() {
+  const { conversionRate } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -18,6 +21,7 @@ export default function ExportPanel() {
     new Date().toISOString().slice(0, 7)
   );
   const [currency, setCurrency] = useState('USD');
+  const [convertAll, setConvertAll] = useState(false); // Convert all to display currency
   const [householdId, setHouseholdId] = useState(null);
 
   useEffect(() => {
@@ -40,7 +44,14 @@ export default function ExportPanel() {
       let rows = [];
 
       if (demoMode) {
-        rows = getDemoTransactions({ month, currency });
+        if (convertAll) {
+          // Get both currencies
+          const usdTx = getDemoTransactions({ month, currency: 'USD' });
+          const penTx = getDemoTransactions({ month, currency: 'PEN' });
+          rows = [...usdTx, ...penTx];
+        } else {
+          rows = getDemoTransactions({ month, currency });
+        }
       } else {
         if (!householdId) {
           setToast({
@@ -58,40 +69,78 @@ export default function ExportPanel() {
             ? `${year + 1}-01-01`
             : `${year}-${String(mon + 1).padStart(2, '0')}-01`;
 
-        const { data, error } = await supabase
+        let query = supabase
           .from('transactions')
           .select(
             'txn_date,description,amount,currency,category,payer,is_flagged,explanation,source'
           )
           .eq('household_id', householdId)
-          .eq('currency', currency)
           .gte('txn_date', `${month}-01`)
           .lt('txn_date', nextMonth)
+          .is('deleted_at', null)
           .order('txn_date', { ascending: true });
+
+        // Only filter by currency if not converting all
+        if (!convertAll) {
+          query = query.eq('currency', currency);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         rows = data || [];
       }
 
-      const headers = [
-        'txn_date',
-        'description',
-        'amount',
-        'currency',
-        'category',
-        'payer',
-        'is_flagged',
-        'explanation',
-        'source',
-      ];
+      // Convert amounts if convertAll is true
+      if (convertAll && rows.length > 0) {
+        rows = rows.map((r) => ({
+          ...r,
+          original_currency: r.currency,
+          original_amount: r.amount,
+          amount: convertAmount(
+            Number(r.amount),
+            r.currency,
+            currency,
+            conversionRate
+          ),
+          currency: currency,
+        }));
+      }
+
+      const headers = convertAll
+        ? [
+            'txn_date',
+            'description',
+            'amount',
+            'currency',
+            'original_amount',
+            'original_currency',
+            'category',
+            'payer',
+            'is_flagged',
+            'explanation',
+            'source',
+          ]
+        : [
+            'txn_date',
+            'description',
+            'amount',
+            'currency',
+            'category',
+            'payer',
+            'is_flagged',
+            'explanation',
+            'source',
+          ];
       const csv = toCsv(rows, headers);
-      downloadCsv(`ChiriBudget_${month}_${currency}.csv`, csv);
+      const suffix = convertAll ? '_converted' : '';
+      downloadCsv(`ChiriBudget_${month}_${currency}${suffix}.csv`, csv);
 
       setToast({
         id: toastId(),
         type: 'success',
-        title: 'Exported ✅',
-        message: `Downloaded ${rows.length} rows.`,
+        title: 'Exported',
+        message: `Downloaded ${rows.length} rows${convertAll ? ' (converted)' : ''}.`,
       });
     } catch (e) {
       setToast({
@@ -135,6 +184,24 @@ export default function ExportPanel() {
               </option>
             ))}
           </select>
+        </label>
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            cursor: 'pointer',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={convertAll}
+            onChange={(e) => setConvertAll(e.target.checked)}
+            className="w-4 h-4 rounded border-warm-gray accent-accent"
+          />
+          <span style={{ ...styles.label, marginBottom: 0 }}>
+            Convert all to {currency}
+          </span>
         </label>
         <button
           onClick={exportCsv}

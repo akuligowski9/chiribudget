@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getDemoMode } from '@/lib/auth';
+import { FX_USD_TO_PEN } from '@/lib/categories';
 import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext(null);
@@ -10,6 +11,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [household, setHousehold] = useState(null);
+  const [conversionRate, setConversionRate] = useState(FX_USD_TO_PEN);
   const [loading, setLoading] = useState(true);
   // Track current user ID without triggering re-renders
   const userIdRef = useRef(null);
@@ -53,6 +55,18 @@ export function AuthProvider({ children }) {
 
             if (!mounted) return;
             setHousehold(householdData || null);
+
+            // Load conversion rate from budget_config
+            const { data: configData } = await supabase
+              .from('budget_config')
+              .select('fx_usd_to_pen')
+              .eq('household_id', profileData.household_id)
+              .maybeSingle();
+
+            if (!mounted) return;
+            if (configData?.fx_usd_to_pen) {
+              setConversionRate(configData.fx_usd_to_pen);
+            }
           }
         }
       } catch (error) {
@@ -96,6 +110,7 @@ export function AuthProvider({ children }) {
     setUser(null);
     setProfile(null);
     setHousehold(null);
+    setConversionRate(FX_USD_TO_PEN);
   }
 
   async function sendMagicLink(email) {
@@ -133,14 +148,31 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function refreshConversionRate() {
+    // Reload conversion rate from budget_config after settings change
+    if (profile?.household_id) {
+      const { data: configData } = await supabase
+        .from('budget_config')
+        .select('fx_usd_to_pen')
+        .eq('household_id', profile.household_id)
+        .maybeSingle();
+
+      if (configData?.fx_usd_to_pen) {
+        setConversionRate(configData.fx_usd_to_pen);
+      }
+    }
+  }
+
   const value = {
     user,
     profile,
     household,
+    conversionRate,
     loading,
     signOut,
     sendMagicLink,
     refreshProfile,
+    refreshConversionRate,
     isAuthenticated: !!user,
     hasHousehold: !!profile?.household_id,
   };

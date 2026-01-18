@@ -4,6 +4,7 @@ import { Settings } from 'lucide-react';
 import BudgetSettings from '@/components/BudgetSettings';
 import Guidelines from '@/components/Guidelines';
 import HouseholdMembers from '@/components/HouseholdMembers';
+import LanguageSelector from '@/components/LanguageSelector';
 import LoginScreen from '@/components/LoginScreen';
 import ProfileSettings from '@/components/ProfileSettings';
 import TrashView from '@/components/TrashView';
@@ -50,6 +51,7 @@ export default function SettingsPage() {
 
       <div className="space-y-4">
         <ProfileSettings />
+        <LanguageSelector />
         <HouseholdMembers />
         <BudgetSettings />
         <Guidelines />

@@ -1,12 +1,14 @@
 'use client';
 
+import { Home, LogOut, Sparkles, User } from 'lucide-react';
+import { useTranslations } from 'next-intl';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Home, LogOut, Sparkles, User } from 'lucide-react';
 
 export default function Header() {
+  const t = useTranslations();
   const { user, household, signOut } = useAuth();
   const { isDemoMode, exitDemo } = useDemo();
 
@@ -31,12 +33,12 @@ export default function Header() {
           {isDemoMode ? (
             <Button variant="outline" size="sm" onClick={exitDemo}>
               <LogOut className="w-4 h-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Exit Demo</span>
+              <span className="hidden sm:inline">{t('demo.exitDemo')}</span>
             </Button>
           ) : (
             <Button variant="outline" size="sm" onClick={signOut}>
               <LogOut className="w-4 h-4 sm:mr-1.5" />
-              <span className="hidden sm:inline">Log out</span>
+              <span className="hidden sm:inline">{t('nav.logOut')}</span>
             </Button>
           )}
         </div>
@@ -47,14 +49,14 @@ export default function Header() {
         {isDemoMode ? (
           <div className="flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5 text-accent" />
-            <span>Demo Mode</span>
+            <span>{t('demo.demoMode')}</span>
           </div>
         ) : (
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1.5">
               <Home className="w-3.5 h-3.5" />
               <strong className="text-charcoal">
-                {household?.name || 'No household'}
+                {household?.name || t('household.title')}
               </strong>
             </span>
             <span className="text-stone">•</span>

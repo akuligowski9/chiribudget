@@ -799,6 +799,43 @@ Add basic usage analytics while respecting user privacy. No PII, no third-party 
 
 ---
 
+### CB-029: Spanish Language Support
+
+**Priority:** v2
+**Status:** Todo
+**Assignee:** Terminal B
+**Tech Spec Reference:** N/A (i18n)
+
+#### Description
+
+Add Spanish language support for the app. The user's wife prefers Spanish, so the app should support both English and Spanish with easy switching.
+
+#### Scope
+
+- Replace all English UI text with Spanish (labels, buttons, menus, messages)
+- Language toggle in Settings
+- Consider auto-translation for transaction descriptions (requires translation API)
+
+#### Implementation Options
+
+1. **Spanish-only**: Simply replace all English strings with Spanish throughout the app (simpler)
+2. **Full i18n**: Use next-intl or react-i18next library with translation files for both languages (more flexible)
+
+#### Acceptance Criteria
+
+- [ ] All UI text available in Spanish
+- [ ] Language preference saved to user profile
+- [ ] App loads in preferred language
+- [ ] Transaction descriptions optionally translatable (if using API)
+
+#### Why v2
+
+- App is functional in English
+- i18n adds complexity
+- Can be done as focused sprint later
+
+---
+
 ## DOCUMENTED GAPS (Won't Fix for v1)
 
 ### CB-014: Rate Limiting
@@ -884,6 +921,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-025 | Import Sorting Plugin           | Low       | Done       | Terminal A |
 | CB-027 | Migrate to TypeScript           | v2        | Deferred   | Unassigned |
 | CB-028 | Privacy-Respecting Analytics    | v2        | Deferred   | Unassigned |
+| CB-029 | Spanish Language Support        | v2        | Todo       | Terminal B |
 | CB-014 | Rate Limiting                   | Won't Fix | Documented | N/A        |
 | CB-015 | Two-Factor Auth                 | Won't Fix | Documented | N/A        |
 | CB-016 | Offline Support                 | Won't Fix | Documented | N/A        |

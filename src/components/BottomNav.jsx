@@ -1,20 +1,22 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { Home, BarChart3, MessageCircle, Settings } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { usePathname } from 'next/navigation';
+import { BarChart3, Home, MessageCircle, Settings } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
+import { cn } from '@/lib/utils';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/dashboard', label: 'Dashboard', icon: BarChart3 },
-  { href: '/discussion', label: 'Discuss', icon: MessageCircle },
-  { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/', labelKey: 'nav.home', icon: Home },
+  { href: '/dashboard', labelKey: 'nav.dashboard', icon: BarChart3 },
+  { href: '/discussion', labelKey: 'nav.discussion', icon: MessageCircle },
+  { href: '/settings', labelKey: 'nav.settings', icon: Settings },
 ];
 
 export default function BottomNav() {
+  const t = useTranslations();
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
@@ -56,7 +58,7 @@ export default function BottomNav() {
                     isActive && 'text-slate'
                   )}
                 >
-                  {item.label}
+                  {t(item.labelKey)}
                 </span>
               </Link>
             );

@@ -23,9 +23,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { ALL_CATEGORIES, CURRENCIES, PAYERS } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
+import { convertAmount } from '@/lib/currency';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
@@ -36,10 +38,11 @@ import { ConfirmDialog } from './ui/confirm-dialog';
 export default function TransactionList({
   startDate,
   endDate,
-  currency,
+  currency, // Display currency (for conversion)
   onTransactionUpdate,
 }) {
   const { isDemoMode } = useDemo();
+  const { conversionRate } = useAuth();
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -72,7 +75,10 @@ export default function TransactionList({
 
     if (isDemoMode) {
       const month = startDate.slice(0, 7);
-      const allTx = getDemoTransactions({ month, currency });
+      // Get ALL demo transactions (both currencies)
+      const usdTx = getDemoTransactions({ month, currency: 'USD' });
+      const penTx = getDemoTransactions({ month, currency: 'PEN' });
+      const allTx = [...usdTx, ...penTx];
       let filtered = allTx.filter(
         (t) => t.txn_date >= startDate && t.txn_date <= endDate
       );
@@ -131,7 +137,7 @@ export default function TransactionList({
 
     setHouseholdId(p.household_id);
 
-    // Build query - include audit columns
+    // Build query - include audit columns, fetch ALL currencies
     let query = supabase
       .from('transactions')
       .select(
@@ -139,9 +145,9 @@ export default function TransactionList({
         { count: 'exact' }
       )
       .eq('household_id', p.household_id)
-      .eq('currency', currency)
       .gte('txn_date', startDate)
-      .lte('txn_date', endDate);
+      .lte('txn_date', endDate)
+      .is('deleted_at', null);
 
     // Apply search filter
     if (searchQuery.trim()) {
@@ -235,12 +241,25 @@ export default function TransactionList({
     }
   }
 
+  // Convert amounts to display currency for totals
   const totalIncome = rows
     .filter((r) => r.amount > 0)
-    .reduce((s, r) => s + Number(r.amount), 0);
+    .reduce(
+      (s, r) =>
+        s +
+        convertAmount(Number(r.amount), r.currency, currency, conversionRate),
+      0
+    );
   const totalExpenses = rows
     .filter((r) => r.amount < 0)
-    .reduce((s, r) => s + Math.abs(Number(r.amount)), 0);
+    .reduce(
+      (s, r) =>
+        s +
+        Math.abs(
+          convertAmount(Number(r.amount), r.currency, currency, conversionRate)
+        ),
+      0
+    );
 
   function toggleSort(field) {
     if (sortField === field) {
@@ -349,7 +368,7 @@ export default function TransactionList({
                 <div
                   key={r.id || `${r.txn_date}-${r.amount}-${r.description}`}
                   role="listitem"
-                  aria-label={`${r.description || 'No description'}, ${r.amount < 0 ? 'expense' : 'income'} of ${currency} ${Math.abs(Number(r.amount)).toFixed(2)}`}
+                  aria-label={`${r.description || 'No description'}, ${r.amount < 0 ? 'expense' : 'income'} of ${currency} ${Math.abs(convertAmount(Number(r.amount), r.currency, currency, conversionRate)).toFixed(2)}${r.currency !== currency ? ' (converted from ' + r.currency + ')' : ''}`}
                   className={cn(
                     'rounded-xl p-3 transition-all duration-200 group',
                     r.is_flagged
@@ -438,15 +457,32 @@ export default function TransactionList({
                           </div>
                         </div>
 
-                        {/* Amount */}
-                        <div
-                          className={cn(
-                            'font-bold text-sm whitespace-nowrap',
-                            r.amount < 0 ? 'text-error' : 'text-success'
+                        {/* Amount - converted to display currency */}
+                        <div className="text-right">
+                          <div
+                            className={cn(
+                              'font-bold text-sm whitespace-nowrap',
+                              r.amount < 0 ? 'text-error' : 'text-success'
+                            )}
+                          >
+                            {r.currency !== currency && '≈'}
+                            {r.amount < 0 ? '-' : '+'}
+                            {currency}{' '}
+                            {Math.abs(
+                              convertAmount(
+                                Number(r.amount),
+                                r.currency,
+                                currency,
+                                conversionRate
+                              )
+                            ).toFixed(2)}
+                          </div>
+                          {r.currency !== currency && (
+                            <div className="text-xs text-warm-gray">
+                              ({r.currency}{' '}
+                              {Math.abs(Number(r.amount)).toFixed(2)})
+                            </div>
                           )}
-                        >
-                          {r.amount < 0 ? '-' : '+'}
-                          {r.currency} {Math.abs(Number(r.amount)).toFixed(2)}
                         </div>
                       </div>
 
