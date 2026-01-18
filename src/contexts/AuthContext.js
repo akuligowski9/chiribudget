@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getDemoMode } from '@/lib/auth';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -11,6 +11,8 @@ export function AuthProvider({ children }) {
   const [profile, setProfile] = useState(null);
   const [household, setHousehold] = useState(null);
   const [loading, setLoading] = useState(true);
+  // Track current user ID without triggering re-renders
+  const userIdRef = useRef(null);
 
   useEffect(() => {
     // Skip auth in demo mode
@@ -28,6 +30,7 @@ export function AuthProvider({ children }) {
 
         if (!mounted) return;
         setUser(currentUser);
+        userIdRef.current = currentUser?.id ?? null;
 
         if (currentUser) {
           // Load profile
@@ -74,8 +77,10 @@ export function AuthProvider({ children }) {
         // User logged out
         setProfile(null);
         setHousehold(null);
-      } else if (newUser.id !== user?.id) {
+        userIdRef.current = null;
+      } else if (newUser.id !== userIdRef.current) {
         // User changed, reload profile
+        userIdRef.current = newUser.id;
         loadUserData();
       }
     });
