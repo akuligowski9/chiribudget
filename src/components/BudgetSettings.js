@@ -1,23 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useDemo } from '@/hooks/useDemo';
-import { USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Sliders, Calculator } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Sliders, Calculator } from 'lucide-react';
-import Toast from './Toast';
-import { toastId } from '@/lib/format';
-import ThresholdChangeModal from './ThresholdChangeModal';
+import { useDemo } from '@/hooks/useDemo';
+import { USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 import {
   getDemoThresholds,
   setDemoThresholds,
   getThresholdChangePreview,
   applyThresholdChanges,
 } from '@/lib/demoStore';
+import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
+import ThresholdChangeModal from './ThresholdChangeModal';
+import Toast from './Toast';
 
 export default function BudgetSettings() {
   const { isDemoMode } = useDemo();

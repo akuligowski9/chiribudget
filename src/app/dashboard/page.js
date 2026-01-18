@@ -1,17 +1,17 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import TransactionList from '@/components/TransactionList';
+import { Calendar, BarChart3 } from 'lucide-react';
 import DashboardSummary from '@/components/DashboardSummary';
 import LoginScreen from '@/components/LoginScreen';
-import { CURRENCIES } from '@/lib/categories';
+import TransactionList from '@/components/TransactionList';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
+import { CURRENCIES } from '@/lib/categories';
 import { cn } from '@/lib/utils';
-import { Calendar, BarChart3 } from 'lucide-react';
 
 const RANGE_PRESETS = [
   { label: 'Day', value: 'day' },

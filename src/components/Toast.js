@@ -1,8 +1,8 @@
 'use client';
 
 import { useEffect } from 'react';
-import { colors } from '@/lib/theme';
 import { TOAST_DURATION_MS } from '@/lib/constants';
+import { colors } from '@/lib/theme';
 
 export default function Toast({ toast, onClose }) {
   useEffect(() => {

@@ -1,3 +1,4 @@
+import { USD_THRESHOLD, FX_USD_TO_PEN } from '../categories';
 import {
   getDemoTransactions,
   getAllDemoTransactions,
@@ -9,7 +10,6 @@ import {
   reflagDemoTransactions,
   resetDemoStore,
 } from '../demoStore';
-import { USD_THRESHOLD, FX_USD_TO_PEN } from '../categories';
 
 describe('demoStore', () => {
   beforeEach(() => {

@@ -1,13 +1,13 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import FlaggedReview from '@/components/FlaggedReview';
+import { MessageCircle } from 'lucide-react';
 import DiscussionPanel from '@/components/DiscussionPanel';
+import FlaggedReview from '@/components/FlaggedReview';
 import LoginScreen from '@/components/LoginScreen';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { MessageCircle } from 'lucide-react';
 
 export default function DiscussionPage() {
   const { user, loading } = useAuth();

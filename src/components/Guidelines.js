@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useDemo } from '@/hooks/useDemo';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Save, X, BookOpen } from 'lucide-react';
-import Toast from './Toast';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useDemo } from '@/hooks/useDemo';
 import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
+import Toast from './Toast';
 
 const DEFAULT_GUIDELINES = `• For all income and losses, track how much is saved / lost per month (Alex, Adriana, Together)
 

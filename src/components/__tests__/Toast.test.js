@@ -1,6 +1,6 @@
 import { render, screen, act } from '@testing-library/react';
-import Toast from '../Toast';
 import { TOAST_DURATION_MS } from '@/lib/constants';
+import Toast from '../Toast';
 
 describe('Toast', () => {
   beforeEach(() => {

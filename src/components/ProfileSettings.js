@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useDemo } from '@/hooks/useDemo';
-import { CURRENCIES } from '@/lib/categories';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
-import { User } from 'lucide-react';
-import Toast from './Toast';
+import { useDemo } from '@/hooks/useDemo';
+import { CURRENCIES } from '@/lib/categories';
 import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
+import Toast from './Toast';
 
 export default function ProfileSettings() {
   const { isDemoMode } = useDemo();

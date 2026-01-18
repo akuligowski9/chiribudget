@@ -1,14 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { getDemoMode } from '@/lib/auth';
-import { getDemoTransactions } from '@/lib/demoStore';
-import { toCsv, downloadCsv } from '@/lib/csv';
 import { CURRENCIES } from '@/lib/categories';
+import { toCsv, downloadCsv } from '@/lib/csv';
+import { getDemoTransactions } from '@/lib/demoStore';
+import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
 import { styles } from '@/lib/theme';
 import Toast from './Toast';
-import { toastId } from '@/lib/format';
 
 export default function ExportPanel() {
   const [demoMode, setDemoMode] = useState(false);

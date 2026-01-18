@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
 import { getDemoMode } from '@/lib/auth';
+import { CURRENCIES, USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 import { yyyyMm, normalizeDesc, toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
 import { colors, styles } from '@/lib/theme';
 import Toast from './Toast';
-import { CURRENCIES, USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 
 function thresholdFor(currency) {
   return currency === 'USD'

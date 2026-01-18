@@ -672,7 +672,7 @@ Document database backup and recovery procedures. Supabase provides automated ba
 ### CB-025: Import Sorting Plugin
 
 **Priority:** Low
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal A
 **Tech Spec Reference:** N/A (DX)
 
@@ -687,12 +687,21 @@ Add ESLint plugin for consistent import sorting. Reduces merge conflicts and imp
 - Auto-fix on save in VS Code
 - Run on pre-commit hook
 
+#### Changes Made
+
+- Installed `eslint-plugin-import` and `eslint-import-resolver-alias`
+- Configured import order: react → next → external → @/\* internal → relative
+- Alphabetize within groups (case-insensitive)
+- No newlines between import groups
+- Auto-fix via `npm run lint -- --fix`
+- Pre-commit hook already runs ESLint (via lint-staged)
+
 #### Acceptance Criteria
 
-- [ ] Plugin installed and configured
-- [ ] Imports sorted consistently
-- [ ] Auto-fix works on save
-- [ ] Pre-commit hook runs sort
+- [x] Plugin installed and configured
+- [x] Imports sorted consistently (all files fixed)
+- [x] Auto-fix works (`eslint --fix`)
+- [x] Pre-commit hook runs sort (lint-staged)
 
 ---
 
@@ -856,7 +865,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-013 | Error Monitoring (Sentry)       | Low       | Todo       | Unassigned |
 | CB-019 | Extract Large Components        | Low       | Todo       | Unassigned |
 | CB-023 | Database Backup Documentation   | Low       | Done       | Terminal B |
-| CB-025 | Import Sorting Plugin           | Low       | Todo       | Unassigned |
+| CB-025 | Import Sorting Plugin           | Low       | Done       | Terminal A |
 | CB-027 | Migrate to TypeScript           | v2        | Deferred   | Unassigned |
 | CB-028 | Privacy-Respecting Analytics    | v2        | Deferred   | Unassigned |
 | CB-014 | Rate Limiting                   | Won't Fix | Documented | N/A        |

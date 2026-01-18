@@ -1,13 +1,13 @@
 'use client';
 
-import ProfileSettings from '@/components/ProfileSettings';
+import { Settings } from 'lucide-react';
 import BudgetSettings from '@/components/BudgetSettings';
 import Guidelines from '@/components/Guidelines';
 import LoginScreen from '@/components/LoginScreen';
+import ProfileSettings from '@/components/ProfileSettings';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { Settings } from 'lucide-react';
 
 export default function SettingsPage() {
   const { user, loading } = useAuth();

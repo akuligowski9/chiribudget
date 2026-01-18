@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useDemo } from '@/hooks/useDemo';
 import Header from '@/components/Header';
-import TransactionHub from '@/components/TransactionHub';
-import TodayTransactions from '@/components/TodayTransactions';
 import HouseholdSetup from '@/components/HouseholdSetup';
 import LoginScreen from '@/components/LoginScreen';
+import TodayTransactions from '@/components/TodayTransactions';
+import TransactionHub from '@/components/TransactionHub';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
 
 export default function Home() {
   const { user, loading } = useAuth();

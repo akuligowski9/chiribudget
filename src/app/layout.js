@@ -1,8 +1,8 @@
 import './globals.css';
-import ErrorBoundary from '@/components/ErrorBoundary';
 import BottomNav from '@/components/BottomNav';
-import Providers from '@/components/Providers';
 import DemoModeBanner from '@/components/DemoModeBanner';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import Providers from '@/components/Providers';
 
 export const metadata = {
   title: 'ChiriBudget',

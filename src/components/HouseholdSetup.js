@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/lib/supabaseClient';
-import { RELOAD_DELAY_MS, COPY_FEEDBACK_MS } from '@/lib/constants';
+import { Home, Users, Copy, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input, Label } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Home, Users, Copy, Check } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { RELOAD_DELAY_MS, COPY_FEEDBACK_MS } from '@/lib/constants';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function HouseholdSetup({ onReady }) {
   const { user, profile, loading, refreshProfile } = useAuth();

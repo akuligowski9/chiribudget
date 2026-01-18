@@ -1,5 +1,5 @@
-import demoTxnsJson from '../../demo/transactions.json';
 import { USD_THRESHOLD, FX_USD_TO_PEN } from './categories';
+import demoTxnsJson from '../../demo/transactions.json';
 
 // In-memory store for demo mode
 let demoTransactions = [...demoTxnsJson];
