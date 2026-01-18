@@ -1,15 +1,17 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Home, LogOut } from 'lucide-react';
+import { Home, LogOut, Sparkles, User } from 'lucide-react';
 
 export default function Header() {
-  const { user, signOut } = useAuth();
+  const { user, household, signOut } = useAuth();
+  const { isDemoMode, exitDemo } = useDemo();
 
-  // Don't render header if not logged in (LoginScreen handles that)
-  if (!user) return null;
+  // Don't render header if not logged in and not in demo mode
+  if (!user && !isDemoMode) return null;
 
   return (
     <Card accent className="p-4">
@@ -26,14 +28,42 @@ export default function Header() {
         </div>
 
         <div className="flex gap-2 items-center">
-          <span className="text-sm text-stone truncate max-w-[150px] hidden sm:block">
-            {user.email}
-          </span>
-          <Button variant="outline" size="sm" onClick={signOut}>
-            <LogOut className="w-4 h-4 sm:mr-1.5" />
-            <span className="hidden sm:inline">Log out</span>
-          </Button>
+          {isDemoMode ? (
+            <Button variant="outline" size="sm" onClick={exitDemo}>
+              <LogOut className="w-4 h-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Exit Demo</span>
+            </Button>
+          ) : (
+            <Button variant="outline" size="sm" onClick={signOut}>
+              <LogOut className="w-4 h-4 sm:mr-1.5" />
+              <span className="hidden sm:inline">Log out</span>
+            </Button>
+          )}
         </div>
+      </div>
+
+      {/* Context bar */}
+      <div className="mt-2 pt-2 border-t border-sand/50 text-sm text-stone">
+        {isDemoMode ? (
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-accent" />
+            <span>Demo Mode</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1.5">
+              <Home className="w-3.5 h-3.5" />
+              <strong className="text-charcoal">
+                {household?.name || 'No household'}
+              </strong>
+            </span>
+            <span className="text-stone">•</span>
+            <span className="flex items-center gap-1.5">
+              <User className="w-3.5 h-3.5" />
+              {user?.email}
+            </span>
+          </div>
+        )}
       </div>
     </Card>
   );
