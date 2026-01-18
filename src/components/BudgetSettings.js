@@ -4,12 +4,17 @@ import { useEffect, useState } from 'react';
 import { Sliders, Calculator } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  CollapsibleCard,
+  CollapsibleCardHeader,
+  CollapsibleCardContent,
+  useCollapsible,
+} from '@/components/ui/collapsible-card';
 import { Input, Label } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
+import { USD_THRESHOLD } from '@/lib/categories';
 import {
   getDemoThresholds,
   setDemoThresholds,
@@ -24,24 +29,22 @@ import Toast from './Toast';
 export default function BudgetSettings() {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
-  const { refreshConversionRate } = useAuth();
+  const { conversionRate, refreshConversionRate } = useAuth();
+  const { isOpen, toggle } = useCollapsible(false);
   const [toast, setToast] = useState(null);
   const [householdId, setHouseholdId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   const [usdThreshold, setUsdThreshold] = useState(USD_THRESHOLD);
-  const [fxRate, setFxRate] = useState(FX_USD_TO_PEN);
-
-  // String values for inputs (allows empty field while typing)
   const [usdThresholdInput, setUsdThresholdInput] = useState(
     String(USD_THRESHOLD)
   );
-  const [fxRateInput, setFxRateInput] = useState(String(FX_USD_TO_PEN));
-
   const [originalUsdThreshold, setOriginalUsdThreshold] =
     useState(USD_THRESHOLD);
-  const [originalFxRate, setOriginalFxRate] = useState(FX_USD_TO_PEN);
+
+  // Get fxRate from context or demo store
+  const [fxRate, setFxRate] = useState(conversionRate);
 
   // Modal state
   const [showModal, setShowModal] = useState(false);
@@ -53,6 +56,13 @@ export default function BudgetSettings() {
     loadSettings();
   }, [isDemoMode]);
 
+  // Keep fxRate in sync with context
+  useEffect(() => {
+    if (!isDemoMode) {
+      setFxRate(conversionRate);
+    }
+  }, [conversionRate, isDemoMode]);
+
   async function loadSettings() {
     setLoading(true);
 
@@ -62,8 +72,6 @@ export default function BudgetSettings() {
       setUsdThresholdInput(String(demoThresholds.usdThreshold));
       setOriginalUsdThreshold(demoThresholds.usdThreshold);
       setFxRate(demoThresholds.fxRate);
-      setFxRateInput(String(demoThresholds.fxRate));
-      setOriginalFxRate(demoThresholds.fxRate);
       setLoading(false);
       return;
     }
@@ -99,17 +107,14 @@ export default function BudgetSettings() {
       setUsdThresholdInput(String(config.usd_threshold));
       setOriginalUsdThreshold(config.usd_threshold);
       setFxRate(config.fx_usd_to_pen);
-      setFxRateInput(String(config.fx_usd_to_pen));
-      setOriginalFxRate(config.fx_usd_to_pen);
     }
 
     setLoading(false);
   }
 
-  // Handle input blur - revert to original if empty/invalid
   function handleUsdBlur() {
     const val = parseFloat(usdThresholdInput);
-    if (isNaN(val) || usdThresholdInput.trim() === '') {
+    if (isNaN(val) || usdThresholdInput.trim() === '' || val <= 0) {
       setUsdThresholdInput(String(originalUsdThreshold));
       setUsdThreshold(originalUsdThreshold);
     } else {
@@ -117,20 +122,8 @@ export default function BudgetSettings() {
     }
   }
 
-  function handleFxBlur() {
-    const val = parseFloat(fxRateInput);
-    if (isNaN(val) || fxRateInput.trim() === '') {
-      setFxRateInput(String(originalFxRate));
-      setFxRate(originalFxRate);
-    } else {
-      setFxRate(val);
-    }
-  }
+  const hasChanges = usdThreshold !== originalUsdThreshold;
 
-  const hasChanges =
-    usdThreshold !== originalUsdThreshold || fxRate !== originalFxRate;
-
-  // Preview changes before saving
   async function handleSaveClick() {
     if (!hasChanges) {
       setToast({
@@ -142,7 +135,6 @@ export default function BudgetSettings() {
     }
 
     if (isDemoMode) {
-      // Get preview of affected transactions
       const preview = getThresholdChangePreview({ usdThreshold, fxRate });
       setModalData(preview);
       setShowModal(true);
@@ -159,10 +151,8 @@ export default function BudgetSettings() {
       return;
     }
 
-    // For real mode, get preview from database
     const penThr = Math.round(usdThreshold * fxRate);
 
-    // Get transactions to flag (over threshold, not flagged, not resolved)
     const { data: toFlagUsd } = await supabase
       .from('transactions')
       .select('id, txn_date, description, amount, currency, flag_reason')
@@ -181,7 +171,6 @@ export default function BudgetSettings() {
       .is('resolved_at', null)
       .or(`amount.gt.${penThr},amount.lt.${-penThr}`);
 
-    // Get transactions to unflag (under threshold, flagged due to threshold, not resolved)
     const { data: toUnflagUsd } = await supabase
       .from('transactions')
       .select('id, txn_date, description, amount, currency, flag_reason')
@@ -211,23 +200,19 @@ export default function BudgetSettings() {
     setShowModal(true);
   }
 
-  // Apply changes after modal confirmation
   async function handleModalConfirm({ toFlagIds, toUnflagIds }) {
     setShowModal(false);
     setSaving(true);
 
     if (isDemoMode) {
-      // Save demo thresholds
-      setDemoThresholds({ usdThreshold, fxRate });
-      // Apply flag/unflag changes
+      const current = getDemoThresholds();
+      setDemoThresholds({ ...current, usdThreshold });
       const { flaggedCount, unflaggedCount } = applyThresholdChanges({
         toFlagIds,
         toUnflagIds,
       });
       setOriginalUsdThreshold(usdThreshold);
-      setOriginalFxRate(fxRate);
       setUsdThresholdInput(String(usdThreshold));
-      setFxRateInput(String(fxRate));
       setSaving(false);
 
       const messages = [];
@@ -245,16 +230,12 @@ export default function BudgetSettings() {
       return;
     }
 
-    // Save budget config
-    const payload = {
-      household_id: householdId,
-      usd_threshold: usdThreshold,
-      fx_usd_to_pen: fxRate,
-    };
-
     const { error } = await supabase
       .from('budget_config')
-      .upsert(payload, { onConflict: 'household_id' });
+      .upsert(
+        { household_id: householdId, usd_threshold: usdThreshold },
+        { onConflict: 'household_id' }
+      );
 
     if (error) {
       setSaving(false);
@@ -267,7 +248,6 @@ export default function BudgetSettings() {
       return;
     }
 
-    // Apply flag changes
     let flaggedCount = 0;
     let unflaggedCount = 0;
 
@@ -293,12 +273,8 @@ export default function BudgetSettings() {
     }
 
     setOriginalUsdThreshold(usdThreshold);
-    setOriginalFxRate(fxRate);
     setUsdThresholdInput(String(usdThreshold));
-    setFxRateInput(String(fxRate));
     setSaving(false);
-
-    // Update conversion rate in context so all components refresh
     refreshConversionRate();
 
     const messages = [];
@@ -317,28 +293,21 @@ export default function BudgetSettings() {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sliders className="w-5 h-5 text-slate" />
-            <CardTitle>{t('settings.budgetThresholds')}</CardTitle>
-          </div>
-          <p className="text-sm text-stone mt-1">
-            {t('settings.thresholdsDescription')}
-          </p>
-        </CardHeader>
-        <CardContent>
+      <CollapsibleCard>
+        <CollapsibleCardHeader
+          icon={Sliders}
+          title={t('settings.budgetThresholds')}
+          description={t('settings.thresholdsDescription')}
+          isOpen={isOpen}
+          onToggle={toggle}
+        />
+        <CollapsibleCardContent isOpen={isOpen}>
           {loading ? (
             <div className="space-y-4 max-w-sm">
               <div className="space-y-1.5">
                 <Skeleton className="h-4 w-24" />
                 <Skeleton className="h-10 w-full" />
                 <Skeleton className="h-3 w-48" />
-              </div>
-              <div className="space-y-1.5">
-                <Skeleton className="h-4 w-32" />
-                <Skeleton className="h-10 w-full" />
-                <Skeleton className="h-3 w-40" />
               </div>
               <Skeleton className="h-24 w-full rounded-xl" />
               <Skeleton className="h-11 w-32" />
@@ -359,23 +328,6 @@ export default function BudgetSettings() {
                 />
                 <p className="text-xs text-warm-gray">
                   {t('settings.thresholdHelp')}
-                </p>
-              </div>
-
-              {/* Conversion Rate */}
-              <div className="space-y-1.5">
-                <Label>{t('settings.conversionRate')}</Label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={fxRateInput}
-                  onChange={(e) => setFxRateInput(e.target.value)}
-                  onBlur={handleFxBlur}
-                  disabled={!isDemoMode && !householdId}
-                  placeholder="3.25"
-                />
-                <p className="text-xs text-warm-gray">
-                  {t('settings.oneUsdEquals', { rate: fxRateInput || '?' })}
                 </p>
               </div>
 
@@ -406,7 +358,6 @@ export default function BudgetSettings() {
                 <Button
                   onClick={handleSaveClick}
                   disabled={!hasChanges || saving}
-                  className="mt-2"
                 >
                   {saving ? t('settings.saving') : t('settings.saveSettings')}
                 </Button>
@@ -415,10 +366,9 @@ export default function BudgetSettings() {
           )}
 
           <Toast toast={toast} onClose={() => setToast(null)} />
-        </CardContent>
-      </Card>
+        </CollapsibleCardContent>
+      </CollapsibleCard>
 
-      {/* Threshold Change Modal */}
       <ThresholdChangeModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}

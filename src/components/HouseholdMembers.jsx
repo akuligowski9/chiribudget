@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Check, Copy, Trash2, Users } from 'lucide-react';
+import { Check, Copy, LogOut, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Toast from '@/components/Toast';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,7 @@ export default function HouseholdMembers() {
   const [copied, setCopied] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [memberToRemove, setMemberToRemove] = useState(null);
+  const [leaveConfirmOpen, setLeaveConfirmOpen] = useState(false);
 
   useEffect(() => {
     loadHouseholdData();
@@ -182,6 +183,54 @@ export default function HouseholdMembers() {
     }
   }
 
+  async function leaveHousehold() {
+    if (isDemoMode) {
+      setToast({
+        id: toastId(),
+        type: 'error',
+        title: t('household.demoMode'),
+        message: t('household.cannotLeaveDemo'),
+      });
+      return;
+    }
+
+    try {
+      // Delete from household_members
+      const { error: memErr } = await supabase
+        .from('household_members')
+        .delete()
+        .eq('household_id', profile.household_id)
+        .eq('user_id', user.id);
+
+      if (memErr) throw memErr;
+
+      // Update profile to remove household association
+      const { error: profErr } = await supabase
+        .from('profiles')
+        .update({ household_id: null })
+        .eq('user_id', user.id);
+
+      if (profErr) throw profErr;
+
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('household.leftHousehold'),
+        message: t('household.leftHouseholdMessage'),
+      });
+
+      // Refresh profile to update UI
+      await refreshProfile();
+    } catch (e) {
+      setToast({
+        id: toastId(),
+        type: 'error',
+        title: t('household.failedToLeave'),
+        message: e.message,
+      });
+    }
+  }
+
   if (loading) {
     return <SkeletonCard />;
   }
@@ -274,10 +323,15 @@ export default function HouseholdMembers() {
           ))}
         </div>
 
-        {/* Note about self-removal */}
-        <p className="text-xs text-warm-gray">
-          {t('household.selfRemovalNote')}
-        </p>
+        {/* Leave Household button */}
+        <Button
+          variant="outline"
+          onClick={() => setLeaveConfirmOpen(true)}
+          className="w-full text-error border-error/30 hover:bg-error/10 hover:text-error"
+        >
+          <LogOut className="w-4 h-4 mr-2" />
+          {t('household.leaveHousehold')}
+        </Button>
       </CardContent>
 
       <ConfirmDialog
@@ -292,6 +346,17 @@ export default function HouseholdMembers() {
           name: memberToRemove?.display_name || '',
         })}
         confirmText={t('household.removeMember')}
+        cancelText={t('common.cancel')}
+        variant="danger"
+      />
+
+      <ConfirmDialog
+        open={leaveConfirmOpen}
+        onClose={() => setLeaveConfirmOpen(false)}
+        onConfirm={leaveHousehold}
+        title={t('household.leaveHouseholdTitle')}
+        message={t('household.leaveHouseholdConfirm')}
+        confirmText={t('household.leaveHousehold')}
         cancelText={t('common.cancel')}
         variant="danger"
       />

@@ -44,15 +44,21 @@
     "shareCodePrompt": "Comparte este código para invitar a alguien:",
     "joined": "Se unió {date}",
     "youTag": "(tú)",
-    "selfRemovalNote": "No puedes eliminarte del hogar. Para salir, contacta a otro miembro para que te elimine.",
     "removeMemberTitle": "Eliminar Miembro",
     "removeMemberConfirm": "¿Estás seguro de que quieres eliminar a {name} del hogar? Necesitará volver a unirse con el código.",
     "memberRemoved": "Miembro eliminado",
     "memberRemovedMessage": "{name} ha sido eliminado del hogar.",
+    "leaveHousehold": "Abandonar Hogar",
+    "leaveHouseholdTitle": "Abandonar Hogar",
+    "leaveHouseholdConfirm": "¿Estás seguro de que quieres abandonar este hogar? Necesitarás un nuevo código para volver a unirte.",
+    "leftHousehold": "Abandonaste el hogar",
+    "leftHouseholdMessage": "Has abandonado el hogar.",
     "failedToLoad": "Error al cargar",
     "failedToRemove": "Error al eliminar",
+    "failedToLeave": "Error al abandonar",
     "demoMode": "Modo demo",
-    "cannotRemoveDemo": "No se pueden eliminar miembros en modo demo."
+    "cannotRemoveDemo": "No se pueden eliminar miembros en modo demo.",
+    "cannotLeaveDemo": "No se puede abandonar el hogar en modo demo."
   },
   "transaction": {
     "title": "Transacciones",
