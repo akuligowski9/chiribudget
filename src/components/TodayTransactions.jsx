@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
+import { useAuth } from '@/contexts/AuthContext';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
@@ -12,22 +13,23 @@ import { toastId } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 export default function TodayTransactions({ refreshKey }) {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
+  const { profile } = useAuth();
   const [toast, setToast] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const today = new Date().toISOString().slice(0, 10);
+  const householdId = profile?.household_id;
 
   useEffect(() => {
-    setDemoMode(getDemoMode());
     loadTransactions();
-  }, [refreshKey]);
+  }, [refreshKey, isDemoMode, householdId]);
 
   async function loadTransactions() {
     setLoading(true);
 
-    if (getDemoMode()) {
+    if (isDemoMode) {
       const month = today.slice(0, 7);
       const tx = getDemoTransactions({ month, currency: 'USD' }).filter(
         (t) => t.txn_date === today
@@ -37,20 +39,7 @@ export default function TodayTransactions({ refreshKey }) {
       return;
     }
 
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user;
-    if (!user) {
-      setLoading(false);
-      return;
-    }
-
-    const { data: p } = await supabase
-      .from('profiles')
-      .select('household_id')
-      .eq('user_id', user.id)
-      .maybeSingle();
-
-    if (!p?.household_id) {
+    if (!householdId) {
       setLoading(false);
       return;
     }
@@ -60,7 +49,7 @@ export default function TodayTransactions({ refreshKey }) {
       .select(
         'id,txn_date,description,amount,currency,category,payer,is_flagged'
       )
-      .eq('household_id', p.household_id)
+      .eq('household_id', householdId)
       .eq('txn_date', today)
       .order('created_at', { ascending: false });
 
@@ -71,7 +60,7 @@ export default function TodayTransactions({ refreshKey }) {
   }
 
   async function toggleFlag(id, currentFlag) {
-    if (demoMode) {
+    if (isDemoMode) {
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, is_flagged: !currentFlag } : r))
       );

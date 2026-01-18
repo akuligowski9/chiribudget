@@ -1,11 +1,12 @@
 'use client';
 
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import TransactionList from '../TransactionList';
 
-// Mock the modules
-jest.mock('@/lib/auth', () => ({
-  getDemoMode: jest.fn(() => true),
+// Mock useDemo hook
+jest.mock('@/hooks/useDemo', () => ({
+  useDemo: () => ({ isDemoMode: true }),
 }));
 
 jest.mock('@/lib/supabaseClient', () => ({
@@ -204,8 +205,8 @@ describe('TransactionList', () => {
   });
 
   it('calls onTransactionUpdate when a transaction is deleted', async () => {
+    const user = userEvent.setup();
     const onTransactionUpdate = jest.fn();
-    const confirmSpy = jest.spyOn(window, 'confirm').mockReturnValue(true);
 
     render(
       <TransactionList
@@ -226,15 +227,21 @@ describe('TransactionList', () => {
 
     expect(deleteButtons.length).toBeGreaterThan(0);
 
-    // Click the first delete button
-    fireEvent.click(deleteButtons[0]);
+    // Click the first delete button - opens ConfirmDialog
+    await user.click(deleteButtons[0]);
 
+    // Wait for confirm dialog to appear
     await waitFor(() => {
-      expect(confirmSpy).toHaveBeenCalled();
-      expect(onTransactionUpdate).toHaveBeenCalled();
+      expect(screen.getByText('Delete Transaction')).toBeInTheDocument();
     });
 
-    confirmSpy.mockRestore();
+    // Click the confirm/delete button in the dialog
+    const confirmButton = screen.getByRole('button', { name: 'Delete' });
+    await user.click(confirmButton);
+
+    await waitFor(() => {
+      expect(onTransactionUpdate).toHaveBeenCalled();
+    });
   });
 });
 

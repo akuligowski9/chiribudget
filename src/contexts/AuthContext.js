@@ -1,0 +1,152 @@
+'use client';
+
+import { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { getDemoMode } from '@/lib/auth';
+
+const AuthContext = createContext(null);
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [household, setHousehold] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Skip auth in demo mode
+    if (getDemoMode()) {
+      setLoading(false);
+      return;
+    }
+
+    let mounted = true;
+
+    async function loadUserData() {
+      try {
+        const { data: authData } = await supabase.auth.getUser();
+        const currentUser = authData?.user ?? null;
+
+        if (!mounted) return;
+        setUser(currentUser);
+
+        if (currentUser) {
+          // Load profile
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .maybeSingle();
+
+          if (!mounted) return;
+          setProfile(profileData || null);
+
+          // Load household if profile has one
+          if (profileData?.household_id) {
+            const { data: householdData } = await supabase
+              .from('households')
+              .select('*')
+              .eq('id', profileData.household_id)
+              .single();
+
+            if (!mounted) return;
+            setHousehold(householdData || null);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading auth data:', error);
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadUserData();
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      const newUser = session?.user ?? null;
+      setUser(newUser);
+
+      if (!newUser) {
+        // User logged out
+        setProfile(null);
+        setHousehold(null);
+      } else if (newUser.id !== user?.id) {
+        // User changed, reload profile
+        loadUserData();
+      }
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    setUser(null);
+    setProfile(null);
+    setHousehold(null);
+  }
+
+  async function sendMagicLink(email) {
+    const { error } = await supabase.auth.signInWithOtp({ email });
+    return { error };
+  }
+
+  function refreshProfile() {
+    // Force reload of profile/household data after setup
+    if (user) {
+      setLoading(true);
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle()
+        .then(({ data: profileData }) => {
+          setProfile(profileData || null);
+          if (profileData?.household_id) {
+            return supabase
+              .from('households')
+              .select('*')
+              .eq('id', profileData.household_id)
+              .single();
+          }
+          return { data: null };
+        })
+        .then(({ data: householdData }) => {
+          setHousehold(householdData || null);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
+    }
+  }
+
+  const value = {
+    user,
+    profile,
+    household,
+    loading,
+    signOut,
+    sendMagicLink,
+    refreshProfile,
+    isAuthenticated: !!user,
+    hasHousehold: !!profile?.household_id,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+}

@@ -4,6 +4,8 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { Home, BarChart3, MessageCircle, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
 
 const NAV_ITEMS = [
   { href: '/', label: 'Home', icon: Home },
@@ -14,6 +16,13 @@ const NAV_ITEMS = [
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const { user, loading } = useAuth();
+  const { isDemoMode } = useDemo();
+
+  // Hide nav when not logged in and not in demo mode
+  if (loading || (!user && !isDemoMode)) {
+    return null;
+  }
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 px-4 pb-4">

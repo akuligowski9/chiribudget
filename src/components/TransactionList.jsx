@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -21,6 +21,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import Toast from './Toast';
+import { ConfirmDialog } from './ui/confirm-dialog';
 import { toastId } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import {
@@ -38,7 +39,7 @@ export default function TransactionList({
   currency,
   onTransactionUpdate,
 }) {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
   const [rows, setRows] = useState([]);
@@ -52,9 +53,9 @@ export default function TransactionList({
   const [page, setPage] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
 
-  useEffect(() => {
-    setDemoMode(getDemoMode());
-  }, []);
+  // Confirm dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteTargetId, setDeleteTargetId] = useState(null);
 
   // Reset page when filters change
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function TransactionList({
   async function loadTransactions() {
     setLoading(true);
 
-    if (getDemoMode()) {
+    if (isDemoMode) {
       const month = startDate.slice(0, 7);
       const allTx = getDemoTransactions({ month, currency });
       let filtered = allTx.filter(
@@ -162,7 +163,7 @@ export default function TransactionList({
   }
 
   async function updateTransaction(id, field, value) {
-    if (demoMode) {
+    if (isDemoMode) {
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, [field]: value } : r))
       );
@@ -193,7 +194,7 @@ export default function TransactionList({
   }
 
   async function deleteTransaction(id) {
-    if (demoMode) {
+    if (isDemoMode) {
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({ id: toastId(), type: 'success', title: 'Deleted (demo)' });
       onTransactionUpdate?.();
@@ -465,9 +466,8 @@ export default function TransactionList({
 
                         <button
                           onClick={() => {
-                            if (confirm('Delete this transaction?')) {
-                              deleteTransaction(r.id);
-                            }
+                            setDeleteTargetId(r.id);
+                            setConfirmOpen(true);
                           }}
                           className="h-8 px-2 rounded-lg bg-error/10 text-error hover:bg-error/20 border border-error/20 opacity-60 group-hover:opacity-100 transition-all"
                         >
@@ -512,6 +512,24 @@ export default function TransactionList({
         )}
 
         <Toast toast={toast} onClose={() => setToast(null)} />
+
+        <ConfirmDialog
+          open={confirmOpen}
+          onClose={() => {
+            setConfirmOpen(false);
+            setDeleteTargetId(null);
+          }}
+          onConfirm={() => {
+            if (deleteTargetId) {
+              deleteTransaction(deleteTargetId);
+            }
+          }}
+          title="Delete Transaction"
+          message="Are you sure you want to delete this transaction? This action cannot be undone."
+          confirmText="Delete"
+          cancelText="Cancel"
+          variant="danger"
+        />
       </CardContent>
     </Card>
   );

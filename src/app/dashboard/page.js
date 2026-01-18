@@ -3,9 +3,13 @@
 import { useState, useMemo } from 'react';
 import TransactionList from '@/components/TransactionList';
 import DashboardSummary from '@/components/DashboardSummary';
+import LoginScreen from '@/components/LoginScreen';
 import { CURRENCIES } from '@/lib/categories';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
 import { cn } from '@/lib/utils';
 import { Calendar, BarChart3 } from 'lucide-react';
 
@@ -62,6 +66,8 @@ function getDateRange(preset, customStart, customEnd) {
 }
 
 export default function DashboardPage() {
+  const { user, loading } = useAuth();
+  const { isDemoMode } = useDemo();
   const [rangePreset, setRangePreset] = useState('month');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
@@ -77,6 +83,30 @@ export default function DashboardPage() {
   const handleTransactionUpdate = () => {
     setRefreshKey((k) => k + 1);
   };
+
+  // Show skeleton while auth is loading (but not in demo mode)
+  if (loading && !isDemoMode) {
+    return (
+      <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-slate to-slate-light">
+            <BarChart3 className="w-5 h-5 text-white" />
+          </div>
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <SkeletonCard className="mb-5" />
+        <div className="space-y-4">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </main>
+    );
+  }
+
+  // Show login screen if not authenticated and not in demo mode
+  if (!user && !isDemoMode) {
+    return <LoginScreen />;
+  }
 
   return (
     <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">

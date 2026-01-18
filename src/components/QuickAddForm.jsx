@@ -9,7 +9,8 @@ import {
   USD_THRESHOLD,
   FX_USD_TO_PEN,
 } from '@/lib/categories';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
+import { useAuth } from '@/contexts/AuthContext';
 import { normalizeDesc, toastId } from '@/lib/format';
 import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -43,7 +44,8 @@ function computeFingerprint({
 }
 
 export default function QuickAddForm({ onSuccess }) {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
+  const { user, profile } = useAuth();
   const [toast, setToast] = useState(null);
 
   const [txn_date, setTxnDate] = useState(() =>
@@ -56,27 +58,18 @@ export default function QuickAddForm({ onSuccess }) {
   const [payer, setPayer] = useState('together');
   const [description, setDescription] = useState('');
 
-  const [householdId, setHouseholdId] = useState(null);
-
   // Field-level validation errors
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    setDemoMode(getDemoMode());
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
-      if (!user) return;
+  // Get householdId from profile
+  const householdId = profile?.household_id || null;
 
-      const { data: p } = await supabase
-        .from('profiles')
-        .select('household_id, default_currency')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      if (p?.household_id) setHouseholdId(p.household_id);
-      if (p?.default_currency) setCurrency(p.default_currency);
-    })();
-  }, []);
+  // Set default currency from profile
+  useEffect(() => {
+    if (profile?.default_currency) {
+      setCurrency(profile.default_currency);
+    }
+  }, [profile?.default_currency]);
 
   const thr = useMemo(() => thresholdFor(currency), [currency]);
   const maxAmount = useMemo(() => getMaxAmount(currency), [currency]);
@@ -159,8 +152,6 @@ export default function QuickAddForm({ onSuccess }) {
 
   async function logError(context, message, payload_snapshot) {
     try {
-      const { data } = await supabase.auth.getUser();
-      const user = data?.user;
       await supabase.from('errors').insert({
         household_id: householdId,
         user_id: user?.id || null,
@@ -200,7 +191,7 @@ export default function QuickAddForm({ onSuccess }) {
       return;
     }
 
-    if (!demoMode && !householdId) {
+    if (!isDemoMode && !householdId) {
       setToast({
         id: toastId(),
         type: 'error',
@@ -210,10 +201,7 @@ export default function QuickAddForm({ onSuccess }) {
       return;
     }
 
-    const { data } = await supabase.auth.getUser();
-    const user = data?.user;
-
-    const fingerprint = demoMode
+    const fingerprint = isDemoMode
       ? `demo_${Date.now()}`
       : computeFingerprint({
           household_id: householdId,
@@ -243,7 +231,7 @@ export default function QuickAddForm({ onSuccess }) {
       created_by: user?.id || '00000000-0000-0000-0000-000000000000',
     };
 
-    if (demoMode) {
+    if (isDemoMode) {
       setToast({ id: toastId(), type: 'success', title: 'Saved (demo)' });
       setAmount('');
       setDescription('');

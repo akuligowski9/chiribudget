@@ -1,6 +1,8 @@
 import './globals.css';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import BottomNav from '@/components/BottomNav';
+import Providers from '@/components/Providers';
+import DemoModeBanner from '@/components/DemoModeBanner';
 
 export const metadata = {
   title: 'ChiriBudget',
@@ -22,8 +24,11 @@ export default function RootLayout({ children }) {
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       </head>
       <body>
-        <ErrorBoundary>{children}</ErrorBoundary>
-        <BottomNav />
+        <Providers>
+          <DemoModeBanner />
+          <ErrorBoundary>{children}</ErrorBoundary>
+          <BottomNav />
+        </Providers>
       </body>
     </html>
   );

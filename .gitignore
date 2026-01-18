@@ -29,3 +29,10 @@ Thumbs.db
 # Cache files
 .eslintcache
 *.tsbuildinfo
+
+# Security documentation (personal notes, not for public repo)
+SECURITY.md
+
+# Terminal task files (for parallel Claude sessions)
+TERMINAL_A_TASKS.md
+TERMINAL_B_TASKS.md

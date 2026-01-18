@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
 import { RELOAD_DELAY_MS, COPY_FEEDBACK_MS } from '@/lib/constants';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -9,36 +10,19 @@ import { Button } from '@/components/ui/button';
 import { Home, Users, Copy, Check } from 'lucide-react';
 
 export default function HouseholdSetup({ onReady }) {
-  const [user, setUser] = useState(null);
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, profile, loading, refreshProfile } = useAuth();
+
   const [householdName, setHouseholdName] = useState('');
   const [joinCode, setJoinCode] = useState('');
   const [status, setStatus] = useState('');
   const [createdCode, setCreatedCode] = useState('');
   const [copied, setCopied] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const { data } = await supabase.auth.getUser();
-      setUser(data?.user ?? null);
-      if (!data?.user) {
-        setLoading(false);
-        return;
-      }
-
-      const { data: p } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', data.user.id)
-        .maybeSingle();
-      setProfile(p || null);
-      setLoading(false);
-    })();
-  }, []);
-
+  // Don't show during loading
   if (loading) return null;
+  // Don't show if no user
   if (!user) return null;
+  // Don't show if user already has a household
   if (profile?.household_id) return null;
 
   async function upsertProfile(household_id) {
@@ -106,7 +90,8 @@ export default function HouseholdSetup({ onReady }) {
       await upsertProfile(hh.id);
       setStatus('Joined successfully! Refreshing...');
       onReady?.(hh.id, hh.join_code);
-      // Refresh the page to load the household data
+      // Refresh the auth context then reload
+      refreshProfile();
       setTimeout(() => window.location.reload(), RELOAD_DELAY_MS);
     } catch (e) {
       setStatus(e.message || 'Failed to join household.');
@@ -120,6 +105,7 @@ export default function HouseholdSetup({ onReady }) {
   }
 
   function continueToApp() {
+    refreshProfile();
     window.location.reload();
   }
 
