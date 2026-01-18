@@ -446,7 +446,7 @@ export default function TransactionList({
                           )}
                         >
                           {r.amount < 0 ? '-' : '+'}
-                          {currency} {Math.abs(Number(r.amount)).toFixed(2)}
+                          {r.currency} {Math.abs(Number(r.amount)).toFixed(2)}
                         </div>
                       </div>
 
