@@ -246,26 +246,36 @@ export default function TransactionList({
 
           {/* Search input */}
           <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray" />
+            <Search
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-warm-gray"
+              aria-hidden="true"
+            />
             <Input
               type="text"
               placeholder="Search..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-8 h-9"
+              aria-label="Search transactions by description or category"
             />
           </div>
         </div>
 
         {/* Sort controls */}
-        <div className="flex gap-2 mt-3">
+        <div
+          className="flex gap-2 mt-3"
+          role="group"
+          aria-label="Sort transactions"
+        >
           <Button
             variant={sortField === 'txn_date' ? 'secondary' : 'outline'}
             size="sm"
             onClick={() => toggleSort('txn_date')}
             className="text-xs"
+            aria-pressed={sortField === 'txn_date'}
+            aria-label={`Sort by date ${sortField === 'txn_date' ? (sortAsc ? 'ascending' : 'descending') : ''}`}
           >
-            <ArrowUpDown className="w-3 h-3 mr-1" />
+            <ArrowUpDown className="w-3 h-3 mr-1" aria-hidden="true" />
             Date {sortField === 'txn_date' && (sortAsc ? '↑' : '↓')}
           </Button>
           <Button
@@ -273,8 +283,10 @@ export default function TransactionList({
             size="sm"
             onClick={() => toggleSort('amount')}
             className="text-xs"
+            aria-pressed={sortField === 'amount'}
+            aria-label={`Sort by amount ${sortField === 'amount' ? (sortAsc ? 'ascending' : 'descending') : ''}`}
           >
-            <ArrowUpDown className="w-3 h-3 mr-1" />
+            <ArrowUpDown className="w-3 h-3 mr-1" aria-hidden="true" />
             Amount {sortField === 'amount' && (sortAsc ? '↑' : '↓')}
           </Button>
         </div>
@@ -310,10 +322,16 @@ export default function TransactionList({
             </div>
 
             {/* Transaction cards */}
-            <div className="space-y-2">
+            <div
+              className="space-y-2"
+              role="list"
+              aria-label="Transaction list"
+            >
               {rows.map((r) => (
                 <div
                   key={r.id || `${r.txn_date}-${r.amount}-${r.description}`}
+                  role="listitem"
+                  aria-label={`${r.description || 'No description'}, ${r.amount < 0 ? 'expense' : 'income'} of ${currency} ${Math.abs(Number(r.amount)).toFixed(2)}`}
                   className={cn(
                     'rounded-xl p-3 transition-all duration-200 group',
                     r.is_flagged
@@ -455,12 +473,19 @@ export default function TransactionList({
                           title={
                             r.is_flagged ? 'Remove flag' : 'Flag for discussion'
                           }
+                          aria-label={
+                            r.is_flagged
+                              ? 'Remove flag from this transaction'
+                              : 'Flag this transaction for discussion'
+                          }
+                          aria-pressed={r.is_flagged}
                         >
                           <Flag
                             className={cn(
                               'w-4 h-4',
                               r.is_flagged && 'fill-current'
                             )}
+                            aria-hidden="true"
                           />
                         </button>
 
@@ -470,8 +495,9 @@ export default function TransactionList({
                             setConfirmOpen(true);
                           }}
                           className="h-8 px-2 rounded-lg bg-error/10 text-error hover:bg-error/20 border border-error/20 opacity-60 group-hover:opacity-100 transition-all"
+                          aria-label="Delete this transaction"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4" aria-hidden="true" />
                         </button>
                       </div>
                     </div>
@@ -482,8 +508,11 @@ export default function TransactionList({
 
             {/* Pagination controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4 pt-4 border-t border-white/40">
-                <span className="text-sm text-warm-gray">
+              <nav
+                className="flex items-center justify-between mt-4 pt-4 border-t border-white/40"
+                aria-label="Transaction pagination"
+              >
+                <span className="text-sm text-warm-gray" aria-live="polite">
                   Page {page + 1} of {totalPages} ({totalCount} total)
                 </span>
                 <div className="flex gap-2">
@@ -492,8 +521,9 @@ export default function TransactionList({
                     size="sm"
                     onClick={() => setPage((p) => Math.max(0, p - 1))}
                     disabled={page === 0}
+                    aria-label="Go to previous page"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ChevronLeft className="w-4 h-4" aria-hidden="true" />
                   </Button>
                   <Button
                     variant="outline"
@@ -502,11 +532,12 @@ export default function TransactionList({
                       setPage((p) => Math.min(totalPages - 1, p + 1))
                     }
                     disabled={page >= totalPages - 1}
+                    aria-label="Go to next page"
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4" aria-hidden="true" />
                   </Button>
                 </div>
-              </div>
+              </nav>
             )}
           </>
         )}

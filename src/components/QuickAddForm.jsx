@@ -264,14 +264,21 @@ export default function QuickAddForm({ onSuccess }) {
 
   return (
     <div>
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form
+        onSubmit={onSubmit}
+        className="space-y-4"
+        aria-label="Add transaction form"
+      >
         <div className="grid grid-cols-3 gap-3">
           <div className="space-y-1.5">
-            <Label>Date</Label>
+            <Label htmlFor="txn-date">Date</Label>
             <Input
+              id="txn-date"
               type="date"
               value={txn_date}
               onChange={handleDateChange}
+              aria-invalid={errors.date ? 'true' : 'false'}
+              aria-describedby={errors.date ? 'date-error' : undefined}
               className={
                 errors.date
                   ? 'border-error focus:border-error focus:ring-error/20'
@@ -279,15 +286,23 @@ export default function QuickAddForm({ onSuccess }) {
               }
             />
             {errors.date && (
-              <p className="text-xs text-error mt-1">{errors.date}</p>
+              <p
+                id="date-error"
+                className="text-xs text-error mt-1"
+                role="alert"
+              >
+                {errors.date}
+              </p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label>Currency</Label>
+            <Label htmlFor="currency-select">Currency</Label>
             <select
+              id="currency-select"
               value={currency}
               onChange={(e) => setCurrency(e.target.value)}
+              aria-label="Select currency"
               className="w-full h-10 px-3 text-sm font-bold rounded-xl cursor-pointer transition-all duration-200 bg-gradient-to-r from-accent to-accent-light text-white border-2 border-accent/30 shadow-md shadow-accent/25 hover:shadow-lg hover:shadow-accent/35"
             >
               {CURRENCIES.map((c) => (
@@ -299,9 +314,9 @@ export default function QuickAddForm({ onSuccess }) {
           </div>
 
           <div className="space-y-1.5">
-            <Label>Type</Label>
+            <Label id="type-label">Type</Label>
             <Select value={kind} onValueChange={setKind}>
-              <SelectTrigger>
+              <SelectTrigger aria-labelledby="type-label">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -313,12 +328,15 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Amount</Label>
+          <Label htmlFor="amount-input">Amount</Label>
           <Input
+            id="amount-input"
             value={amount}
             onChange={handleAmountChange}
             inputMode="decimal"
             placeholder="e.g. 75.20"
+            aria-invalid={errors.amount ? 'true' : 'false'}
+            aria-describedby={errors.amount ? 'amount-error' : 'amount-hint'}
             className={
               errors.amount
                 ? 'border-error focus:border-error focus:ring-error/20'
@@ -326,9 +344,15 @@ export default function QuickAddForm({ onSuccess }) {
             }
           />
           {errors.amount ? (
-            <p className="text-xs text-error mt-1">{errors.amount}</p>
+            <p
+              id="amount-error"
+              className="text-xs text-error mt-1"
+              role="alert"
+            >
+              {errors.amount}
+            </p>
           ) : (
-            <p className="text-xs text-warm-gray">
+            <p id="amount-hint" className="text-xs text-warm-gray">
               Threshold: {currency} {thr} | Max: {currency}{' '}
               {maxAmount.toLocaleString()}
             </p>
@@ -336,9 +360,9 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Category</Label>
+          <Label id="category-label">Category</Label>
           <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
+            <SelectTrigger aria-labelledby="category-label">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -352,9 +376,9 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Payer</Label>
+          <Label id="payer-label">Payer</Label>
           <Select value={payer} onValueChange={setPayer}>
-            <SelectTrigger>
+            <SelectTrigger aria-labelledby="payer-label">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -368,11 +392,14 @@ export default function QuickAddForm({ onSuccess }) {
         </div>
 
         <div className="space-y-1.5">
-          <Label>Description (optional)</Label>
+          <Label htmlFor="description-input">Description (optional)</Label>
           <Input
+            id="description-input"
             value={description}
             onChange={handleDescriptionChange}
             maxLength={MAX_DESCRIPTION_LENGTH + 10}
+            aria-invalid={errors.description ? 'true' : 'false'}
+            aria-describedby={errors.description ? 'desc-error' : 'desc-hint'}
             className={
               errors.description
                 ? 'border-error focus:border-error focus:ring-error/20'
@@ -380,9 +407,11 @@ export default function QuickAddForm({ onSuccess }) {
             }
           />
           {errors.description ? (
-            <p className="text-xs text-error mt-1">{errors.description}</p>
+            <p id="desc-error" className="text-xs text-error mt-1" role="alert">
+              {errors.description}
+            </p>
           ) : (
-            <p className="text-xs text-warm-gray">
+            <p id="desc-hint" className="text-xs text-warm-gray">
               {description.length}/{MAX_DESCRIPTION_LENGTH}
             </p>
           )}

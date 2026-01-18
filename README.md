@@ -160,6 +160,8 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## Deployment (Vercel)
 
+### Quick Start
+
 1. Push your code to GitHub
 2. Import the repo in [Vercel](https://vercel.com)
 3. Add environment variables:
@@ -167,4 +169,93 @@ Open [http://localhost:3000](http://localhost:3000)
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 4. Deploy!
 
-The app will auto-deploy on every push to main.
+### GitHub Actions CI/CD (Optional)
+
+This project includes GitHub Actions workflows for continuous integration and deployment.
+
+**CI Workflow** (`.github/workflows/ci.yml`):
+
+- Runs on every push and pull request to main/master
+- Checks formatting, runs linter, runs tests, and builds
+
+**Deploy Workflow** (`.github/workflows/deploy.yml`):
+
+- Runs after CI passes on main/master
+- Requires `VERCEL_TOKEN` secret in your GitHub repository
+
+To enable automated deployments:
+
+1. Get your Vercel token:
+   - Go to [Vercel Account Settings](https://vercel.com/account/tokens)
+   - Click **Create** and name it (e.g., "github-actions")
+   - Copy the token
+
+2. Add the secret to GitHub:
+   - Go to your repo → **Settings** → **Secrets and variables** → **Actions**
+   - Click **New repository secret**
+   - Name: `VERCEL_TOKEN`
+   - Value: paste your Vercel token
+
+3. Link your Vercel project (first time only):
+   ```bash
+   npx vercel link
+   ```
+
+Now pushes to main will automatically deploy after tests pass.
+
+### Environment Variables Reference
+
+| Variable                        | Required  | Description                      |
+| ------------------------------- | --------- | -------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Yes       | Your Supabase project URL        |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes       | Your Supabase anon/public key    |
+| `VERCEL_TOKEN`                  | For CI/CD | Vercel API token (GitHub secret) |
+
+---
+
+## Troubleshooting
+
+### Common Issues
+
+**"Invalid API key" or auth errors**
+
+- Check that `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are set correctly
+- Verify the anon key hasn't been regenerated in Supabase dashboard
+
+**Magic link not arriving**
+
+- Check spam/junk folder
+- In Supabase, go to **Authentication** → **Settings** and check email provider settings
+- For development, you can disable email confirmations
+
+**"Row Level Security" errors**
+
+- Ensure you ran the complete `supabase/schema.sql` including RLS policies
+- Check that the user is a member of the household they're trying to access
+
+**Build fails on Vercel**
+
+- Verify all environment variables are set in Vercel project settings
+- Check the build logs for specific error messages
+
+**Tests fail locally**
+
+- Run `npm install` to ensure dependencies are up to date
+- Check that Node.js version is 18+ (20 recommended)
+
+### Resetting the Database
+
+If you need to start fresh:
+
+1. In Supabase SQL Editor, run:
+
+   ```sql
+   DROP SCHEMA public CASCADE;
+   CREATE SCHEMA public;
+   GRANT ALL ON SCHEMA public TO postgres;
+   GRANT ALL ON SCHEMA public TO public;
+   ```
+
+2. Re-run the entire `supabase/schema.sql`
+
+**Warning:** This deletes all data permanently.

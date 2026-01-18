@@ -132,14 +132,24 @@ export default function HouseholdSetup({ onReady }) {
               Share this code with your partner so they can join:
             </p>
             <div className="flex items-center gap-2">
-              <code className="flex-1 bg-white/80 px-4 py-2 rounded-lg font-mono text-lg tracking-wider text-charcoal">
+              <code
+                className="flex-1 bg-white/80 px-4 py-2 rounded-lg font-mono text-lg tracking-wider text-charcoal"
+                aria-label={`Join code: ${createdCode}`}
+              >
                 {createdCode}
               </code>
-              <Button variant="outline" size="sm" onClick={copyCode}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={copyCode}
+                aria-label={
+                  copied ? 'Code copied' : 'Copy join code to clipboard'
+                }
+              >
                 {copied ? (
-                  <Check className="w-4 h-4" />
+                  <Check className="w-4 h-4" aria-hidden="true" />
                 ) : (
-                  <Copy className="w-4 h-4" />
+                  <Copy className="w-4 h-4" aria-hidden="true" />
                 )}
               </Button>
             </div>
@@ -160,14 +170,23 @@ export default function HouseholdSetup({ onReady }) {
               </div>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label>Household Name</Label>
+                  <Label htmlFor="household-name">Household Name</Label>
                   <Input
+                    id="household-name"
                     value={householdName}
                     onChange={(e) => setHouseholdName(e.target.value)}
                     placeholder="e.g., Alex & Adriana"
+                    aria-describedby="household-name-desc"
                   />
+                  <span id="household-name-desc" className="sr-only">
+                    Enter a name for your new household
+                  </span>
                 </div>
-                <Button onClick={createHousehold} className="w-full">
+                <Button
+                  onClick={createHousehold}
+                  className="w-full"
+                  aria-label="Create a new household"
+                >
                   Create Household
                 </Button>
               </div>
@@ -183,17 +202,23 @@ export default function HouseholdSetup({ onReady }) {
               </div>
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <Label>Join Code</Label>
+                  <Label htmlFor="join-code">Join Code</Label>
                   <Input
+                    id="join-code"
                     value={joinCode}
                     onChange={(e) => setJoinCode(e.target.value)}
                     placeholder="e.g., a1b2c3d4e5f6"
+                    aria-describedby="join-code-desc"
                   />
+                  <span id="join-code-desc" className="sr-only">
+                    Enter the join code shared by your household member
+                  </span>
                 </div>
                 <Button
                   variant="secondary"
                   onClick={joinHousehold}
                   className="w-full"
+                  aria-label="Join an existing household"
                 >
                   Join Household
                 </Button>
@@ -203,19 +228,28 @@ export default function HouseholdSetup({ onReady }) {
         )}
 
         {/* Status message */}
-        {status && !createdCode && (
-          <div
-            className={`p-3 rounded-lg text-sm font-medium ${
-              status.includes('!')
-                ? 'bg-success/10 text-success border border-success/20'
-                : status.includes('...')
-                  ? 'bg-slate/10 text-slate border border-slate/20'
-                  : 'bg-error/10 text-error border border-error/20'
-            }`}
-          >
-            {status}
-          </div>
-        )}
+        <div aria-live="polite" aria-atomic="true">
+          {status && !createdCode && (
+            <div
+              role={
+                status.includes('!')
+                  ? 'status'
+                  : status.includes('...')
+                    ? 'status'
+                    : 'alert'
+              }
+              className={`p-3 rounded-lg text-sm font-medium ${
+                status.includes('!')
+                  ? 'bg-success/10 text-success border border-success/20'
+                  : status.includes('...')
+                    ? 'bg-slate/10 text-slate border border-slate/20'
+                    : 'bg-error/10 text-error border border-error/20'
+              }`}
+            >
+              {status}
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

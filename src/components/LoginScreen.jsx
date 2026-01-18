@@ -77,19 +77,28 @@ export default function LoginScreen() {
         </form>
 
         {/* Status Message */}
-        {status && (
-          <div
-            className={`mt-4 p-3 rounded-lg text-sm text-center ${
-              status.includes('Check your email')
-                ? 'bg-success/10 text-success border border-success/20'
-                : status.includes('...')
-                  ? 'bg-slate/10 text-slate'
-                  : 'bg-error/10 text-error border border-error/20'
-            }`}
-          >
-            {status}
-          </div>
-        )}
+        <div aria-live="polite" aria-atomic="true">
+          {status && (
+            <div
+              role={
+                status.includes('Check your email')
+                  ? 'status'
+                  : status.includes('...')
+                    ? 'status'
+                    : 'alert'
+              }
+              className={`mt-4 p-3 rounded-lg text-sm text-center ${
+                status.includes('Check your email')
+                  ? 'bg-success/10 text-success border border-success/20'
+                  : status.includes('...')
+                    ? 'bg-slate/10 text-slate'
+                    : 'bg-error/10 text-error border border-error/20'
+              }`}
+            >
+              {status}
+            </div>
+          )}
+        </div>
 
         {/* Divider */}
         <div className="relative my-6">
