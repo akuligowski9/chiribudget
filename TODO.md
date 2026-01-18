@@ -10,12 +10,17 @@
 - Demo data expanded to 41 transactions (USD + PEN)
 - PWA icons fixed (were empty)
 - Deprecated meta tag fixed
+- QuickAddForm validation tests (22 tests)
+
+### Test Coverage
+
+- 130 tests passing across 12 test suites
+- Key test files: demoStore, TransactionList, QuickAddForm, AuthContext
 
 ### Next Up (No Supabase Needed)
 
-1. More test coverage (QuickAddForm validation)
-2. Discussion page improvements
-3. CSV export enhancements
+1. Discussion page improvements
+2. CSV export enhancements
 
 ### When Ready for Supabase (~15 min)
 
