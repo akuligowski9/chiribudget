@@ -113,11 +113,11 @@ describe('DashboardSummary', () => {
     render(<DashboardSummary {...defaultProps} />);
 
     await waitFor(() => {
-      // Income should show 3000 (may appear multiple times in category breakdowns)
-      const incomeElements = screen.getAllByText('USD 3000');
+      // Income should show 3000.00 (may appear multiple times in category breakdowns)
+      const incomeElements = screen.getAllByText('USD 3000.00');
       expect(incomeElements.length).toBeGreaterThan(0);
-      // Expenses should show 50
-      const expenseElements = screen.getAllByText('USD 50');
+      // Expenses should show 50.00
+      const expenseElements = screen.getAllByText('USD 50.00');
       expect(expenseElements.length).toBeGreaterThan(0);
     });
   });

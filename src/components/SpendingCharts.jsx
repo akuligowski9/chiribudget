@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
+import { PieChart as PieIcon, TrendingUp } from 'lucide-react';
 import {
   PieChart,
   Pie,
@@ -16,7 +17,6 @@ import {
   Bar,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { PieChart as PieIcon, TrendingUp } from 'lucide-react';
 
 // Earth tone colors that match the app theme
 const EXPENSE_COLORS = [
@@ -94,7 +94,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value) => [`${currency} ${value.toFixed(0)}`, '']}
+                formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
                 contentStyle={{
                   background: 'rgba(255,255,255,0.95)',
                   border: '1px solid #e8e0d5',
@@ -118,7 +118,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
               />
               <span className="text-stone truncate">{entry.name}</span>
               <span className="text-charcoal font-semibold ml-auto">
-                {currency} {entry.value.toFixed(0)}
+                {currency} {entry.value.toFixed(2)}
               </span>
             </div>
           ))}
@@ -229,7 +229,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
               />
               <Tooltip
                 formatter={(value, name) => [
-                  `${currency} ${value.toFixed(0)}`,
+                  `${currency} ${value.toFixed(2)}`,
                   name.charAt(0).toUpperCase() + name.slice(1),
                 ]}
                 contentStyle={{
@@ -282,7 +282,7 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
                 width={70}
               />
               <Tooltip
-                formatter={(value) => [`${currency} ${value.toFixed(0)}`, '']}
+                formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
                 contentStyle={{
                   background: 'rgba(255,255,255,0.95)',
                   border: '1px solid #e8e0d5',
@@ -304,7 +304,7 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
           <span
             className={`font-bold ${net >= 0 ? 'text-success' : 'text-error'}`}
           >
-            {currency} {net.toFixed(0)}
+            {currency} {net.toFixed(2)}
           </span>
         </div>
       </CardContent>
