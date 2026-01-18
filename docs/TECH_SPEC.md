@@ -156,7 +156,7 @@ Tracks monthly discussion state per currency.
 payer_t: alex, adriana, together
 currency_t: USD, PEN
 month_status_t: draft, discussed
-import_status_t: staged, confirmed, rejected
+import_status_t: staged, confirmed
 category_t: Fixed Expenses, Rent/Mortgages, Food, Dogs,
             Holidays & Birthdays, Adventure, Unexpected,
             Salary, Investments, Extra

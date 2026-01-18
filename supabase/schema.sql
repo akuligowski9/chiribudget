@@ -19,7 +19,7 @@ do $$ begin
 exception when duplicate_object then null; end $$;
 
 do $$ begin
-  create type import_status_t as enum ('staged', 'confirmed', 'rejected');
+  create type import_status_t as enum ('staged', 'confirmed');
 exception when duplicate_object then null; end $$;
 
 do $$ begin
