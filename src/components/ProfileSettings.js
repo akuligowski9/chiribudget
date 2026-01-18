@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import { User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  CollapsibleCard,
+  CollapsibleCardHeader,
+  CollapsibleCardContent,
+  useCollapsible,
+} from '@/components/ui/collapsible-card';
 import { Input, Label } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDemo } from '@/hooks/useDemo';
@@ -16,6 +21,7 @@ import Toast from './Toast';
 export default function ProfileSettings() {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
+  const { isOpen, toggle } = useCollapsible(false);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
@@ -132,17 +138,15 @@ export default function ProfileSettings() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-slate" />
-          <CardTitle>{t('settings.yourProfile')}</CardTitle>
-        </div>
-        <p className="text-sm text-stone mt-1">
-          {t('settings.personalSettings')}
-        </p>
-      </CardHeader>
-      <CardContent>
+    <CollapsibleCard>
+      <CollapsibleCardHeader
+        icon={User}
+        title={t('settings.yourProfile')}
+        description={t('settings.personalSettings')}
+        isOpen={isOpen}
+        onToggle={toggle}
+      />
+      <CollapsibleCardContent isOpen={isOpen}>
         {loading ? (
           <div className="space-y-4 max-w-sm">
             <div className="space-y-1.5">
@@ -205,18 +209,14 @@ export default function ProfileSettings() {
               </p>
             </div>
 
-            <Button
-              onClick={saveProfile}
-              disabled={!hasChanges}
-              className="mt-2"
-            >
+            <Button onClick={saveProfile} disabled={!hasChanges}>
               {t('settings.saveProfile')}
             </Button>
           </div>
         )}
 
         <Toast toast={toast} onClose={() => setToast(null)} />
-      </CardContent>
-    </Card>
+      </CollapsibleCardContent>
+    </CollapsibleCard>
   );
 }

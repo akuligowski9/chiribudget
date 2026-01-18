@@ -3,6 +3,7 @@
 import { Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import BudgetSettings from '@/components/BudgetSettings';
+import ConversionRateSettings from '@/components/ConversionRateSettings';
 import Guidelines from '@/components/Guidelines';
 import HouseholdMembers from '@/components/HouseholdMembers';
 import LanguageSelector from '@/components/LanguageSelector';
@@ -57,6 +58,7 @@ export default function SettingsPage() {
         <ProfileSettings />
         <LanguageSelector />
         <HouseholdMembers />
+        <ConversionRateSettings />
         <BudgetSettings />
         <Guidelines />
         <TrashView />

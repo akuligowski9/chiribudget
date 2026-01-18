@@ -5,7 +5,12 @@ import { Check, Copy, LogOut, Trash2, Users } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Toast from '@/components/Toast';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  CollapsibleCard,
+  CollapsibleCardHeader,
+  CollapsibleCardContent,
+  useCollapsible,
+} from '@/components/ui/collapsible-card';
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,6 +23,7 @@ export default function HouseholdMembers() {
   const t = useTranslations();
   const { user, profile, refreshProfile } = useAuth();
   const { isDemoMode } = useDemo();
+  const { isOpen, toggle } = useCollapsible(false);
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [household, setHousehold] = useState(null);
@@ -240,99 +246,97 @@ export default function HouseholdMembers() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Users className="w-5 h-5 text-slate" />
-          <CardTitle>{t('household.householdMembers')}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Household name */}
-        <div className="text-sm text-stone">
-          <span className="font-medium text-charcoal">{household.name}</span>
-        </div>
-
-        {/* Join code */}
-        <div className="flex items-center gap-2 p-3 bg-white/50 rounded-xl border border-white/60">
-          <div className="flex-1 min-w-0">
-            <div className="text-xs text-warm-gray mb-1">
-              {t('household.shareCodePrompt')}
+    <CollapsibleCard>
+      <CollapsibleCardHeader
+        icon={Users}
+        title={t('household.householdMembers')}
+        description={household.name}
+        isOpen={isOpen}
+        onToggle={toggle}
+      />
+      <CollapsibleCardContent isOpen={isOpen}>
+        <div className="space-y-4">
+          {/* Join code */}
+          <div className="flex items-center gap-2 p-3 bg-white/50 rounded-xl border border-white/60">
+            <div className="flex-1 min-w-0">
+              <div className="text-xs text-warm-gray mb-1">
+                {t('household.shareCodePrompt')}
+              </div>
+              <code className="font-mono text-sm tracking-wider text-charcoal">
+                {household.join_code}
+              </code>
             </div>
-            <code className="font-mono text-sm tracking-wider text-charcoal">
-              {household.join_code}
-            </code>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={copyJoinCode}
+              className="shrink-0"
+              aria-label={
+                copied ? t('household.codeCopied') : t('household.copyCode')
+              }
+            >
+              {copied ? (
+                <Check className="w-4 h-4 text-success" aria-hidden="true" />
+              ) : (
+                <Copy className="w-4 h-4" aria-hidden="true" />
+              )}
+            </Button>
           </div>
+
+          {/* Members list */}
+          <div className="space-y-2">
+            <div className="text-xs font-semibold text-warm-gray uppercase tracking-wide">
+              {t('household.members')} ({members.length})
+            </div>
+            {members.map((member) => (
+              <div
+                key={member.user_id}
+                className="flex items-center gap-3 p-3 bg-white/40 rounded-xl border border-white/60"
+              >
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate to-slate-light flex items-center justify-center text-white text-sm font-semibold">
+                  {member.display_name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="font-medium text-charcoal text-sm">
+                    {member.display_name}
+                    {member.is_current_user && (
+                      <span className="ml-2 text-xs text-slate">
+                        {t('household.youTag')}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-xs text-warm-gray">
+                    {t('household.joined', {
+                      date: new Date(member.created_at).toLocaleDateString(),
+                    })}
+                  </div>
+                </div>
+                {!member.is_current_user && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleRemoveClick(member)}
+                    className="shrink-0 text-error hover:text-error hover:bg-error/10"
+                    aria-label={t('household.removeMember')}
+                  >
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
+                  </Button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Leave Household button */}
           <Button
             variant="outline"
-            size="sm"
-            onClick={copyJoinCode}
-            className="shrink-0"
-            aria-label={
-              copied ? t('household.codeCopied') : t('household.copyCode')
-            }
+            onClick={() => setLeaveConfirmOpen(true)}
+            className="w-full text-error border-error/30 hover:bg-error/10 hover:text-error"
           >
-            {copied ? (
-              <Check className="w-4 h-4 text-success" aria-hidden="true" />
-            ) : (
-              <Copy className="w-4 h-4" aria-hidden="true" />
-            )}
+            <LogOut className="w-4 h-4 mr-2" />
+            {t('household.leaveHousehold')}
           </Button>
         </div>
-
-        {/* Members list */}
-        <div className="space-y-2">
-          <div className="text-xs font-semibold text-warm-gray uppercase tracking-wide">
-            {t('household.members')} ({members.length})
-          </div>
-          {members.map((member) => (
-            <div
-              key={member.user_id}
-              className="flex items-center gap-3 p-3 bg-white/40 rounded-xl border border-white/60"
-            >
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate to-slate-light flex items-center justify-center text-white text-sm font-semibold">
-                {member.display_name.charAt(0).toUpperCase()}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-medium text-charcoal text-sm">
-                  {member.display_name}
-                  {member.is_current_user && (
-                    <span className="ml-2 text-xs text-slate">
-                      {t('household.youTag')}
-                    </span>
-                  )}
-                </div>
-                <div className="text-xs text-warm-gray">
-                  {t('household.joined', {
-                    date: new Date(member.created_at).toLocaleDateString(),
-                  })}
-                </div>
-              </div>
-              {!member.is_current_user && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleRemoveClick(member)}
-                  className="shrink-0 text-error hover:text-error hover:bg-error/10"
-                  aria-label={t('household.removeMember')}
-                >
-                  <Trash2 className="w-4 h-4" aria-hidden="true" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Leave Household button */}
-        <Button
-          variant="outline"
-          onClick={() => setLeaveConfirmOpen(true)}
-          className="w-full text-error border-error/30 hover:bg-error/10 hover:text-error"
-        >
-          <LogOut className="w-4 h-4 mr-2" />
-          {t('household.leaveHousehold')}
-        </Button>
-      </CardContent>
+      </CollapsibleCardContent>
 
       <ConfirmDialog
         open={confirmOpen}
@@ -362,6 +366,6 @@ export default function HouseholdMembers() {
       />
 
       <Toast toast={toast} onClose={() => setToast(null)} />
-    </Card>
+    </CollapsibleCard>
   );
 }

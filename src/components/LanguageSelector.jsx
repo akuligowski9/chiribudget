@@ -2,7 +2,12 @@
 
 import { Globe } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  CollapsibleCard,
+  CollapsibleCardHeader,
+  CollapsibleCardContent,
+  useCollapsible,
+} from '@/components/ui/collapsible-card';
 import {
   Select,
   SelectContent,
@@ -16,16 +21,17 @@ import { localeNames, locales } from '@/i18n/config';
 export default function LanguageSelector() {
   const t = useTranslations('settings');
   const { locale, setLocale } = useLanguage();
+  const { isOpen, toggle } = useCollapsible(false);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Globe className="w-5 h-5 text-slate" />
-          <CardTitle>{t('languagePreference')}</CardTitle>
-        </div>
-      </CardHeader>
-      <CardContent>
+    <CollapsibleCard>
+      <CollapsibleCardHeader
+        icon={Globe}
+        title={t('languagePreference')}
+        isOpen={isOpen}
+        onToggle={toggle}
+      />
+      <CollapsibleCardContent isOpen={isOpen}>
         <div className="space-y-1.5 max-w-xs">
           <Select value={locale} onValueChange={setLocale}>
             <SelectTrigger>
@@ -40,7 +46,7 @@ export default function LanguageSelector() {
             </SelectContent>
           </Select>
         </div>
-      </CardContent>
-    </Card>
+      </CollapsibleCardContent>
+    </CollapsibleCard>
   );
 }

@@ -4,7 +4,12 @@ import { useEffect, useState } from 'react';
 import { Trash2, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import {
+  CollapsibleCard,
+  CollapsibleCardHeader,
+  CollapsibleCardContent,
+  useCollapsible,
+} from '@/components/ui/collapsible-card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { toastId } from '@/lib/format';
@@ -15,6 +20,7 @@ export default function TrashView() {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
   const { profile } = useAuth();
+  const { isOpen, toggle } = useCollapsible(false);
   const [deletedRows, setDeletedRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -112,34 +118,33 @@ export default function TrashView() {
 
   if (isDemoMode) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle gradient className="flex items-center gap-2">
-            <Trash2 className="w-5 h-5" />
-            {t('settings.trash')}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      <CollapsibleCard>
+        <CollapsibleCardHeader
+          icon={Trash2}
+          title={t('settings.trash')}
+          description={t('demo.trashNotAvailable')}
+          isOpen={isOpen}
+          onToggle={toggle}
+        />
+        <CollapsibleCardContent isOpen={isOpen}>
           <p className="text-warm-gray text-sm">
             {t('demo.trashNotAvailable')}
           </p>
-        </CardContent>
-      </Card>
+        </CollapsibleCardContent>
+      </CollapsibleCard>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle gradient className="flex items-center gap-2">
-          <Trash2 className="w-5 h-5" />
-          {t('settings.trash')}
-        </CardTitle>
-        <p className="text-sm text-warm-gray mt-1">
-          {t('settings.trashDescription')}
-        </p>
-      </CardHeader>
-      <CardContent>
+    <CollapsibleCard>
+      <CollapsibleCardHeader
+        icon={Trash2}
+        title={t('settings.trash')}
+        description={t('settings.trashDescription')}
+        isOpen={isOpen}
+        onToggle={toggle}
+      />
+      <CollapsibleCardContent isOpen={isOpen}>
         {loading ? (
           <p className="text-warm-gray text-sm">{t('common.loading')}</p>
         ) : deletedRows.length === 0 ? (
@@ -189,8 +194,8 @@ export default function TrashView() {
             ))}
           </div>
         )}
-      </CardContent>
+      </CollapsibleCardContent>
       <Toast toast={toast} onClose={() => setToast(null)} />
-    </Card>
+    </CollapsibleCard>
   );
 }

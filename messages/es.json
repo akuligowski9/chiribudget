@@ -181,6 +181,7 @@
     "thresholdsDescription": "Las transacciones sobre el umbral se marcan automáticamente para revisión",
     "usdThreshold": "Umbral USD ($)",
     "conversionRate": "Tipo de Cambio",
+    "conversionRateDescription": "Tipo de cambio usado en toda la aplicación para mostrar monedas",
     "oneUsdEquals": "1 USD = {rate} PEN",
     "fxRate": "Tipo de Cambio (USD a PEN)",
     "penThreshold": "Umbral PEN",
