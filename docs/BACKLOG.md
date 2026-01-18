@@ -254,13 +254,21 @@ Improve the "Mark Discussed" button UX when flagged items are still unresolved. 
 ### CB-018: Mobile Responsiveness Testing
 
 **Priority:** Medium
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal A
 **Tech Spec Reference:** TECH_SPEC.md#feature-specifications
 
 #### Description
 
 Test and fix mobile responsiveness on small screens (<360px width). Some users have older or smaller devices that may have layout issues.
+
+#### Changes Made
+
+- QuickAddForm: Changed grid from `grid-cols-3` to `grid-cols-2 sm:grid-cols-3`
+- FlaggedReview: Added 44px min-height to "Remove flag" button
+- ImportPanel: Fixed table horizontal scroll for mobile
+- Dashboard: Added 44px min-height to range preset buttons, added aria-pressed
+- theme.js: Added minHeight: 44 to button and input styles
 
 #### Testing Devices
 
@@ -798,7 +806,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-006 | Remove Unused UI Exports        | Medium    | Done       | Terminal B |
 | CB-007 | Focus Indicators                | Medium    | Todo       | Unassigned |
 | CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
-| CB-018 | Mobile Responsiveness Testing   | Medium    | Todo       | Terminal A |
+| CB-018 | Mobile Responsiveness Testing   | Medium    | Done       | Terminal A |
 | CB-020 | Add Audit Columns               | Medium    | Todo       | Terminal A |
 | CB-021 | Document/Remove `rejected` Enum | Medium    | Todo       | Terminal A |
 | CB-022 | Auto-Deploy Workflow            | Medium    | Done       | Terminal A |

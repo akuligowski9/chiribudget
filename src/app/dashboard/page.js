@@ -125,11 +125,12 @@ export default function DashboardPage() {
                 key={preset.value}
                 onClick={() => setRangePreset(preset.value)}
                 className={cn(
-                  'px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200',
+                  'min-h-[44px] px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200',
                   rangePreset === preset.value
                     ? 'bg-gradient-to-r from-slate to-slate-light text-white shadow-md shadow-slate/20'
                     : 'bg-white/50 text-stone hover:bg-white/80 hover:text-charcoal border border-white/60'
                 )}
+                aria-pressed={rangePreset === preset.value}
               >
                 {preset.label}
               </button>

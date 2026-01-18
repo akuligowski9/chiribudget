@@ -58,6 +58,7 @@ export const styles = {
   },
   button: {
     padding: '10px 18px',
+    minHeight: 44,
     borderRadius: 8,
     border: 'none',
     fontWeight: 600,
@@ -74,6 +75,7 @@ export const styles = {
   },
   input: {
     padding: '10px 14px',
+    minHeight: 44,
     borderRadius: 8,
     border: `1px solid ${colors.border}`,
     fontSize: 15,

@@ -315,7 +315,9 @@ export default function ImportPanel() {
             style={{
               marginTop: 12,
               maxHeight: 180,
-              overflow: 'auto',
+              overflowX: 'auto',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch',
               background: colors.bgCard,
               borderRadius: 8,
               padding: 10,
@@ -323,7 +325,7 @@ export default function ImportPanel() {
           >
             <table
               style={{
-                width: '100%',
+                minWidth: 500,
                 borderCollapse: 'collapse',
                 fontSize: 13,
               }}

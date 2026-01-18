@@ -230,13 +230,14 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
                       className="w-full min-h-[60px] rounded-xl border-2 border-white/60 bg-white/70 backdrop-blur-sm px-3 py-2 text-sm text-charcoal placeholder:text-warm-gray/70 focus:border-slate focus:bg-white/90 focus:outline-none resize-none"
                       onBlur={(e) => saveExplanation(r.id, e.target.value)}
                     />
-                    <div className="flex items-center justify-between mt-2">
+                    <div className="flex items-center justify-between mt-2 gap-2">
                       <span className="text-xs text-warm-gray">
                         Auto-saves when you click away
                       </span>
                       <button
                         onClick={() => unflag(r.id)}
-                        className="text-xs text-slate hover:text-slate-dark font-medium"
+                        className="min-h-[44px] px-3 text-xs text-slate hover:text-slate-dark hover:bg-slate/10 font-medium rounded-lg transition-colors"
+                        aria-label={`Remove flag from transaction: ${r.description || 'no description'}`}
                       >
                         Remove flag
                       </button>
