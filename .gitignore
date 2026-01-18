@@ -30,6 +30,12 @@ Thumbs.db
 .eslintcache
 *.tsbuildinfo
 
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
 # Security documentation (personal notes, not for public repo)
 SECURITY.md
 
