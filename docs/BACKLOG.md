@@ -227,7 +227,7 @@ Add visible focus indicators for keyboard navigation. Essential for users who na
 ### CB-017: Improve "Mark Discussed" UX
 
 **Priority:** Medium
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal A
 **Tech Spec Reference:** TECH_SPEC.md#feature-specifications
 
@@ -416,7 +416,7 @@ Document the deployment process for Vercel + Supabase setup. Help future maintai
 ### CB-008: Server-Side Enum Validation
 
 **Priority:** Low
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal B
 **Tech Spec Reference:** TECH_SPEC.md#data-model
 
@@ -600,7 +600,7 @@ Extract large components into smaller, focused sub-components. ImportPanel is 33
 ### CB-023: Database Backup Documentation
 
 **Priority:** Low
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal B
 **Tech Spec Reference:** TECH_SPEC.md#deployment
 
@@ -797,21 +797,21 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-005 | ARIA Accessibility Labels       | Medium    | Done       | Terminal A |
 | CB-006 | Remove Unused UI Exports        | Medium    | Done       | Terminal B |
 | CB-007 | Focus Indicators                | Medium    | Todo       | Unassigned |
-| CB-017 | Improve "Mark Discussed" UX     | Medium    | Todo       | Terminal A |
+| CB-017 | Improve "Mark Discussed" UX     | Medium    | Done       | Terminal A |
 | CB-018 | Mobile Responsiveness Testing   | Medium    | Todo       | Terminal A |
 | CB-020 | Add Audit Columns               | Medium    | Todo       | Terminal A |
 | CB-021 | Document/Remove `rejected` Enum | Medium    | Todo       | Terminal A |
 | CB-022 | Auto-Deploy Workflow            | Medium    | Done       | Terminal A |
 | CB-024 | Constants File                  | Medium    | Done       | Terminal B |
 | CB-026 | Deployment Documentation        | Medium    | Done       | Terminal A |
-| CB-008 | Server-Side Enum Validation     | Low       | Todo       | Unassigned |
+| CB-008 | Server-Side Enum Validation     | Low       | Done       | Terminal B |
 | CB-009 | Household Member Management UI  | Low       | Todo       | Unassigned |
 | CB-010 | E2E Tests with Playwright       | Low       | Todo       | Unassigned |
 | CB-011 | Batch Insert with Rollback      | Low       | Todo       | Unassigned |
 | CB-012 | Soft Deletes                    | Low       | Todo       | Unassigned |
 | CB-013 | Error Monitoring (Sentry)       | Low       | Todo       | Unassigned |
 | CB-019 | Extract Large Components        | Low       | Todo       | Unassigned |
-| CB-023 | Database Backup Documentation   | Low       | Todo       | Unassigned |
+| CB-023 | Database Backup Documentation   | Low       | Done       | Terminal B |
 | CB-025 | Import Sorting Plugin           | Low       | Todo       | Unassigned |
 | CB-027 | Migrate to TypeScript           | v2        | Deferred   | Unassigned |
 | CB-028 | Privacy-Respecting Analytics    | v2        | Deferred   | Unassigned |

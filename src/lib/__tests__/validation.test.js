@@ -1,12 +1,21 @@
+import {
+  validateDate,
+  validateAmount,
+  validateDescription,
+  validateCurrency,
+  validateCategory,
+  validatePayer,
+  validateTransaction,
+  getFirstError,
+} from '../validation';
+
 describe('Form validation', () => {
   describe('Date validation', () => {
-    const validateDate = (date) => {
-      const today = new Date().toISOString().slice(0, 10);
-      if (date > today) {
-        return 'Date cannot be in the future';
-      }
-      return null;
-    };
+    it('requires a date', () => {
+      expect(validateDate(null)).toBe('Date is required');
+      expect(validateDate(undefined)).toBe('Date is required');
+      expect(validateDate('')).toBe('Date is required');
+    });
 
     it('allows today', () => {
       const today = new Date().toISOString().slice(0, 10);
@@ -31,30 +40,11 @@ describe('Form validation', () => {
   });
 
   describe('Amount validation', () => {
-    const MAX_AMOUNT_USD = 50000;
-    const MAX_AMOUNT_PEN = 162500; // 50000 * 3.25
-
-    const validateAmount = (value, currency) => {
-      if (!value || value.trim() === '') {
-        return 'Amount is required';
-      }
-      const num = Number(value);
-      if (isNaN(num) || !Number.isFinite(num)) {
-        return 'Enter a valid number';
-      }
-      if (num <= 0) {
-        return 'Amount must be greater than 0';
-      }
-      const max = currency === 'USD' ? MAX_AMOUNT_USD : MAX_AMOUNT_PEN;
-      if (num > max) {
-        return `Amount cannot exceed ${currency} ${max.toLocaleString()}`;
-      }
-      return null;
-    };
-
     it('requires amount', () => {
       expect(validateAmount('', 'USD')).toBe('Amount is required');
       expect(validateAmount('  ', 'USD')).toBe('Amount is required');
+      expect(validateAmount(null, 'USD')).toBe('Amount is required');
+      expect(validateAmount(undefined, 'USD')).toBe('Amount is required');
     });
 
     it('rejects invalid numbers', () => {
@@ -100,5 +90,177 @@ describe('Form validation', () => {
       );
       expect(validateAmount('100000', 'PEN')).toBeNull();
     });
+  });
+
+  describe('Description validation', () => {
+    it('allows empty description', () => {
+      expect(validateDescription('')).toBeNull();
+      expect(validateDescription(null)).toBeNull();
+      expect(validateDescription(undefined)).toBeNull();
+    });
+
+    it('allows description under limit', () => {
+      expect(validateDescription('Test description')).toBeNull();
+      expect(validateDescription('a'.repeat(200))).toBeNull();
+    });
+
+    it('rejects description over limit', () => {
+      expect(validateDescription('a'.repeat(201))).toBe(
+        'Description cannot exceed 200 characters'
+      );
+    });
+  });
+});
+
+describe('Enum validation (Server-Side Defense)', () => {
+  describe('Currency validation', () => {
+    it('requires currency', () => {
+      expect(validateCurrency(null)).toBe('Currency is required');
+      expect(validateCurrency(undefined)).toBe('Currency is required');
+      expect(validateCurrency('')).toBe('Currency is required');
+    });
+
+    it('accepts valid currencies', () => {
+      expect(validateCurrency('USD')).toBeNull();
+      expect(validateCurrency('PEN')).toBeNull();
+    });
+
+    it('rejects invalid currencies', () => {
+      expect(validateCurrency('EUR')).toContain('Invalid currency');
+      expect(validateCurrency('GBP')).toContain('Invalid currency');
+      expect(validateCurrency('usd')).toContain('Invalid currency'); // Case sensitive
+    });
+  });
+
+  describe('Category validation', () => {
+    it('requires category', () => {
+      expect(validateCategory(null)).toBe('Category is required');
+      expect(validateCategory('')).toBe('Category is required');
+    });
+
+    it('accepts valid expense categories', () => {
+      expect(validateCategory('Fixed Expenses')).toBeNull();
+      expect(validateCategory('Rent/Mortgages')).toBeNull();
+      expect(validateCategory('Food')).toBeNull();
+      expect(validateCategory('Dogs')).toBeNull();
+      expect(validateCategory('Holidays & Birthdays')).toBeNull();
+      expect(validateCategory('Adventure')).toBeNull();
+      expect(validateCategory('Unexpected')).toBeNull();
+    });
+
+    it('accepts valid income categories', () => {
+      expect(validateCategory('Salary')).toBeNull();
+      expect(validateCategory('Investments')).toBeNull();
+      expect(validateCategory('Extra')).toBeNull();
+    });
+
+    it('rejects invalid categories', () => {
+      expect(validateCategory('Entertainment')).toContain('Invalid category');
+      expect(validateCategory('Groceries')).toContain('Invalid category');
+      expect(validateCategory('food')).toContain('Invalid category'); // Case sensitive
+    });
+  });
+
+  describe('Payer validation', () => {
+    it('requires payer', () => {
+      expect(validatePayer(null)).toBe('Payer is required');
+      expect(validatePayer('')).toBe('Payer is required');
+    });
+
+    it('accepts valid payers (case-insensitive)', () => {
+      expect(validatePayer('Alex')).toBeNull();
+      expect(validatePayer('Adriana')).toBeNull();
+      expect(validatePayer('Together')).toBeNull();
+      expect(validatePayer('alex')).toBeNull();
+      expect(validatePayer('ADRIANA')).toBeNull();
+      expect(validatePayer('together')).toBeNull();
+    });
+
+    it('rejects invalid payers', () => {
+      expect(validatePayer('John')).toContain('Invalid payer');
+      expect(validatePayer('Both')).toContain('Invalid payer');
+      expect(validatePayer('Me')).toContain('Invalid payer');
+    });
+  });
+});
+
+describe('Full transaction validation', () => {
+  const validTransaction = {
+    txn_date: '2025-01-15',
+    amount: -50,
+    currency: 'USD',
+    category: 'Food',
+    payer: 'Alex',
+    description: 'Groceries',
+  };
+
+  it('accepts valid transaction', () => {
+    const result = validateTransaction(validTransaction);
+    expect(result.isValid).toBe(true);
+    expect(Object.keys(result.errors)).toHaveLength(0);
+  });
+
+  it('rejects transaction with invalid currency', () => {
+    const result = validateTransaction({
+      ...validTransaction,
+      currency: 'EUR',
+    });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.currency).toContain('Invalid currency');
+  });
+
+  it('rejects transaction with invalid category', () => {
+    const result = validateTransaction({
+      ...validTransaction,
+      category: 'InvalidCategory',
+    });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.category).toContain('Invalid category');
+  });
+
+  it('rejects transaction with invalid payer', () => {
+    const result = validateTransaction({
+      ...validTransaction,
+      payer: 'InvalidPayer',
+    });
+    expect(result.isValid).toBe(false);
+    expect(result.errors.payer).toContain('Invalid payer');
+  });
+
+  it('collects multiple errors', () => {
+    const result = validateTransaction({
+      txn_date: '2030-12-31',
+      amount: 0,
+      currency: 'INVALID',
+      category: 'INVALID',
+      payer: 'INVALID',
+      description: 'a'.repeat(201),
+    });
+    expect(result.isValid).toBe(false);
+    expect(Object.keys(result.errors).length).toBeGreaterThan(3);
+  });
+});
+
+describe('getFirstError helper', () => {
+  it('returns null for valid transaction', () => {
+    const result = validateTransaction({
+      txn_date: '2025-01-15',
+      amount: -50,
+      currency: 'USD',
+      category: 'Food',
+      payer: 'Alex',
+    });
+    expect(getFirstError(result)).toBeNull();
+  });
+
+  it('returns first error message for invalid transaction', () => {
+    const result = validateTransaction({
+      txn_date: null,
+      amount: -50,
+      currency: 'USD',
+      category: 'Food',
+      payer: 'Alex',
+    });
+    expect(getFirstError(result)).toBe('Date is required');
   });
 });

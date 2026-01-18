@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import FlaggedReview from '@/components/FlaggedReview';
 import DiscussionPanel from '@/components/DiscussionPanel';
 import LoginScreen from '@/components/LoginScreen';
@@ -13,6 +13,14 @@ export default function DiscussionPage() {
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
   const [currency, setCurrency] = useState('USD');
+  const flaggedReviewRef = useRef(null);
+
+  function scrollToFlagged() {
+    flaggedReviewRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }
 
   // Show skeleton while auth is loading (but not in demo mode)
   if (loading && !isDemoMode) {
@@ -51,8 +59,13 @@ export default function DiscussionPage() {
       </p>
 
       <div className="space-y-4">
-        <FlaggedReview currency={currency} onCurrencyChange={setCurrency} />
-        <DiscussionPanel currency={currency} />
+        <div ref={flaggedReviewRef}>
+          <FlaggedReview currency={currency} onCurrencyChange={setCurrency} />
+        </div>
+        <DiscussionPanel
+          currency={currency}
+          onScrollToFlagged={scrollToFlagged}
+        />
       </div>
     </main>
   );
