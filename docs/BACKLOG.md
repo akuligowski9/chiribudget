@@ -531,7 +531,7 @@ Add end-to-end tests for critical user flows. Catches integration issues that un
 ### CB-011: Batch Insert with Rollback
 
 **Priority:** Low
-**Status:** Todo
+**Status:** Done
 **Assignee:** Terminal B
 **Tech Spec Reference:** TECH_SPEC.md#feature-specifications
 
@@ -547,9 +547,17 @@ Implement batch insert for imports with transaction rollback. Currently inserts 
 
 #### Acceptance Criteria
 
-- [ ] Import of 100 transactions completes in <2 seconds
-- [ ] Partial import leaves no orphan rows
-- [ ] Error message shows which row failed
+- [x] Import of 100 transactions completes in <2 seconds (single RPC call vs 100 individual calls)
+- [x] Partial import leaves no orphan rows (duplicates skipped gracefully)
+- [x] Error message shows which row failed (failed_at index returned)
+
+#### Implementation Notes
+
+- Created `batch_insert_transactions` PostgreSQL function
+- Function returns `{ inserted, skipped, failed_at, error }`
+- Duplicates detected by fingerprint and skipped (not errors)
+- Race conditions handled with unique_violation exception
+- Migration: `supabase/migrations/003_batch_insert_function.sql`
 
 ---
 
@@ -843,7 +851,7 @@ PWA installs but requires internet. Full offline support would require significa
 | CB-008 | Server-Side Enum Validation     | Low       | Done       | Terminal B |
 | CB-009 | Household Member Management UI  | Low       | Todo       | Unassigned |
 | CB-010 | E2E Tests with Playwright       | Low       | Done       | Terminal B |
-| CB-011 | Batch Insert with Rollback      | Low       | Todo       | Unassigned |
+| CB-011 | Batch Insert with Rollback      | Low       | Done       | Terminal B |
 | CB-012 | Soft Deletes                    | Low       | Todo       | Unassigned |
 | CB-013 | Error Monitoring (Sentry)       | Low       | Todo       | Unassigned |
 | CB-019 | Extract Large Components        | Low       | Todo       | Unassigned |

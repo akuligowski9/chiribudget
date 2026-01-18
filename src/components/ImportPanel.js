@@ -188,12 +188,18 @@ export default function ImportPanel() {
         };
       });
 
-      // Insert may throw unique constraint errors if duplicates; that's OK.
-      // We'll insert one-by-one for clarity in v1.
-      let inserted = 0;
-      for (const r of rows) {
-        const { error } = await supabase.from('transactions').insert(r);
-        if (!error) inserted++;
+      // Batch insert using RPC function for better performance and atomicity
+      const { data: result, error: rpcError } = await supabase.rpc(
+        'batch_insert_transactions',
+        { p_transactions: rows }
+      );
+
+      if (rpcError) throw rpcError;
+
+      const { inserted, skipped, failed_at, error: batchError } = result;
+
+      if (batchError) {
+        throw new Error(`Row ${failed_at}: ${batchError}`);
       }
 
       await supabase
@@ -205,7 +211,7 @@ export default function ImportPanel() {
         id: toastId(),
         type: 'success',
         title: 'Import saved ✅',
-        message: `Inserted ${inserted}/${rows.length} (duplicates skipped).`,
+        message: `Inserted ${inserted}/${rows.length}${skipped > 0 ? ` (${skipped} duplicates skipped)` : ''}.`,
       });
       setPreview(null);
       setJsonText('');
