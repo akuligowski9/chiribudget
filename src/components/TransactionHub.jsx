@@ -1,11 +1,11 @@
 'use client';
 import { useState } from 'react';
-import QuickAddForm from './QuickAddForm';
-import ImportPanel from './ImportPanel';
-import ExportPanel from './ExportPanel';
+import { Plus, Upload, Download } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
-import { Plus, Upload, Download } from 'lucide-react';
+import ExportPanel from './ExportPanel';
+import ImportPanel from './ImportPanel';
+import QuickAddForm from './QuickAddForm';
 
 const TABS = [
   { id: 'quick', label: 'Quick Add', icon: Plus },
@@ -31,7 +31,7 @@ export default function TransactionHub({ onTransactionAdded }) {
                   'flex items-center gap-2 px-4 py-2.5 text-sm font-semibold rounded-xl transition-all duration-200',
                   tab === t.id
                     ? 'bg-gradient-to-r from-slate to-slate-light text-white shadow-md shadow-slate/20'
-                    : 'bg-white/50 text-stone hover:bg-white/80 hover:text-charcoal border border-white/60'
+                    : 'bg-white text-charcoal hover:bg-sand/50 border border-stone/30 shadow-sm'
                 )}
               >
                 <Icon className="w-4 h-4" />

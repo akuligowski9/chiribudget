@@ -24,14 +24,14 @@ import {
 } from '@/components/ui/select';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { useDemo } from '@/hooks/useDemo';
-import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
+import { ALL_CATEGORIES, CURRENCIES, PAYERS } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
 import { getDemoTransactions } from '@/lib/demoStore';
+import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 import Toast from './Toast';
 import { ConfirmDialog } from './ui/confirm-dialog';
-import { toastId } from '@/lib/format';
 
 export default function TransactionList({
   startDate,
@@ -487,6 +487,24 @@ export default function TransactionList({
                                 className="text-xs capitalize"
                               >
                                 {p}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        <Select
+                          value={r.currency}
+                          onValueChange={(value) =>
+                            updateTransaction(r.id, 'currency', value)
+                          }
+                        >
+                          <SelectTrigger className="h-8 w-auto min-w-[70px] text-xs font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map((c) => (
+                              <SelectItem key={c} value={c} className="text-xs">
+                                {c}
                               </SelectItem>
                             ))}
                           </SelectContent>

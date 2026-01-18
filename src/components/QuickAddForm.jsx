@@ -1,19 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import {
-  ALL_CATEGORIES,
-  CURRENCIES,
-  PAYERS,
-  USD_THRESHOLD,
-  FX_USD_TO_PEN,
-} from '@/lib/categories';
-import { useDemo } from '@/hooks/useDemo';
-import { useAuth } from '@/contexts/AuthContext';
-import { normalizeDesc, toastId } from '@/lib/format';
-import { Input, Label } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { Input, Label } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -21,14 +10,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import Toast from './Toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
+import {
+  ALL_CATEGORIES,
+  CURRENCIES,
+  PAYERS,
+  USD_THRESHOLD,
+  FX_USD_TO_PEN,
+} from '@/lib/categories';
 import { getMaxAmount, MAX_DESCRIPTION_LENGTH } from '@/lib/constants';
-
-function thresholdFor(currency) {
-  return currency === 'USD'
-    ? USD_THRESHOLD
-    : Math.round(USD_THRESHOLD * FX_USD_TO_PEN);
-}
+import { getDemoThresholds } from '@/lib/demoStore';
+import { normalizeDesc, toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
+import Toast from './Toast';
 
 function computeFingerprint({
   household_id,
@@ -51,18 +46,49 @@ export default function QuickAddForm({ onSuccess }) {
   const [txn_date, setTxnDate] = useState(() =>
     new Date().toISOString().slice(0, 10)
   );
-  const [currency, setCurrency] = useState('USD');
+  const [currency, setCurrency] = useState('PEN');
   const [kind, setKind] = useState('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
-  const [payer, setPayer] = useState('together');
+  const [payer, setPayer] = useState('Together');
   const [description, setDescription] = useState('');
 
   // Field-level validation errors
   const [errors, setErrors] = useState({});
 
+  // Threshold values (fetched from settings or defaults)
+  const [usdThreshold, setUsdThreshold] = useState(USD_THRESHOLD);
+  const [fxRate, setFxRate] = useState(FX_USD_TO_PEN);
+
   // Get householdId from profile
   const householdId = profile?.household_id || null;
+
+  // Load threshold settings
+  useEffect(() => {
+    if (isDemoMode) {
+      const demoThresholds = getDemoThresholds();
+      setUsdThreshold(demoThresholds.usdThreshold);
+      setFxRate(demoThresholds.fxRate);
+      return;
+    }
+
+    if (!householdId) return;
+
+    async function loadThresholds() {
+      const { data: config } = await supabase
+        .from('budget_config')
+        .select('usd_threshold, fx_usd_to_pen')
+        .eq('household_id', householdId)
+        .maybeSingle();
+
+      if (config) {
+        setUsdThreshold(config.usd_threshold);
+        setFxRate(config.fx_usd_to_pen);
+      }
+    }
+
+    loadThresholds();
+  }, [isDemoMode, householdId]);
 
   // Set default currency from profile
   useEffect(() => {
@@ -71,7 +97,11 @@ export default function QuickAddForm({ onSuccess }) {
     }
   }, [profile?.default_currency]);
 
-  const thr = useMemo(() => thresholdFor(currency), [currency]);
+  const thr = useMemo(
+    () =>
+      currency === 'USD' ? usdThreshold : Math.round(usdThreshold * fxRate),
+    [currency, usdThreshold, fxRate]
+  );
   const maxAmount = useMemo(() => getMaxAmount(currency), [currency]);
   const numericAmount = useMemo(() => {
     const n = Number(amount);
