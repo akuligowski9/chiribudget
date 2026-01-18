@@ -1,19 +1,21 @@
 # ChiriBudget - Development Notes
 
-## Resume Point (Jan 12, 2026)
+## Resume Point (Jan 18, 2026)
 
 ### Just Completed
 
-- Constants file for magic numbers (`src/lib/constants.js`)
-- Description validation (200 char max with counter)
-- Loading skeletons for TodayTransactions & TransactionList
+- Auth system with AuthContext, useDemo hook, LoginScreen
+- ConfirmDialog component (replaces window.confirm)
+- Loading skeletons for all components
+- Demo data expanded to 41 transactions (USD + PEN)
+- PWA icons fixed (were empty)
+- Deprecated meta tag fixed
 
 ### Next Up (No Supabase Needed)
 
-1. Demo mode - improve sample data in `demo/transactions.json`
-2. Add skeletons to remaining components (BudgetSettings, ProfileSettings, Guidelines)
-3. Delete confirmation dialogs
-4. More test coverage (QuickAddForm validation)
+1. More test coverage (QuickAddForm validation)
+2. Discussion page improvements
+3. CSV export enhancements
 
 ### When Ready for Supabase (~15 min)
 
@@ -27,4 +29,5 @@
 npm run dev           # Start dev server
 npm test              # Run tests
 npm run build         # Production build
+npm run lint          # Run ESLint
 ```
