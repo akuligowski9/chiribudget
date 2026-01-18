@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Pencil, Save, X, BookOpen } from 'lucide-react';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
@@ -24,7 +25,7 @@ const DEFAULT_GUIDELINES = `• For all income and losses, track how much is sav
 • Notify each other before new recurring costs or spending over the threshold`;
 
 export default function Guidelines() {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -39,14 +40,13 @@ export default function Guidelines() {
   const [editValue, setEditValue] = useState('');
 
   useEffect(() => {
-    setDemoMode(getDemoMode());
     loadGuidelines();
-  }, []);
+  }, [isDemoMode]);
 
   async function loadGuidelines() {
     setLoading(true);
 
-    if (getDemoMode()) {
+    if (isDemoMode) {
       setGuidelines(DEFAULT_GUIDELINES);
       setOriginalGuidelines(DEFAULT_GUIDELINES);
       setUpdatedAt(new Date('2025-12-01'));
@@ -122,7 +122,7 @@ export default function Guidelines() {
       return;
     }
 
-    if (demoMode) {
+    if (isDemoMode) {
       setGuidelines(editValue);
       setOriginalGuidelines(editValue);
       setUpdatedAt(new Date());
@@ -238,9 +238,15 @@ export default function Guidelines() {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex items-center gap-2 text-warm-gray">
-            <div className="w-4 h-4 rounded-full bg-slate/20 animate-pulse" />
-            <span className="text-sm">Loading...</span>
+          <div className="space-y-3">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="flex gap-2">
+                <Skeleton className="w-2 h-2 rounded-full mt-1.5 shrink-0" />
+                <Skeleton
+                  className={`h-4 ${i % 2 === 0 ? 'w-full' : 'w-3/4'}`}
+                />
+              </div>
+            ))}
           </div>
         ) : editing ? (
           <div className="space-y-3">

@@ -160,14 +160,14 @@ describe('demoStore', () => {
   describe('applyThresholdChanges', () => {
     it('flags specified transactions', () => {
       const result = applyThresholdChanges({
-        toFlagIds: ['d4'], // Gas station - $52.18
+        toFlagIds: ['d6'], // Shell gas station - $52.18 expense
         toUnflagIds: [],
       });
 
       expect(result.flaggedCount).toBe(1);
       expect(result.unflaggedCount).toBe(0);
 
-      const updated = getAllDemoTransactions().find((t) => t.id === 'd4');
+      const updated = getAllDemoTransactions().find((t) => t.id === 'd6');
       expect(updated.is_flagged).toBe(true);
       expect(updated.flag_reason).toBe('over_threshold_expense');
     });
@@ -188,7 +188,7 @@ describe('demoStore', () => {
 
     it('handles both flagging and unflagging', () => {
       const result = applyThresholdChanges({
-        toFlagIds: ['d4'],
+        toFlagIds: ['d6'],
         toUnflagIds: ['d2'],
       });
 
@@ -197,13 +197,13 @@ describe('demoStore', () => {
     });
 
     it('sets correct flag_reason for income', () => {
-      // p5 is a positive amount (income)
+      // p6 is Freelance web project - positive amount (income)
       applyThresholdChanges({
-        toFlagIds: ['p5'],
+        toFlagIds: ['d18'], // Dividend - VTSAX, positive income
         toUnflagIds: [],
       });
 
-      const updated = getAllDemoTransactions().find((t) => t.id === 'p5');
+      const updated = getAllDemoTransactions().find((t) => t.id === 'd18');
       expect(updated.is_flagged).toBe(true);
       expect(updated.flag_reason).toBe('over_threshold_income');
     });
@@ -267,9 +267,9 @@ describe('demoStore', () => {
       reflagDemoTransactions({ usdThreshold: 300, fxRate: 3.25 });
       // PEN threshold would be 975
 
-      // p5 is 1200 PEN, should be flagged
-      const p5 = getAllDemoTransactions().find((t) => t.id === 'p5');
-      expect(p5.is_flagged).toBe(true);
+      // p6 is Freelance web project at 1800 PEN, should be flagged
+      const p6 = getAllDemoTransactions().find((t) => t.id === 'p6');
+      expect(p6.is_flagged).toBe(true);
     });
   });
 

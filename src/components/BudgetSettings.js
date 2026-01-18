@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
 import { USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Sliders, Calculator } from 'lucide-react';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
@@ -19,7 +20,7 @@ import {
 } from '@/lib/demoStore';
 
 export default function BudgetSettings() {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [householdId, setHouseholdId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,14 +46,13 @@ export default function BudgetSettings() {
   const penThreshold = Math.round(usdThreshold * fxRate);
 
   useEffect(() => {
-    setDemoMode(getDemoMode());
     loadSettings();
-  }, []);
+  }, [isDemoMode]);
 
   async function loadSettings() {
     setLoading(true);
 
-    if (getDemoMode()) {
+    if (isDemoMode) {
       const demoThresholds = getDemoThresholds();
       setUsdThreshold(demoThresholds.usdThreshold);
       setUsdThresholdInput(String(demoThresholds.usdThreshold));
@@ -133,7 +133,7 @@ export default function BudgetSettings() {
       return;
     }
 
-    if (demoMode) {
+    if (isDemoMode) {
       // Get preview of affected transactions
       const preview = getThresholdChangePreview({ usdThreshold, fxRate });
       setModalData(preview);
@@ -208,7 +208,7 @@ export default function BudgetSettings() {
     setShowModal(false);
     setSaving(true);
 
-    if (demoMode) {
+    if (isDemoMode) {
       // Save demo thresholds
       setDemoThresholds({ usdThreshold, fxRate });
       // Apply flag/unflag changes
@@ -314,9 +314,19 @@ export default function BudgetSettings() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex items-center gap-2 text-warm-gray">
-              <div className="w-4 h-4 rounded-full bg-slate/20 animate-pulse" />
-              <span className="text-sm">Loading...</span>
+            <div className="space-y-4 max-w-sm">
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-48" />
+              </div>
+              <div className="space-y-1.5">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-3 w-40" />
+              </div>
+              <Skeleton className="h-24 w-full rounded-xl" />
+              <Skeleton className="h-11 w-32" />
             </div>
           ) : (
             <div className="space-y-4 max-w-sm">
@@ -329,7 +339,7 @@ export default function BudgetSettings() {
                   value={usdThresholdInput}
                   onChange={(e) => setUsdThresholdInput(e.target.value)}
                   onBlur={handleUsdBlur}
-                  disabled={!demoMode && !householdId}
+                  disabled={!isDemoMode && !householdId}
                   placeholder="500"
                 />
                 <p className="text-xs text-warm-gray">
@@ -346,7 +356,7 @@ export default function BudgetSettings() {
                   value={fxRateInput}
                   onChange={(e) => setFxRateInput(e.target.value)}
                   onBlur={handleFxBlur}
-                  disabled={!demoMode && !householdId}
+                  disabled={!isDemoMode && !householdId}
                   placeholder="3.25"
                 />
                 <p className="text-xs text-warm-gray">
@@ -370,7 +380,7 @@ export default function BudgetSettings() {
                 </p>
               </div>
 
-              {!demoMode && !householdId ? (
+              {!isDemoMode && !householdId ? (
                 <p className="text-xs text-warm-gray italic">
                   Log in to customize these settings
                 </p>

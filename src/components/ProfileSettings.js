@@ -2,17 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
+import { useDemo } from '@/hooks/useDemo';
 import { CURRENCIES } from '@/lib/categories';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input, Label } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 import { User } from 'lucide-react';
 import Toast from './Toast';
 import { toastId } from '@/lib/format';
 
 export default function ProfileSettings() {
-  const [demoMode, setDemoMode] = useState(false);
+  const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState(null);
@@ -25,14 +26,13 @@ export default function ProfileSettings() {
   const [originalCurrency, setOriginalCurrency] = useState('USD');
 
   useEffect(() => {
-    setDemoMode(getDemoMode());
     loadProfile();
-  }, []);
+  }, [isDemoMode]);
 
   async function loadProfile() {
     setLoading(true);
 
-    if (getDemoMode()) {
+    if (isDemoMode) {
       setDisplayName('Demo User');
       setOriginalDisplayName('Demo User');
       setDefaultCurrency('USD');
@@ -77,7 +77,7 @@ export default function ProfileSettings() {
       return;
     }
 
-    if (demoMode) {
+    if (isDemoMode) {
       setOriginalDisplayName(displayName);
       setOriginalCurrency(defaultCurrency);
       setToast({ id: toastId(), type: 'success', title: 'Saved (demo)' });
@@ -130,11 +130,24 @@ export default function ProfileSettings() {
       </CardHeader>
       <CardContent>
         {loading ? (
-          <div className="flex items-center gap-2 text-warm-gray">
-            <div className="w-4 h-4 rounded-full bg-slate/20 animate-pulse" />
-            <span className="text-sm">Loading...</span>
+          <div className="space-y-4 max-w-sm">
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-12" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-56" />
+            </div>
+            <div className="space-y-1.5">
+              <Skeleton className="h-4 w-28" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-3 w-48" />
+            </div>
+            <Skeleton className="h-11 w-28" />
           </div>
-        ) : !demoMode && !userId ? (
+        ) : !isDemoMode && !userId ? (
           <p className="text-sm text-warm-gray">
             Log in to configure your profile settings.
           </p>
