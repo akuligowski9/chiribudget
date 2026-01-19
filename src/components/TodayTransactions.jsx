@@ -1,16 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { useDemo } from '@/hooks/useDemo';
-import { useAuth } from '@/contexts/AuthContext';
-import { getDemoTransactions } from '@/lib/demoStore';
+import { Flag, FlagOff, TrendingUp, TrendingDown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
-import { Flag, FlagOff, TrendingUp, TrendingDown } from 'lucide-react';
-import Toast from './Toast';
+import { useAuth } from '@/contexts/AuthContext';
+import { useDemo } from '@/hooks/useDemo';
+import { getDemoTransactions, updateDemoTransaction } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
+import Toast from './Toast';
 
 export default function TodayTransactions({ refreshKey }) {
   const { isDemoMode } = useDemo();
@@ -61,6 +61,8 @@ export default function TodayTransactions({ refreshKey }) {
 
   async function toggleFlag(id, currentFlag) {
     if (isDemoMode) {
+      // Update demoStore so other components see the change
+      updateDemoTransaction(id, { is_flagged: !currentFlag });
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, is_flagged: !currentFlag } : r))
       );

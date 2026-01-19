@@ -21,7 +21,7 @@ import {
   FX_USD_TO_PEN,
 } from '@/lib/categories';
 import { getMaxAmount, MAX_DESCRIPTION_LENGTH } from '@/lib/constants';
-import { getDemoThresholds } from '@/lib/demoStore';
+import { addDemoTransaction, getDemoThresholds } from '@/lib/demoStore';
 import { normalizeDesc, toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
@@ -281,6 +281,8 @@ export default function QuickAddForm({ onSuccess }) {
     };
 
     if (isDemoMode) {
+      // Add to demoStore so other components see the new transaction
+      addDemoTransaction(row);
       setToast({
         id: toastId(),
         type: 'success',

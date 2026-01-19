@@ -1,11 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
-import { getDemoMode } from '@/lib/auth';
-import { getDemoTransactions } from '@/lib/demoStore';
-import { CURRENCIES } from '@/lib/categories';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import {
   Flag,
   AlertTriangle,
@@ -13,9 +8,14 @@ import {
   TrendingUp,
   TrendingDown,
 } from 'lucide-react';
-import Toast from './Toast';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { getDemoMode } from '@/lib/auth';
+import { CURRENCIES } from '@/lib/categories';
+import { getDemoTransactions, updateDemoTransaction } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
+import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
+import Toast from './Toast';
 
 export default function FlaggedReview({ currency, onCurrencyChange }) {
   const [demoMode, setDemoMode] = useState(false);
@@ -66,6 +66,8 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
 
   async function saveExplanation(id, explanation) {
     if (demoMode) {
+      // Update demoStore so other components see the change
+      updateDemoTransaction(id, { explanation });
       setRows((prev) =>
         prev.map((r) => (r.id === id ? { ...r, explanation } : r))
       );
@@ -94,6 +96,8 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
 
   async function unflag(id) {
     if (demoMode) {
+      // Update demoStore so other components see the change
+      updateDemoTransaction(id, { is_flagged: false });
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({ id: toastId(), type: 'success', title: 'Unflagged (demo)' });
       return;
