@@ -7,11 +7,7 @@ import { useTranslations } from 'next-intl';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
-import {
-  EXPENSE_CATEGORIES,
-  INCOME_CATEGORIES,
-  PAYERS,
-} from '@/lib/categories';
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
 import { convertAmount } from '@/lib/currency';
 import { getDemoTransactions } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
@@ -64,7 +60,7 @@ export default function DashboardSummary({
   refreshKey,
 }) {
   const t = useTranslations();
-  const { conversionRate } = useAuth();
+  const { conversionRate, payerOptions } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
   const [rawRows, setRawRows] = useState([]);
@@ -142,10 +138,10 @@ export default function DashboardSummary({
   }, [expenseRows]);
 
   const netByPayer = useMemo(() => {
-    const m = Object.fromEntries(PAYERS.map((p) => [p, 0]));
+    const m = Object.fromEntries(payerOptions.map((p) => [p, 0]));
     for (const r of rows) m[r.payer] = (m[r.payer] || 0) + r.displayAmount;
     return m;
-  }, [rows]);
+  }, [rows, payerOptions]);
 
   const totalIncome = sum(Object.values(incomeByCat));
   const totalExpenses = sum(Object.values(expenseByCat));
@@ -290,39 +286,50 @@ export default function DashboardSummary({
           </div>
 
           {/* Net by Payer */}
-          <div className="bg-white/40 rounded-xl p-4 border border-white/60">
-            <div className="font-semibold text-charcoal mb-3">
-              {t('dashboard.netByPayer')}
-            </div>
-            <div className="grid grid-cols-3 gap-3">
-              {PAYERS.map((p) => {
-                const val = Number(netByPayer[p] || 0);
-                return (
-                  <div
-                    key={p}
-                    className={cn(
-                      'rounded-lg p-3 text-center',
-                      val >= 0
-                        ? 'bg-success/10 border border-success/20'
-                        : 'bg-error/10 border border-error/20'
-                    )}
-                  >
-                    <div className="text-xs text-stone font-medium mb-1 capitalize">
-                      {t(`payers.${p.toLowerCase()}`)}
-                    </div>
+          {payerOptions.length > 0 && (
+            <div className="bg-white/40 rounded-xl p-4 border border-white/60">
+              <div className="font-semibold text-charcoal mb-3">
+                {t('dashboard.netByPayer')}
+              </div>
+              <div
+                className={cn(
+                  'grid gap-3',
+                  payerOptions.length === 1
+                    ? 'grid-cols-1'
+                    : payerOptions.length === 2
+                      ? 'grid-cols-2'
+                      : 'grid-cols-3'
+                )}
+              >
+                {payerOptions.map((p) => {
+                  const val = Number(netByPayer[p] || 0);
+                  return (
                     <div
+                      key={p}
                       className={cn(
-                        'font-bold',
-                        val >= 0 ? 'text-success' : 'text-error'
+                        'rounded-lg p-3 text-center',
+                        val >= 0
+                          ? 'bg-success/10 border border-success/20'
+                          : 'bg-error/10 border border-error/20'
                       )}
                     >
-                      {currency} {val.toFixed(2)}
+                      <div className="text-xs text-stone font-medium mb-1 capitalize">
+                        {p === 'Together' ? t('payers.together') : p}
+                      </div>
+                      <div
+                        className={cn(
+                          'font-bold',
+                          val >= 0 ? 'text-success' : 'text-error'
+                        )}
+                      >
+                        {currency} {val.toFixed(2)}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
         </CardContent>
       </Card>
 

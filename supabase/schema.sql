@@ -6,9 +6,7 @@
 create extension if not exists pgcrypto;
 
 -- Enums
-do $$ begin
-  create type payer_t as enum ('alex', 'adriana', 'together');
-exception when duplicate_object then null; end $$;
+-- Note: payer is now TEXT (not enum) to support dynamic household member names
 
 do $$ begin
   create type currency_t as enum ('USD', 'PEN');
@@ -129,7 +127,7 @@ create table if not exists transactions (
   amount numeric(12,2) not null, -- negative = expense, positive = income
 
   category category_t not null,
-  payer payer_t not null,
+  payer text not null, -- display_name from profiles, or 'Together'
 
   -- Flagging workflow (notes not required per-transaction by default)
   is_flagged boolean not null default false,
@@ -270,7 +268,7 @@ create table if not exists import_batches (
   source_file_url text, -- URL to file in Supabase Storage
   source_type source_type_t default 'screenshot',
   source_bank source_bank_t default 'other',
-  default_payer payer_t default 'adriana',
+  default_payer text, -- display_name from profiles
   txn_year integer, -- Year when dates don't include it
   date_range_start date,
   date_range_end date,

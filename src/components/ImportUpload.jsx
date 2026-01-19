@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { AlertCircle, FileSpreadsheet, Loader2, Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Papa from 'papaparse';
@@ -15,7 +15,6 @@ import {
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { PAYERS } from '@/lib/categories';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 
@@ -138,7 +137,7 @@ function generateFingerprint(
 export default function ImportUpload({ onClose, onSuccess }) {
   const t = useTranslations();
   const fileInputRef = useRef(null);
-  const { profile } = useAuth();
+  const { profile, payerOptions } = useAuth();
   const { isDemoMode } = useDemo();
   const [toast, setToast] = useState(null);
 
@@ -146,8 +145,15 @@ export default function ImportUpload({ onClose, onSuccess }) {
   const [file, setFile] = useState(null);
   const [previewData, setPreviewData] = useState(null);
   const [bank, setBank] = useState('interbank');
-  const [defaultPayer, setDefaultPayer] = useState('Partner 1');
+  const [defaultPayer, setDefaultPayer] = useState('');
   const [year, setYear] = useState(CURRENT_YEAR.toString());
+
+  // Set default payer when options are loaded
+  useEffect(() => {
+    if (payerOptions.length > 0 && !defaultPayer) {
+      setDefaultPayer(payerOptions[0]);
+    }
+  }, [payerOptions, defaultPayer]);
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
   const [importResults, setImportResults] = useState(null); // { inserted, duplicates, unparseable }
@@ -307,14 +313,52 @@ export default function ImportUpload({ onClose, onSuccess }) {
         );
       }
 
-      // Insert transactions (skip duplicates)
+      // Compute date range from transactions
+      const dates = transactions.map((tx) => tx.txn_date).sort();
+      const dateRangeStart = dates[0];
+      const dateRangeEnd = dates[dates.length - 1];
+      const month = dateRangeStart?.slice(0, 7) || `${year}-01`;
+
+      // Create display name: "Bank Month Year" e.g. "Interbank Nov 2025"
+      const bankLabel = BANKS.find((b) => b.value === bank)?.label || bank;
+      const monthDate = new Date(month + '-01');
+      const monthName = monthDate.toLocaleString('en', { month: 'short' });
+      const displayName = `${bankLabel} ${monthName} ${year}`;
+
+      // Create import batch record
+      const { data: batchData, error: batchError } = await supabase
+        .from('import_batches')
+        .insert({
+          household_id: profile?.household_id,
+          currency: mapping.currency,
+          month,
+          source_bank: bank,
+          default_payer: defaultPayer,
+          txn_year: parseInt(year),
+          date_range_start: dateRangeStart,
+          date_range_end: dateRangeEnd,
+          display_name: displayName,
+          raw_payload: parseResult.data,
+          status: 'staged',
+          created_by: profile?.user_id,
+        })
+        .select('id')
+        .single();
+
+      if (batchError) {
+        throw new Error(batchError.message);
+      }
+
+      const batchId = batchData.id;
+
+      // Insert transactions with batch ID (skip duplicates)
       let insertedCount = 0;
       let skippedCount = 0;
 
       for (const tx of transactions) {
         const { error: txError } = await supabase
           .from('transactions')
-          .insert(tx);
+          .insert({ ...tx, import_batch_id: batchId });
 
         if (txError) {
           if (txError.code === '23505') {
@@ -577,9 +621,9 @@ export default function ImportUpload({ onClose, onSuccess }) {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {PAYERS.map((p) => (
+                    {payerOptions.map((p) => (
                       <SelectItem key={p} value={p}>
-                        {t(`payers.${p.toLowerCase()}`)}
+                        {p === 'Together' ? t('payers.together') : p}
                       </SelectItem>
                     ))}
                   </SelectContent>

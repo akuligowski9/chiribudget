@@ -16,7 +16,6 @@ import { useDemo } from '@/hooks/useDemo';
 import {
   ALL_CATEGORIES,
   CURRENCIES,
-  PAYERS,
   USD_THRESHOLD,
   FX_USD_TO_PEN,
 } from '@/lib/categories';
@@ -56,7 +55,7 @@ function computeFingerprint({
 export default function QuickAddForm({ onSuccess }) {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
-  const { user, profile } = useAuth();
+  const { user, profile, payerOptions } = useAuth();
   const [toast, setToast] = useState(null);
 
   const [txn_date, setTxnDate] = useState(() =>
@@ -66,7 +65,7 @@ export default function QuickAddForm({ onSuccess }) {
   const [kind, setKind] = useState('expense');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('Food');
-  const [payer, setPayer] = useState('Together');
+  const [payer, setPayer] = useState('');
   const [description, setDescription] = useState('');
 
   // Field-level validation errors
@@ -112,6 +111,17 @@ export default function QuickAddForm({ onSuccess }) {
       setCurrency(profile.default_currency);
     }
   }, [profile?.default_currency]);
+
+  // Set default payer when options are loaded
+  useEffect(() => {
+    if (payerOptions.length > 0 && !payer) {
+      // Default to "Together" if available, otherwise first option
+      const defaultPayer = payerOptions.includes('Together')
+        ? 'Together'
+        : payerOptions[0];
+      setPayer(defaultPayer);
+    }
+  }, [payerOptions, payer]);
 
   const thr = useMemo(
     () =>
@@ -441,9 +451,9 @@ export default function QuickAddForm({ onSuccess }) {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {PAYERS.map((p) => (
+              {payerOptions.map((p) => (
                 <SelectItem key={p} value={p} className="capitalize">
-                  {t(`payers.${p.toLowerCase()}`)}
+                  {p === 'Together' ? t('payers.together') : p}
                 </SelectItem>
               ))}
             </SelectContent>

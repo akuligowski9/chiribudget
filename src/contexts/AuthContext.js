@@ -7,10 +7,14 @@ import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext(null);
 
+// Demo mode payer options
+const DEMO_PAYERS = ['Partner 1', 'Partner 2', 'Together'];
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [household, setHousehold] = useState(null);
+  const [members, setMembers] = useState([]); // Household members with display names
   const [conversionRate, setConversionRate] = useState(FX_USD_TO_PEN);
   const [loading, setLoading] = useState(true);
   // Track current user ID without triggering re-renders
@@ -56,6 +60,18 @@ export function AuthProvider({ children }) {
             if (!mounted) return;
             setHousehold(householdData || null);
 
+            // Load household members with their display names
+            const { data: membersData } = await supabase
+              .from('household_members')
+              .select('user_id, profiles(display_name)')
+              .eq('household_id', profileData.household_id);
+
+            if (!mounted) return;
+            const memberNames = (membersData || [])
+              .map((m) => m.profiles?.display_name)
+              .filter(Boolean);
+            setMembers(memberNames);
+
             // Load conversion rate from budget_config
             const { data: configData } = await supabase
               .from('budget_config')
@@ -91,6 +107,7 @@ export function AuthProvider({ children }) {
         // User logged out
         setProfile(null);
         setHousehold(null);
+        setMembers([]);
         userIdRef.current = null;
       } else if (newUser.id !== userIdRef.current) {
         // User changed, reload profile
@@ -110,8 +127,17 @@ export function AuthProvider({ children }) {
     setUser(null);
     setProfile(null);
     setHousehold(null);
+    setMembers([]);
     setConversionRate(FX_USD_TO_PEN);
   }
+
+  // Compute payer options from household members
+  // If 2+ members, add "Together" as an option
+  const payerOptions = getDemoMode()
+    ? DEMO_PAYERS
+    : members.length >= 2
+      ? [...members, 'Together']
+      : members;
 
   async function sendMagicLink(email) {
     const { error } = await supabase.auth.signInWithOtp({ email });
@@ -167,6 +193,8 @@ export function AuthProvider({ children }) {
     user,
     profile,
     household,
+    members,
+    payerOptions,
     conversionRate,
     loading,
     signOut,

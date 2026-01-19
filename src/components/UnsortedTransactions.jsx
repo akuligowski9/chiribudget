@@ -26,7 +26,7 @@ import {
 import { SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { ALL_CATEGORIES, PAYERS } from '@/lib/categories';
+import { ALL_CATEGORIES } from '@/lib/categories';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
@@ -76,7 +76,7 @@ const DEMO_UNSORTED = [
 
 export default function UnsortedTransactions() {
   const t = useTranslations();
-  const { profile } = useAuth();
+  const { profile, payerOptions } = useAuth();
   const { isDemoMode } = useDemo();
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
@@ -390,9 +390,9 @@ export default function UnsortedTransactions() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">{t('unsorted.allPayers')}</SelectItem>
-                {PAYERS.map((p) => (
+                {payerOptions.map((p) => (
                   <SelectItem key={p} value={p}>
-                    {t(`payers.${p.toLowerCase()}`)}
+                    {p === 'Together' ? t('payers.together') : p}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -429,9 +429,9 @@ export default function UnsortedTransactions() {
                   <span>{t('unsorted.setPayer')}</span>
                 </SelectTrigger>
                 <SelectContent>
-                  {PAYERS.map((p) => (
+                  {payerOptions.map((p) => (
                     <SelectItem key={p} value={p}>
-                      {t(`payers.${p.toLowerCase()}`)}
+                      {p === 'Together' ? t('payers.together') : p}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -570,9 +570,11 @@ export default function UnsortedTransactions() {
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                {PAYERS.map((p) => (
+                                {payerOptions.map((p) => (
                                   <SelectItem key={p} value={p}>
-                                    {t(`payers.${p.toLowerCase()}`)}
+                                    {p === 'Together'
+                                      ? t('payers.together')
+                                      : p}
                                   </SelectItem>
                                 ))}
                               </SelectContent>

@@ -26,7 +26,7 @@ import {
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
-import { ALL_CATEGORIES, CURRENCIES, PAYERS } from '@/lib/categories';
+import { ALL_CATEGORIES, CURRENCIES } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
 import { convertAmount } from '@/lib/currency';
 import {
@@ -62,7 +62,7 @@ export default function TransactionList({
 }) {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
-  const { conversionRate } = useAuth();
+  const { conversionRate, payerOptions } = useAuth();
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -559,17 +559,19 @@ export default function TransactionList({
                         >
                           <SelectTrigger className="h-8 w-auto min-w-[100px] text-xs capitalize">
                             <SelectValue>
-                              {r.payer && t(`payers.${r.payer.toLowerCase()}`)}
+                              {r.payer === 'Together'
+                                ? t('payers.together')
+                                : r.payer}
                             </SelectValue>
                           </SelectTrigger>
                           <SelectContent>
-                            {PAYERS.map((p) => (
+                            {payerOptions.map((p) => (
                               <SelectItem
                                 key={p}
                                 value={p}
                                 className="text-xs capitalize"
                               >
-                                {t(`payers.${p.toLowerCase()}`)}
+                                {p === 'Together' ? t('payers.together') : p}
                               </SelectItem>
                             ))}
                           </SelectContent>
