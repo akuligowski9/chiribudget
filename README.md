@@ -3,8 +3,16 @@
 **Purpose:** Create a friendly, shared view of our family’s financial health.  
 **Subtitle:** Built to make monthly budgeting easier than spreadsheets.
 
-ChiriBudget is a small, mobile-friendly web app (installable as a PWA) designed for two-person households.  
+ChiriBudget is a small, mobile-friendly web app (installable as a PWA) designed for two-person households.
 It supports quick daily transaction entry, import preview/verification, CSV export, and a monthly dashboard for discussion and accountability.
+
+---
+
+## Live Demo
+
+Try ChiriBudget without signing up: **[Try Demo](https://chiribudget.vercel.app)**
+
+Click "Try Demo Mode" on the login screen to explore with sample data. No account required.
 
 ---
 
@@ -259,3 +267,27 @@ If you need to start fresh:
 2. Re-run the entire `supabase/schema.sql`
 
 **Warning:** This deletes all data permanently.
+
+---
+
+## Contributing
+
+This is a personal project for household use, but contributions are welcome.
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Make your changes
+4. Run tests (`npm test`) and lint (`npm run lint`)
+5. Commit with a descriptive message
+6. Open a pull request
+
+Please read the existing code style and follow established patterns.
+
+---
+
+## Documentation
+
+- [BACKLOG.md](./docs/BACKLOG.md) — Task tracking and priorities
+- [ROADMAP.md](./docs/ROADMAP.md) — High-level planning (Now/Next/Later)
+- [TECH_SPEC.md](./docs/TECH_SPEC.md) — Technical specification and architecture
+- [INSTRUCTIONS.md](./docs/INSTRUCTIONS.md) — AI collaboration guidelines

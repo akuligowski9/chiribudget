@@ -224,17 +224,28 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 - Description: Max 200 characters
 - Category/Payer/Currency: Required enums
 
+**Edge Cases**:
+
+- Duplicate fingerprint: Rejected by unique constraint, user sees error
+- Network failure mid-submit: Transaction not saved, user can retry
+- Threshold exactly equal: Not flagged (must exceed threshold)
+
+**Decisions**:
+
+- Fingerprint uses description (not just date+amount) to allow same-day same-amount purchases at different stores
+- Negative amounts = expenses, positive = income (convention from original design)
+
 ### 5.2 Import Preview
 
 **Purpose**: Bulk import with verification before commit
 
 **Flow**:
 
-1. User pastes JSON array of transactions
+1. User pastes JSON array or uploads CSV
 2. Client parses and validates structure
 3. Preview shows: count, total, duplicates detected
 4. User confirms
-5. Transactions inserted with `source: 'import'`
+5. Transactions inserted with `source: 'import'`, linked to import_batch
 
 **JSON Format**:
 
@@ -249,6 +260,19 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 ]
 ```
 
+**Edge Cases**:
+
+- Empty file: Rejected with clear error message
+- Malformed JSON/CSV: Parse error shown, no partial import
+- All duplicates: Success with "0 new, N skipped" message
+- Mixed valid/invalid rows: Valid rows imported, invalid rows listed for manual entry
+
+**Decisions**:
+
+- CSV import creates import_batch record for grouping/tracking
+- Duplicates silently skipped (not errors) to allow re-importing same file safely
+- Batch insert via RPC for atomicity and performance
+
 ### 5.3 Dashboard
 
 **Purpose**: Monthly review and accountability
@@ -257,10 +281,21 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 
 - Month/currency selector
 - Category breakdown (pie/bar charts)
-- Net by payer (alex, adriana, together)
+- Net by payer (dynamic from household members)
 - Flagged transactions list
 - Discussion notes editor
-- "Mark Discussed" button (blocked if unresolved flags)
+- "Mark Discussed" button (warning if unresolved flags)
+
+**Edge Cases**:
+
+- No transactions in month: Empty state with helpful message
+- Single household member: "Together" option hidden, only shows individual
+- All flags resolved mid-session: UI updates, "Mark Discussed" enabled
+
+**Decisions**:
+
+- "Mark Discussed" shows confirmation dialog if unresolved flags exist, but doesn't block
+- Payer breakdown uses dynamic names from household_members, not hardcoded
 
 ### 5.4 Auto-Flagging
 
@@ -274,7 +309,19 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 **Default Thresholds**:
 
 - USD: $500
-- PEN: 1625 (500 \* 3.25 FX rate)
+- PEN: 1625 (500 × 3.25 FX rate)
+
+**Edge Cases**:
+
+- Threshold exactly equal: Not flagged (must strictly exceed)
+- Threshold changed after transaction: Existing flags unchanged until re-flagging
+- Manual category override: User can change category, flag persists
+
+**Decisions**:
+
+- Auto-flagging overrides user-selected category (forces Unexpected/Extra)
+- Thresholds configurable per household via budget_config table
+- FX rate stored in config for PEN threshold calculation
 
 ### 5.5 Demo Mode
 
@@ -288,6 +335,18 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 - Uses `demo/transactions.json` (41 sample transactions)
 - Import preview works but doesn't persist
 - No authentication required
+
+**Edge Cases**:
+
+- Browser clears localStorage: Demo mode exits, user sees login screen
+- Demo user tries to access Settings: Profile shows demo placeholder data
+- Demo user deletes transaction: Removed from demoStore for session only
+
+**Decisions**:
+
+- Demo changes stored in demoStore (in-memory) and sync across components
+- Demo payers use fallback list since no real household members exist
+- Demo mode indicated by banner at top of screen
 
 ---
 
@@ -399,21 +458,56 @@ npm run test:coverage # With coverage report
 
 ---
 
-## 10. Future Considerations
+## 10. External Integrations
 
-### 10.1 Planned Enhancements
+### 10.1 Supabase
 
-- E2E tests with Playwright
-- Server-side validation for enums
-- Batch import with transaction rollback
-- Household member management UI
-- Error monitoring (Sentry)
+- **Auth**: Magic link email authentication
+- **Database**: PostgreSQL with Row-Level Security
+- **Client SDK**: `@supabase/supabase-js` for browser-side queries
+- **Real-time**: Not currently used (future consideration)
 
-### 10.2 Documented Gaps (Acceptable for v1)
+### 10.2 Vercel
 
-- No rate limiting (low risk for 2-person app)
-- No two-factor auth (magic link sufficient)
-- No offline support (requires internet)
+- **Hosting**: Edge deployment with global CDN
+- **CI/CD**: GitHub Actions triggers deploy on push to main
+- **Environment**: Node.js 18.x runtime
+
+### 10.3 No Other External Services
+
+ChiriBudget intentionally avoids third-party services for:
+
+- Analytics (privacy)
+- Error tracking (planned: Sentry)
+- Translation APIs (deferred)
+- Banking integrations (out of scope)
+
+---
+
+## 11. Open Questions & Risks
+
+### 11.1 Open Questions
+
+| Question                  | Context                                                     | Status                |
+| ------------------------- | ----------------------------------------------------------- | --------------------- |
+| Bank CSV formats          | Need examples from BCP, Interbank to build parsers          | Waiting on user input |
+| Threshold re-flagging UX  | How to handle existing transactions when threshold changes? | Deferred              |
+| Multi-currency households | What if household uses 3+ currencies?                       | Out of scope for v1   |
+
+### 11.2 Known Risks
+
+| Risk                         | Impact                               | Mitigation                                          |
+| ---------------------------- | ------------------------------------ | --------------------------------------------------- |
+| Supabase downtime            | App unusable                         | Accept for personal project; Supabase has 99.9% SLA |
+| Magic link email delivery    | Users can't log in                   | Document troubleshooting; check spam folder         |
+| Demo data staleness          | Demo doesn't reflect latest features | Manually update demo/transactions.json              |
+| Browser localStorage cleared | Demo mode exits unexpectedly         | Session-only impact; no data loss                   |
+
+### 11.3 Documented Gaps (Acceptable for v1)
+
+- No rate limiting (low risk for 2-person app, RLS prevents abuse)
+- No two-factor auth (magic link is single-use, expires in 1 hour)
+- No offline support (requires internet; PWA caches static assets only)
 
 ---
 
