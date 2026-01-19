@@ -281,7 +281,8 @@
     "missingDate": "Falta fecha",
     "zeroAmount": "Monto cero",
     "noFileSelected": "Por favor selecciona un archivo",
-    "processingFailed": "Error al procesar estado de cuenta"
+    "processingFailed": "Error al procesar estado de cuenta",
+    "history": "Historial"
   },
   "discussion": {
     "title": "Discusión Mensual",

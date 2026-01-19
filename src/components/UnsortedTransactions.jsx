@@ -6,6 +6,7 @@ import {
   CheckSquare,
   FileUp,
   Filter,
+  History,
   ImageIcon,
   Square,
   Tag,
@@ -84,14 +85,15 @@ export default function UnsortedTransactions() {
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [payerFilter, setPayerFilter] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
 
-  // Load pending transactions grouped by import batch
+  // Load transactions grouped by import batch
   useEffect(() => {
-    loadPendingTransactions();
+    loadBatches();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [profile?.household_id, isDemoMode]);
+  }, [profile?.household_id, isDemoMode, showHistory]);
 
-  async function loadPendingTransactions() {
+  async function loadBatches() {
     if (isDemoMode) {
       setBatches(DEMO_UNSORTED);
       setLoading(false);
@@ -104,25 +106,33 @@ export default function UnsortedTransactions() {
     }
 
     try {
-      // Get import batches with pending transactions
-      const { data: batchData, error: batchErr } = await supabase
+      // Get import batches - filter by status unless showing history
+      let batchQuery = supabase
         .from('import_batches')
         .select('*')
         .eq('household_id', profile.household_id)
-        .in('status', ['staged', 'processing'])
         .order('created_at', { ascending: false });
 
+      if (!showHistory) {
+        batchQuery = batchQuery.in('status', ['staged', 'processing']);
+      }
+
+      const { data: batchData, error: batchErr } = await batchQuery;
       if (batchErr) throw batchErr;
 
-      // Get all pending transactions
-      const { data: txData, error: txErr } = await supabase
+      // Get transactions - filter by status unless showing history
+      let txQuery = supabase
         .from('transactions')
         .select('*')
         .eq('household_id', profile.household_id)
-        .eq('status', 'pending')
         .is('deleted_at', null)
         .order('txn_date', { ascending: false });
 
+      if (!showHistory) {
+        txQuery = txQuery.eq('status', 'pending');
+      }
+
+      const { data: txData, error: txErr } = await txQuery;
       if (txErr) throw txErr;
 
       // Group transactions by import_batch_id
@@ -133,7 +143,7 @@ export default function UnsortedTransactions() {
         ),
       }));
 
-      // Include transactions without batch (manual pending)
+      // Include transactions without batch (manual entries)
       const orphanTx = (txData || []).filter((tx) => !tx.import_batch_id);
       if (orphanTx.length > 0) {
         batchesWithTx.push({
@@ -142,11 +152,17 @@ export default function UnsortedTransactions() {
           source_type: 'manual',
           default_payer: 'Together',
           created_at: new Date().toISOString(),
+          status: 'manual',
           transactions: orphanTx,
         });
       }
 
-      setBatches(batchesWithTx);
+      // Filter out empty batches when showing history
+      const nonEmptyBatches = showHistory
+        ? batchesWithTx
+        : batchesWithTx.filter((b) => b.transactions.length > 0);
+
+      setBatches(nonEmptyBatches);
     } catch (e) {
       setToast({
         id: toastId(),
@@ -326,7 +342,7 @@ export default function UnsortedTransactions() {
 
       const count = selectedIds.size;
       setSelectedIds(new Set());
-      await loadPendingTransactions();
+      await loadBatches();
 
       setToast({
         id: toastId(),
@@ -369,10 +385,20 @@ export default function UnsortedTransactions() {
                 </span>
               )}
             </div>
-            <Button onClick={() => setShowUpload(true)} size="sm">
-              <ImageIcon className="w-4 h-4 mr-2" />
-              {t('unsorted.import')}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant={showHistory ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setShowHistory(!showHistory)}
+              >
+                <History className="w-4 h-4 mr-2" />
+                {t('unsorted.history')}
+              </Button>
+              <Button onClick={() => setShowUpload(true)} size="sm">
+                <ImageIcon className="w-4 h-4 mr-2" />
+                {t('unsorted.import')}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -596,7 +622,7 @@ export default function UnsortedTransactions() {
           onClose={() => setShowUpload(false)}
           onSuccess={() => {
             setShowUpload(false);
-            loadPendingTransactions();
+            loadBatches();
           }}
         />
       )}

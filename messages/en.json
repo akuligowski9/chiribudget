@@ -281,7 +281,8 @@
     "missingDate": "Missing date",
     "zeroAmount": "Zero amount",
     "noFileSelected": "Please select a file",
-    "processingFailed": "Failed to process statement"
+    "processingFailed": "Failed to process statement",
+    "history": "History"
   },
   "discussion": {
     "title": "Monthly Discussion",
