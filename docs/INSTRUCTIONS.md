@@ -75,6 +75,14 @@ When conflicts arise, resolve them in this order:
 - `OPS.md` — Operational documentation (committed, redacted)
 - `OPS_PRIVATE.md` — Sensitive operational details (gitignored)
 
+### Root (Claude-specific)
+
+- `CLAUDE.md` — Claude model behavior preferences (tone, style, reminders)
+
+`CLAUDE.md` customizes Claude's behavior but does NOT override this file. If there is a conflict, `INSTRUCTIONS.md` always wins.
+
+See "CLAUDE.md Responsibilities" section below for required content.
+
 ### Rules
 
 - Do NOT create additional documentation files unless explicitly instructed.
@@ -223,6 +231,46 @@ It must include:
 - Links to BACKLOG, ROADMAP, TECH_SPEC
 
 > If README content becomes inaccurate, it must be updated during the next documentation sync.
+
+---
+
+## CLAUDE.md Responsibilities
+
+`CLAUDE.md` lives in the repository root and customizes Claude model behavior only.
+
+### Required Content
+
+```markdown
+# CLAUDE.md
+
+This file customizes behavior for Claude models only.
+Claude must still follow all rules in INSTRUCTIONS.md.
+
+Preferences:
+
+- Be verbose rather than concise.
+- Ask clarifying questions instead of assuming.
+- Surface inconsistencies explicitly.
+- Prefer structured markdown.
+- Pause every ~60 minutes to ask about a documentation sync.
+- If the user says "muffins", immediately stop and summarize state.
+
+Tone:
+
+- Direct
+- Thoughtful
+- Systems-oriented
+- Not overly enthusiastic
+
+If Claude behavior conflicts with INSTRUCTIONS.md, INSTRUCTIONS.md always wins.
+```
+
+### Rules
+
+- `CLAUDE.md` must NOT contain project-specific technical details (those belong in TECH_SPEC.md).
+- `CLAUDE.md` must NOT duplicate rules from INSTRUCTIONS.md.
+- `CLAUDE.md` is for AI model behavior preferences only.
+- If INSTRUCTIONS.md and CLAUDE.md conflict, INSTRUCTIONS.md always wins.
 
 ---
 
