@@ -72,6 +72,8 @@ When conflicts arise, resolve them in this order:
 - `BACKLOG.md` — Source of truth for committed work
 - `TECH_SPEC.md` — Deep technical + feature/view breakdown
 - `ROADMAP.md` — High-level narrative plan
+- `OPS.md` — Operational documentation (committed, redacted)
+- `OPS_PRIVATE.md` — Sensitive operational details (gitignored)
 
 ### Rules
 
@@ -408,3 +410,153 @@ Before ending a session:
    - Where to resume next time
 
 > This cool-down ensures the project is safe to pause and easy to resume.
+
+---
+
+## Operational Documentation (OPS)
+
+This project may include operational documentation that describes how to OPERATE, PROTECT, RECOVER, and MAINTAIN the system.
+
+Operational documentation is intentionally separate from design and planning documents. It focuses on real-world procedures and risk management, not system architecture or feature behavior.
+
+The project owner (Alex) does NOT need to be an operations expert. The AI collaborator is explicitly expected to assist with identifying, proposing, and maintaining operational knowledge in a safe, conservative manner.
+
+### OPS Document Structure
+
+Operational documentation uses the following structure:
+
+```
+docs/
+├── OPS.md              (committed, redacted, procedural)
+└── OPS_PRIVATE.md      (gitignored, sensitive/internal)
+```
+
+**Rules:**
+
+- `OPS.md` must be committed to the repository.
+- `OPS_PRIVATE.md` must be gitignored.
+- `OPS.md` must never contain secrets, credentials, private keys, or internal-only access details.
+- `OPS_PRIVATE.md` may contain sensitive operational information.
+
+`OPS.md` should reference `OPS_PRIVATE.md` abstractly when sensitive details exist (e.g., "See OPS_PRIVATE.md for credentials or internal access details.").
+
+### What OPS Is (Intent)
+
+OPS documentation exists to answer questions such as:
+
+- "How do I back this up?"
+- "How do I restore it if something goes wrong?"
+- "What secrets exist and how are they protected?"
+- "What should I check during an incident?"
+- "What steps should be taken before deploying or making risky changes?"
+
+OPS documentation is a practical runbook. It prioritizes safety, clarity, and recovery over completeness or elegance.
+
+### What Belongs in OPS.md (Committed)
+
+`OPS.md` MAY include:
+
+- Backup and recovery procedures
+- Restore testing steps
+- High-level security model and threat awareness
+- Authentication and access model (no secrets)
+- Deployment and environment setup checklists
+- Emergency or failure-handling procedures
+- Operational assumptions (Supabase, Vercel, etc.)
+- CLI commands with placeholders
+- Links to dashboards or provider documentation
+- Notes intended for maintainers, not users
+
+`OPS.md` is allowed to be procedural, explicit, environment-specific, opinionated, and internal-facing.
+
+`OPS.md` must remain safe to commit publicly.
+
+### What Belongs in OPS_PRIVATE.md (Gitignored)
+
+`OPS_PRIVATE.md` MAY include:
+
+- Actual secrets, tokens, or keys
+- Service role keys
+- Internal URLs or admin panels
+- Provider project references
+- Emergency access instructions
+- Incident notes or sensitive observations
+- Any information you would not want publicly visible
+
+> **AI must NEVER invent or reconstruct the contents of OPS_PRIVATE.md.**
+> **AI must NEVER request secrets unless explicitly instructed.**
+
+### What Does NOT Belong in OPS
+
+OPS documentation must NOT contain:
+
+- Feature definitions
+- Product requirements
+- User-facing behavior descriptions
+- Architectural reasoning or tradeoffs
+- Data model explanations
+- Long-term product intent
+- Planning, prioritization, or backlog items
+
+Those belong in BACKLOG.md, TECH_SPEC.md, or ROADMAP.md.
+
+OPS documentation must not duplicate TECH_SPEC content. TECH_SPEC may reference OPS documentation, but OPS must not explain how the system is designed or implemented.
+
+### AI Responsibility for OPS
+
+The AI collaborator is expected to actively assist with operations by:
+
+- Identifying when operational concerns may exist
+- Asking questions such as:
+  - "Should we document backup and recovery for this?"
+  - "Is there a security or operational risk we should capture?"
+  - "Does this change affect deployment or restore procedures?"
+- Proposing safe, conservative defaults when the owner is unsure
+- Clearly marking assumptions and asking for confirmation
+- Avoiding provider-specific claims unless confirmed
+
+If the AI is uncertain about an operational detail:
+
+- It must ask before documenting it.
+- It must not hallucinate procedures, limits, or guarantees.
+
+### OPS Update Frequency
+
+OPS documentation does NOT follow the 60-minute documentation sync rule.
+
+Update OPS documentation ONLY when:
+
+- Infrastructure or hosting changes
+- Backup or recovery strategy changes
+- Authentication or security model changes
+- Deployment process changes
+- Restore or recovery procedures are tested
+- An incident or failure reveals missing or incorrect guidance
+- The AI identifies a meaningful operational gap and asks to address it
+
+OPS updates should be intentional, infrequent, and high-signal.
+
+### Logging OPS Updates
+
+When `OPS.md` or `OPS_PRIVATE.md` is updated:
+
+- Record a brief entry in `PROGRESS.md` noting:
+  - What changed
+  - Why it changed
+  - Which OPS file was affected
+
+OPS documentation itself should remain concise and procedural. Historical context belongs in `PROGRESS.md`.
+
+### OPS and Safe Operation
+
+When working on:
+
+- Design, features, or planning → OPS documentation should generally be ignored.
+- Deployment, security, recovery, or incidents → OPS documentation becomes authoritative.
+
+If OPS documentation appears missing, outdated, or incomplete when relevant:
+
+- Pause and ask whether it should be updated before proceeding.
+- Do NOT assume or invent operational behavior.
+
+> OPS documentation exists to make the system safe to operate, pause, and recover.

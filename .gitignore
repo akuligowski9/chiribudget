@@ -36,8 +36,9 @@ Thumbs.db
 /blob-report/
 /playwright/.cache/
 
-# Security documentation (personal notes, not for public repo)
+# Sensitive documentation (not for public repo)
 SECURITY.md
+docs/OPS_PRIVATE.md
 
 # Terminal task files (for parallel Claude sessions)
 TERMINAL_A_TASKS.md
