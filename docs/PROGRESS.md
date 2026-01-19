@@ -4,6 +4,37 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-19 — Future Features Added to Backlog
+
+### Summary
+
+End-of-day session to capture future feature ideas in the backlog and promote them to GitHub Issues for long-term tracking.
+
+### Work Completed
+
+**New Backlog Items (Low Priority)**
+
+- CB-035: Recurring Transactions — Auto-populate monthly bills, rent, subscriptions (#1)
+- CB-036: Category Budget Limits — Set spending caps per category with warnings (#2)
+- CB-037: Month-over-Month Comparison — Show spending trends vs previous months (#3)
+- CB-038: Shared Shopping List — Household shopping list that complements expense tracking (#4)
+
+**GitHub Issues Created**
+
+All 4 items promoted to GitHub Issues for async tracking. BACKLOG.md updated with issue numbers.
+
+### Decisions Made
+
+- **Receipt photo attachment deferred**: Considered but not added — would require significant infrastructure (storage, OCR) for minimal benefit in a 2-person household app
+- **All new items Low priority**: These are enhancements, not blockers for v1
+
+### What's Next
+
+- Bank-specific CSV parsing (waiting on examples)
+- Terminal B tasks from plan file (ConfirmDialog, demoStore tests, etc.)
+
+---
+
 ## 2026-01-19 — Documentation Restructure & INSTRUCTIONS.md Compliance
 
 ### Summary
