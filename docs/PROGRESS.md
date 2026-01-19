@@ -4,6 +4,57 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-19 — Documentation Restructure & INSTRUCTIONS.md Compliance
+
+### Summary
+
+Major documentation overhaul to align with the new `INSTRUCTIONS.md` collaboration contract. Consolidated operational docs, restructured backlog format, and established consistent documentation standards.
+
+### Work Completed
+
+**Documentation Structure**
+
+- Created `docs/INSTRUCTIONS.md` — AI collaboration contract with authoritative rules
+- Created `docs/PROGRESS.md` — Session continuity log
+- Created `docs/ROADMAP.md` — Now/Next/Later narrative plan
+- Restructured `docs/BACKLOG.md` to match required format (Status Flow, checkbox items, GitHub Issue field)
+- Updated `docs/TECH_SPEC.md` with Edge Cases, Decisions, External Integrations, Open Questions/Risks
+
+**Operational Documentation (OPS)**
+
+- Created `docs/OPS.md` — Public-safe operational runbook (backup, recovery, security, deployment)
+- Created `docs/OPS_PRIVATE.md` — Sensitive details (gitignored)
+- Deleted `docs/BACKUP.md` — Merged into OPS.md
+- Deleted `docs/SECURITY.md` — Split into OPS.md and OPS_PRIVATE.md
+- Added OPS section to INSTRUCTIONS.md with full guidelines
+
+**CLAUDE.md**
+
+- Simplified `CLAUDE.md` to behavior preferences only (no project details)
+- Added CLAUDE.md Responsibilities section to INSTRUCTIONS.md with required template
+- Project details now live in TECH_SPEC.md, not CLAUDE.md
+
+**README.md**
+
+- Added Live Demo link to chiribudget.vercel.app
+- Added Contributing section
+- Added Documentation section with links to docs/
+
+### Decisions Made
+
+- **INSTRUCTIONS.md is authoritative**: CLAUDE.md preferences cannot override it
+- **OPS separate from TECH_SPEC**: Operational procedures don't belong in design docs
+- **OPS_PRIVATE gitignored**: Sensitive details never committed
+- **Backlog format**: Checkbox items with Status, Priority, Assignee, GitHub Issue fields
+- **CLAUDE.md minimal**: Only behavior preferences, defers to INSTRUCTIONS.md for rules
+
+### What's Next
+
+- Bank-specific CSV parsing (waiting on examples)
+- Consider creating initial OPS.md content for other Alex projects using same template
+
+---
+
 ## 2026-01-19 — Dynamic Payers & Import Batch Improvements
 
 ### Summary
