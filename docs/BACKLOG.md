@@ -57,6 +57,38 @@ No medium priority items currently in progress.
   - GitHub Issue: No
   - Notes: Target no component over 200 lines
 
+- [ ] CB-035: Recurring Transactions
+  - Description: Auto-populate recurring transactions like monthly bills, rent, and subscriptions. Reduces manual entry for predictable expenses.
+  - Status: Planned
+  - Priority: Low
+  - Assignee: Unassigned
+  - GitHub Issue: #1
+  - Notes: Need to design recurrence UI (monthly, weekly, custom); option to skip/edit each occurrence
+
+- [ ] CB-036: Category Budget Limits
+  - Description: Set monthly spending caps per category. Warn users when approaching or exceeding limits. Helps enforce household budget agreements.
+  - Status: Planned
+  - Priority: Low
+  - Assignee: Unassigned
+  - GitHub Issue: #2
+  - Notes: Store in budget_config table; visual indicator on dashboard
+
+- [ ] CB-037: Month-over-Month Comparison
+  - Description: Show spending trends compared to previous months. "You spent 20% more on Food this month." Helps identify patterns.
+  - Status: Planned
+  - Priority: Low
+  - Assignee: Unassigned
+  - GitHub Issue: #3
+  - Notes: Could be a new dashboard section or toggle on existing charts
+
+- [ ] CB-038: Shared Shopping List
+  - Description: Simple shared list for household shopping needs. Complements expense tracking by capturing intent before purchase.
+  - Status: Planned
+  - Priority: Low
+  - Assignee: Unassigned
+  - GitHub Issue: #4
+  - Notes: New table needed; consider whether items convert to transactions
+
 ---
 
 ## Parking Lot
