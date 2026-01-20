@@ -126,6 +126,8 @@ When documentation is first set up and no prefix exists:
 Planned → In Progress → Done
               ↓
            Blocked
+              ↓
+           Archived
 ```
 
 ### Definitions
@@ -136,6 +138,9 @@ Planned → In Progress → Done
 | **In Progress** | Actively being worked on                              |
 | **Blocked**     | Cannot proceed without input, decision, or dependency |
 | **Done**        | Complete                                              |
+| **Archived**    | Was planned, no longer pursuing (kept for history)    |
+
+Use **Archived** for tasks that were planned but later abandoned, superseded, or deemed not worth doing. This preserves decision history without cluttering active work. Different from **Documented Gaps**, which are known limitations accepted by design from the start.
 
 This flow must be used consistently in:
 
@@ -198,7 +203,7 @@ Must include:
 ```markdown
 - [ ] <PREFIX>-### Short title
   - Description: combined problem + intended solution (1–4 sentences)
-  - Status: Planned | In Progress | Blocked | Done
+  - Status: Planned | In Progress | Blocked | Done | Archived
   - Priority: Critical | High | Medium | Low
   - Version: v1 | v2 | Unassigned (optional)
   - Assignee: Alex | <name> | Unassigned
