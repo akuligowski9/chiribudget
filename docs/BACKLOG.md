@@ -48,7 +48,9 @@ No medium priority items currently in progress.
 
 #### Description
 
-Add Sentry for production error tracking. Free tier sufficient for app scale, helps catch issues before users report them. Install `@sentry/nextjs`, configure DSN, no PII in reports.
+Add Sentry for production error tracking to catch issues before users report them. Currently errors in production go unnoticed until a user complains, which may never happen for non-blocking issues. Silent failures can accumulate and degrade the experience over time.
+
+Sentry's free tier is sufficient for this app's scale. Integration requires installing `@sentry/nextjs`, configuring the DSN, and ensuring no PII (emails, transaction descriptions) is included in error reports. Source maps should be uploaded for readable stack traces.
 
 #### Acceptance Criteria
 
@@ -71,7 +73,9 @@ Add Sentry for production error tracking. Free tier sufficient for app scale, he
 
 #### Description
 
-Refactor ImportPanel.jsx (330+ lines) into smaller components. Split into ImportFileUpload, ImportPreview, ImportConfirm for maintainability. Target no component over 200 lines.
+Refactor ImportPanel.jsx (330+ lines) into smaller, more maintainable components. Large components are harder to test, harder to reason about, and more prone to bugs when modified. The import flow has distinct phases that map naturally to separate components.
+
+Split into ImportFileUpload (file selection and parsing), ImportPreview (review parsed transactions), and ImportConfirm (final confirmation and submission). Target no component over 200 lines. This refactor should not change any user-facing behavior - purely internal restructuring.
 
 #### Acceptance Criteria
 
