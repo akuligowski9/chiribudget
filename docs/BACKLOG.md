@@ -34,7 +34,60 @@ No critical items currently.
 
 ## Medium
 
-No medium priority items currently in progress.
+### CB-044: PNC Bank CSV Parser
+
+#### Description
+
+Add CSV parsing support for PNC Bank export format. Currently the import feature only supports a generic CSV format, requiring manual reformatting of bank exports before import. PNC exports transactions in their own format with specific column names, date formats, and amount representations that differ from the app's expected format.
+
+The parser should auto-detect PNC format based on header columns and map fields appropriately: date column to txn_date, description/memo to description, debit/credit columns to signed amount. This eliminates manual CSV manipulation and reduces friction for regular imports from PNC accounts.
+
+#### Acceptance Criteria
+
+- [ ] Auto-detect PNC CSV format from headers
+- [ ] Map PNC columns to transaction fields
+- [ ] Handle PNC date format correctly
+- [ ] Handle debit/credit amount representation
+- [ ] Unit tests for PNC parser
+
+#### Metadata
+
+- **Status:** Blocked
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+- **Blocked By:** Waiting for sample PNC CSV export
+
+---
+
+### CB-045: Interbank (Peru) CSV Parser
+
+#### Description
+
+Add CSV parsing support for Interbank (Peru) export format. Interbank is a Peruvian bank with Spanish-language exports and PEN currency transactions. The export format likely uses different column names, date formats (DD/MM/YYYY vs MM/DD/YYYY), and possibly includes additional fields like reference numbers or branch codes.
+
+The parser should auto-detect Interbank format and map fields appropriately, defaulting to PEN currency for all transactions. Spanish column headers should be recognized. This enables direct import from Interbank account exports without manual reformatting.
+
+#### Acceptance Criteria
+
+- [ ] Auto-detect Interbank CSV format from headers
+- [ ] Map Interbank columns to transaction fields
+- [ ] Handle Peruvian date format (DD/MM/YYYY)
+- [ ] Default currency to PEN
+- [ ] Handle Spanish column names
+- [ ] Unit tests for Interbank parser
+
+#### Metadata
+
+- **Status:** Blocked
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+- **Blocked By:** Waiting for sample Interbank CSV export
 
 ---
 
@@ -59,31 +112,6 @@ Sentry's free tier is sufficient for this app's scale. Integration requires inst
 - **Status:** Planned
 - **Priority:** Low
 - **Type:** Feature
-- **Version:** v2
-- **Assignee:** Unassigned
-- **GitHub Issue:** No
-
----
-
-### CB-019: Extract Large Components
-
-#### Description
-
-Refactor ImportPanel.jsx (330+ lines) into smaller, more maintainable components. Large components are harder to test, harder to reason about, and more prone to bugs when modified. The import flow has distinct phases that map naturally to separate components.
-
-Split into ImportFileUpload (file selection and parsing), ImportPreview (review parsed transactions), and ImportConfirm (final confirmation and submission). Target no component over 200 lines. This refactor should not change any user-facing behavior - purely internal restructuring.
-
-#### Acceptance Criteria
-
-- [ ] ImportPanel.jsx split into 3+ smaller components
-- [ ] No component exceeds 200 lines
-- [ ] All existing tests pass
-
-#### Metadata
-
-- **Status:** Planned
-- **Priority:** Low
-- **Type:** Maintenance
 - **Version:** v2
 - **Assignee:** Unassigned
 - **GitHub Issue:** No
@@ -322,6 +350,33 @@ N/A — Documented gap, not implementing.
 ---
 
 ## Done
+
+### CB-019: Extract Large Components
+
+#### Description
+
+Refactored ImportPanel.js (426 lines) into smaller, more maintainable components. Large components are harder to test, harder to reason about, and more prone to bugs when modified. The import flow has distinct phases that map naturally to separate components.
+
+Split into ImportJsonInput (JSON text input and currency selector), ImportPreview (preview stats and transaction table), and importUtils (helper functions for fingerprinting and normalization). ImportPanel.js is now the orchestration component with state and handlers.
+
+#### Acceptance Criteria
+
+- [x] ImportPanel.js split into 3+ smaller components
+- [x] ImportJsonInput.jsx created (63 lines)
+- [x] ImportPreview.jsx created (148 lines)
+- [x] importUtils.js created (49 lines)
+- [x] All existing tests pass
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Low
+- **Type:** Maintenance
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
 
 ### CB-039: Offline Storage Foundation
 

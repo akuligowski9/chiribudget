@@ -1,50 +1,17 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import ImportJsonInput from '@/components/ImportJsonInput';
+import ImportPreview from '@/components/ImportPreview';
+import Toast from '@/components/Toast';
 import { getDemoMode } from '@/lib/auth';
-import { CURRENCIES, USD_THRESHOLD, FX_USD_TO_PEN } from '@/lib/categories';
-import { yyyyMm, normalizeDesc, toastId } from '@/lib/format';
+import { yyyyMm, toastId } from '@/lib/format';
+import {
+  thresholdFor,
+  computeFingerprint,
+  normalizeImported,
+} from '@/lib/importUtils';
 import { supabase } from '@/lib/supabaseClient';
-import { colors, styles } from '@/lib/theme';
-import Toast from './Toast';
-
-function thresholdFor(currency) {
-  return currency === 'USD'
-    ? USD_THRESHOLD
-    : Math.round(USD_THRESHOLD * FX_USD_TO_PEN);
-}
-
-function computeFingerprint({
-  household_id,
-  currency,
-  txn_date,
-  amount,
-  description,
-}) {
-  const base = `${household_id}|${currency}|${txn_date}|${Number(amount).toFixed(2)}|${normalizeDesc(description)}`;
-  let h = 0;
-  for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) >>> 0;
-  return `fp_${h}`;
-}
-
-function normalizeImported(raw, currencyFallback) {
-  const list = Array.isArray(raw) ? raw : raw?.transactions || [];
-  return list
-    .map((t) => {
-      const txn_date = (t.txn_date || t.date || '').slice(0, 10);
-      const currency = t.currency || currencyFallback || 'USD';
-      const amount = Number(t.amount);
-      return {
-        txn_date,
-        currency,
-        amount: Number.isFinite(amount) ? amount : 0,
-        description: t.description || t.memo || '',
-        payer: t.payer || 'together',
-        category: t.category || (amount < 0 ? 'Food' : 'Salary'),
-      };
-    })
-    .filter((t) => t.txn_date && Number.isFinite(t.amount) && t.amount !== 0);
-}
 
 export default function ImportPanel() {
   const [demoMode, setDemoMode] = useState(false);
@@ -230,194 +197,27 @@ export default function ImportPanel() {
         id: toastId(),
         type: 'error',
         title: 'Something went wrong',
-        message: 'Don’t worry — we saved this error for later review.',
+        message: "Don't worry — we saved this error for later review.",
       });
     }
   }
 
   return (
     <div>
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          flexWrap: 'wrap',
-          alignItems: 'flex-end',
-        }}
-      >
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <span style={styles.label}>Currency</span>
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-            className="w-24 h-10 px-3 text-sm font-bold rounded-xl cursor-pointer transition-all duration-200 bg-gradient-to-r from-accent to-accent-light text-white border-2 border-accent/30 shadow-md shadow-accent/25 hover:shadow-lg hover:shadow-accent/35"
-          >
-            {CURRENCIES.map((c) => (
-              <option key={c} value={c} className="bg-white text-charcoal">
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button
-          onClick={parse}
-          style={{ ...styles.button, ...styles.buttonSecondary }}
-        >
-          Parse JSON
-        </button>
-      </div>
-
-      <textarea
-        value={jsonText}
-        onChange={(e) => setJsonText(e.target.value)}
-        placeholder="Paste JSON export here..."
-        style={{
-          ...styles.input,
-          width: '100%',
-          minHeight: 180,
-          marginTop: 14,
-          resize: 'vertical',
-        }}
+      <ImportJsonInput
+        currency={currency}
+        onCurrencyChange={setCurrency}
+        jsonText={jsonText}
+        onJsonTextChange={setJsonText}
+        onParse={parse}
       />
 
-      {preview && (
-        <div
-          style={{
-            marginTop: 16,
-            background: colors.bgHover,
-            borderRadius: 12,
-            padding: 16,
-          }}
-        >
-          <div
-            style={{
-              fontWeight: 600,
-              color: colors.textPrimary,
-              marginBottom: 10,
-            }}
-          >
-            Import Preview
-          </div>
-          <div style={{ fontSize: 14, color: colors.textSecondary }}>
-            Month: <b style={{ color: colors.textPrimary }}>{preview.month}</b>{' '}
-            • Currency: <b style={{ color: colors.textPrimary }}>{currency}</b>{' '}
-            • Rows:{' '}
-            <b style={{ color: colors.textPrimary }}>{preview.txns.length}</b>
-          </div>
-          <div
-            style={{ marginTop: 6, fontSize: 14, color: colors.textSecondary }}
-          >
-            Income:{' '}
-            <b style={{ color: colors.income }}>{preview.income.toFixed(2)}</b>{' '}
-            • Expenses:{' '}
-            <b style={{ color: colors.expense }}>
-              {preview.expenses.toFixed(2)}
-            </b>{' '}
-            • Flagged:{' '}
-            <b style={{ color: colors.warning }}>{preview.flaggedCount}</b>
-          </div>
-
-          <div
-            style={{
-              marginTop: 12,
-              maxHeight: 180,
-              overflowX: 'auto',
-              overflowY: 'auto',
-              WebkitOverflowScrolling: 'touch',
-              background: colors.bgCard,
-              borderRadius: 8,
-              padding: 10,
-            }}
-          >
-            <table
-              style={{
-                minWidth: 500,
-                borderCollapse: 'collapse',
-                fontSize: 13,
-              }}
-            >
-              <thead>
-                <tr style={{ color: colors.textSecondary }}>
-                  <th align="left" style={{ padding: '6px 8px' }}>
-                    Date
-                  </th>
-                  <th align="left" style={{ padding: '6px 8px' }}>
-                    Desc
-                  </th>
-                  <th align="right" style={{ padding: '6px 8px' }}>
-                    Amt
-                  </th>
-                  <th align="left" style={{ padding: '6px 8px' }}>
-                    Cur
-                  </th>
-                  <th align="left" style={{ padding: '6px 8px' }}>
-                    Cat
-                  </th>
-                  <th align="left" style={{ padding: '6px 8px' }}>
-                    Payer
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {preview.txns.slice(0, 50).map((t, i) => (
-                  <tr
-                    key={i}
-                    style={{ borderTop: `1px solid ${colors.borderLight}` }}
-                  >
-                    <td style={{ padding: '6px 8px', color: colors.textMuted }}>
-                      {t.txn_date}
-                    </td>
-                    <td style={{ padding: '6px 8px' }}>{t.description}</td>
-                    <td
-                      align="right"
-                      style={{
-                        padding: '6px 8px',
-                        fontWeight: 500,
-                        color: t.amount < 0 ? colors.expense : colors.income,
-                      }}
-                    >
-                      {t.amount.toFixed(2)}
-                    </td>
-                    <td style={{ padding: '6px 8px', color: colors.textMuted }}>
-                      {t.currency}
-                    </td>
-                    <td
-                      style={{
-                        padding: '6px 8px',
-                        color: colors.textSecondary,
-                      }}
-                    >
-                      {t.category}
-                    </td>
-                    <td
-                      style={{
-                        padding: '6px 8px',
-                        color: colors.textSecondary,
-                      }}
-                    >
-                      {t.payer}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-          <button
-            onClick={confirm}
-            style={{ ...styles.button, ...styles.buttonPrimary, marginTop: 14 }}
-          >
-            Confirm & {demoMode ? 'Simulate' : 'Save'}
-          </button>
-          {demoMode && (
-            <div
-              style={{ marginTop: 8, fontSize: 12, color: colors.textMuted }}
-            >
-              Demo mode does not persist data.
-            </div>
-          )}
-        </div>
-      )}
+      <ImportPreview
+        preview={preview}
+        currency={currency}
+        demoMode={demoMode}
+        onConfirm={confirm}
+      />
 
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>
