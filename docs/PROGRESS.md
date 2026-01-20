@@ -4,6 +4,34 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-19 — Unified Item Format for Backlog & GitHub Issues
+
+### Summary
+
+Established a single consistent format for all backlog items and GitHub issues. Every item now has Description, Acceptance Criteria, and Metadata sections.
+
+### Work Completed
+
+- Created unified item format with Description, Acceptance Criteria (checkboxes), and Metadata
+- Converted all 37 backlog items to new format (Low, Parking Lot, Documented Gaps, Done)
+- Updated GitHub issues #1-4 to match backlog format
+- Added Archived status for abandoned/superseded tasks
+- Added Type field (Feature, Bug, Maintenance) to metadata
+- Updated Status Flow to include Archived
+
+### Decisions Made
+
+- **One format everywhere**: Same structure in BACKLOG.md and GitHub Issues for consistency
+- **Acceptance Criteria required**: Even Done items have checkboxes (marked complete)
+- **Documented Gaps use N/A**: Acceptance Criteria shows "N/A — Documented gap, not implementing"
+
+### What's Next
+
+- Apply INSTRUCTIONS.md template to other projects
+- Bank-specific CSV parsing (waiting on examples)
+
+---
+
 ## 2026-01-19 — INSTRUCTIONS.md Template Finalization
 
 ### Summary
