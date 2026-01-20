@@ -36,7 +36,7 @@ function notifySyncListeners(event) {
 
 // Process a single queue item
 async function processQueueItem(item) {
-  const { operation, transactionId, payload } = item;
+  const { operation, transactionId, payload: _payload } = item;
 
   try {
     switch (operation) {
@@ -65,12 +65,12 @@ async function processCreate(item) {
     _localVersion,
     _serverVersion,
     _offlineCreatedAt,
-    month,
+    month: _month,
     ...serverPayload
   } = payload;
 
   // Also remove the offline ID - server will generate a new UUID
-  const { id, ...insertPayload } = serverPayload;
+  const { id: _id, ...insertPayload } = serverPayload;
 
   const { data, error } = await supabase
     .from('transactions')
@@ -132,8 +132,8 @@ async function processUpdate(item) {
     _localVersion,
     _serverVersion,
     _offlineCreatedAt,
-    month,
-    id,
+    month: _month,
+    id: _id,
     ...updatePayload
   } = payload;
 

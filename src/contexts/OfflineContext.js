@@ -36,7 +36,7 @@ const SYNC_INTERVAL = 5 * 60 * 1000;
 export function OfflineProvider({ children }) {
   const { isOnline, isOffline, wasOffline, clearWasOffline } =
     useNetworkStatus();
-  const { profile, household } = useAuth();
+  const { profile, household: _household } = useAuth();
 
   const [pendingCount, setPendingCount] = useState(0);
   const [conflicts, setConflicts] = useState([]);
@@ -46,6 +46,29 @@ export function OfflineProvider({ children }) {
   const [isInitialized, setIsInitialized] = useState(false);
 
   const syncIntervalRef = useRef(null);
+
+  // Define useCallback hooks BEFORE useEffects that depend on them
+  const refreshPendingCount = useCallback(async () => {
+    if (getDemoMode()) return;
+    const count = await getPendingSyncCount();
+    setPendingCount(count);
+  }, []);
+
+  const refreshConflicts = useCallback(async () => {
+    if (getDemoMode()) return;
+    const conflictList = await getConflicts();
+    setConflicts(conflictList);
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    if (getDemoMode() || !isOnline || isSyncInProgress()) {
+      return;
+    }
+
+    await processSync();
+    await refreshPendingCount();
+    await refreshConflicts();
+  }, [isOnline, refreshPendingCount, refreshConflicts]);
 
   // Initialize offline store when household is available
   useEffect(() => {
@@ -68,7 +91,7 @@ export function OfflineProvider({ children }) {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [profile?.household_id]);
+  }, [profile?.household_id, refreshPendingCount, refreshConflicts]);
 
   // Listen for sync events
   useEffect(() => {
@@ -99,7 +122,7 @@ export function OfflineProvider({ children }) {
     });
 
     return unsubscribe;
-  }, [isInitialized]);
+  }, [isInitialized, refreshPendingCount, refreshConflicts]);
 
   // Trigger sync when coming back online
   useEffect(() => {
@@ -107,7 +130,7 @@ export function OfflineProvider({ children }) {
       clearWasOffline();
       syncNow();
     }
-  }, [isOnline, wasOffline, isInitialized, clearWasOffline]);
+  }, [isOnline, wasOffline, isInitialized, clearWasOffline, syncNow]);
 
   // Set up periodic sync
   useEffect(() => {
@@ -124,7 +147,7 @@ export function OfflineProvider({ children }) {
         clearInterval(syncIntervalRef.current);
       }
     };
-  }, [isInitialized, isOnline, pendingCount]);
+  }, [isInitialized, isOnline, pendingCount, syncNow]);
 
   // Trigger sync on visibility change (when app comes to foreground)
   useEffect(() => {
@@ -145,29 +168,7 @@ export function OfflineProvider({ children }) {
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [isInitialized, isOnline, pendingCount]);
-
-  const refreshPendingCount = useCallback(async () => {
-    if (getDemoMode()) return;
-    const count = await getPendingSyncCount();
-    setPendingCount(count);
-  }, []);
-
-  const refreshConflicts = useCallback(async () => {
-    if (getDemoMode()) return;
-    const conflictList = await getConflicts();
-    setConflicts(conflictList);
-  }, []);
-
-  const syncNow = useCallback(async () => {
-    if (getDemoMode() || !isOnline || isSyncInProgress()) {
-      return;
-    }
-
-    await processSync();
-    await refreshPendingCount();
-    await refreshConflicts();
-  }, [isOnline, refreshPendingCount, refreshConflicts]);
+  }, [isInitialized, isOnline, pendingCount, syncNow]);
 
   // Wrapper for adding transactions that handles offline state
   const addTransaction = useCallback(

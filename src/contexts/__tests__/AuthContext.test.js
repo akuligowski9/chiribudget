@@ -3,8 +3,8 @@
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { AuthProvider, useAuth } from '../AuthContext';
 
-// Track auth state change callback
-let authStateCallback = null;
+// Track auth state change callback (captured for potential future tests)
+let _authStateCallback = null;
 
 // Mock Supabase
 jest.mock('@/lib/supabaseClient', () => ({
@@ -16,7 +16,7 @@ jest.mock('@/lib/supabaseClient', () => ({
         })
       ),
       onAuthStateChange: jest.fn((callback) => {
-        authStateCallback = callback;
+        _authStateCallback = callback;
         return {
           data: {
             subscription: {
@@ -79,7 +79,7 @@ function TestComponent() {
 describe('AuthContext', () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    authStateCallback = null;
+    _authStateCallback = null;
   });
 
   it('shows loading state initially', () => {
