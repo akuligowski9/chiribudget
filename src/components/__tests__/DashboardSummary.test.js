@@ -11,6 +11,7 @@ jest.mock('@/lib/auth', () => ({
 jest.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
     conversionRate: 3.25,
+    payerOptions: ['alex', 'adriana', 'together'],
     user: null,
     profile: null,
     household: null,

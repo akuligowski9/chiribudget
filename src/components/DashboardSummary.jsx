@@ -60,7 +60,7 @@ export default function DashboardSummary({
   refreshKey,
 }) {
   const t = useTranslations();
-  const { conversionRate, payerOptions } = useAuth();
+  const { conversionRate = 1, payerOptions = [] } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
   const [rawRows, setRawRows] = useState([]);

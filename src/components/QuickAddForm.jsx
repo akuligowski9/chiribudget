@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOffline } from '@/contexts/OfflineContext';
 import { useDemo } from '@/hooks/useDemo';
 import {
   ALL_CATEGORIES,
@@ -55,7 +56,8 @@ function computeFingerprint({
 export default function QuickAddForm({ onSuccess }) {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
-  const { user, profile, payerOptions } = useAuth();
+  const { user, profile, payerOptions = [] } = useAuth();
+  const { isOffline, addTransaction: addOfflineTransaction } = useOffline();
   const [toast, setToast] = useState(null);
 
   const [txn_date, setTxnDate] = useState(() =>
@@ -306,6 +308,33 @@ export default function QuickAddForm({ onSuccess }) {
       return;
     }
 
+    // If offline, use offline store
+    if (isOffline) {
+      try {
+        await addOfflineTransaction(row);
+        setToast({
+          id: toastId(),
+          type: 'success',
+          title: t('common.savedOffline') || 'Saved offline',
+          message:
+            t('common.willSyncWhenOnline') || 'Will sync when back online',
+        });
+        setAmount('');
+        setDescription('');
+        setCategory(kind === 'expense' ? 'Food' : 'Salary');
+        setErrors({});
+        onSuccess?.();
+      } catch (err) {
+        setToast({
+          id: toastId(),
+          type: 'error',
+          title: t('errors.somethingWentWrong'),
+          message: err.message || 'Failed to save offline',
+        });
+      }
+      return;
+    }
+
     try {
       const { error } = await supabase.from('transactions').insert(row);
       if (error) throw error;
@@ -317,6 +346,27 @@ export default function QuickAddForm({ onSuccess }) {
       setErrors({});
       onSuccess?.();
     } catch (err) {
+      // If the error is network-related, try saving offline
+      if (err.message?.includes('network') || err.message?.includes('fetch')) {
+        try {
+          await addOfflineTransaction(row);
+          setToast({
+            id: toastId(),
+            type: 'success',
+            title: t('common.savedOffline') || 'Saved offline',
+            message:
+              t('common.willSyncWhenOnline') || 'Will sync when back online',
+          });
+          setAmount('');
+          setDescription('');
+          setCategory(kind === 'expense' ? 'Food' : 'Salary');
+          setErrors({});
+          onSuccess?.();
+          return;
+        } catch {
+          // Fall through to error handling
+        }
+      }
       await logError('save_transaction', err.message || 'Unknown error', row);
       setToast({
         id: toastId(),

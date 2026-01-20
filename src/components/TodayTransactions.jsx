@@ -1,10 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Flag, FlagOff, TrendingUp, TrendingDown } from 'lucide-react';
+import {
+  Flag,
+  FlagOff,
+  TrendingUp,
+  TrendingDown,
+  CloudOff,
+} from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOffline } from '@/contexts/OfflineContext';
 import { useDemo } from '@/hooks/useDemo';
 import { getDemoTransactions, updateDemoTransaction } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
@@ -15,6 +22,7 @@ import Toast from './Toast';
 export default function TodayTransactions({ refreshKey }) {
   const { isDemoMode } = useDemo();
   const { profile } = useAuth();
+  const { getOfflineTxns, pendingCount } = useOffline();
   const [toast, setToast] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,7 +32,8 @@ export default function TodayTransactions({ refreshKey }) {
 
   useEffect(() => {
     loadTransactions();
-  }, [refreshKey, isDemoMode, householdId]);
+    // Also reload when pendingCount changes (after sync)
+  }, [refreshKey, isDemoMode, householdId, pendingCount]);
 
   async function loadTransactions() {
     setLoading(true);
@@ -54,7 +63,27 @@ export default function TodayTransactions({ refreshKey }) {
       .order('created_at', { ascending: false });
 
     if (!error) {
-      setRows(tx || []);
+      let allRows = tx || [];
+
+      // Merge with offline transactions
+      try {
+        const month = today.slice(0, 7);
+        const offlineUsd = await getOfflineTxns({ month, currency: 'USD' });
+        const offlinePen = await getOfflineTxns({ month, currency: 'PEN' });
+        const offlineTxns = [...offlineUsd, ...offlinePen].filter(
+          (t) => t.txn_date === today
+        );
+
+        if (offlineTxns.length > 0) {
+          // Add offline transactions at the beginning
+          allRows = [...offlineTxns, ...allRows];
+        }
+      } catch (offlineErr) {
+        // Offline store not available, continue with server data only
+        console.warn('Could not fetch offline transactions:', offlineErr);
+      }
+
+      setRows(allRows);
     }
     setLoading(false);
   }
@@ -158,6 +187,12 @@ export default function TodayTransactions({ refreshKey }) {
                   </div>
                   <div className="text-xs text-warm-gray mt-0.5">
                     {r.category} &middot; {r.payer}
+                    {r._syncStatus === 'pending' && (
+                      <span className="ml-1.5 inline-flex items-center gap-1 text-warning">
+                        <CloudOff className="w-3 h-3" aria-hidden="true" />
+                        Pending
+                      </span>
+                    )}
                   </div>
                 </div>
 

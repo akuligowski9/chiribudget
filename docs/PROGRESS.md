@@ -4,6 +4,58 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-20 — Offline Support Implementation
+
+### Summary
+
+Implemented full offline support (CB-039 through CB-043) so users can log transactions without internet and sync when connectivity returns. This addresses the primary use case of entering expenses immediately after a purchase when there's no internet.
+
+### Work Completed
+
+**New Files Created**
+
+- `src/lib/offlineStore.js` — IndexedDB operations mirroring demoStore API pattern
+- `src/lib/syncQueue.js` — Queue management with retry backoff and conflict resolution
+- `src/hooks/useNetworkStatus.js` — Online/offline detection hook
+- `src/contexts/OfflineContext.js` — React context for offline state and operations
+- `public/sw.js` — Service worker with caching strategies
+- `src/components/ServiceWorkerRegistration.jsx` — Service worker registration component
+- `src/components/NetworkStatus.jsx` — Offline banner and sync status indicator
+- `src/components/SyncConflictModal.jsx` — Modal for displaying sync conflict details
+
+**Modified Files**
+
+- `src/components/Providers.jsx` — Added OfflineProvider to provider hierarchy
+- `src/components/QuickAddForm.jsx` — Added offline write path with "Saved offline" feedback
+- `src/components/TransactionList.jsx` — Merged offline transactions, pending indicator
+- `src/components/TodayTransactions.jsx` — Included offline transactions for today
+- `src/app/layout.js` — Added ServiceWorkerRegistration and NetworkStatus
+- `jest.setup.js` — Added OfflineContext mock for tests
+
+**Testing**
+
+- Fixed test failures from new useOffline hook dependency
+- Added default values for `payerOptions` in components using useAuth
+- Updated test mocks in TransactionList.test.js, TransactionUpdate.test.js, DashboardSummary.test.js
+- All 162 tests passing, build succeeds
+
+### Decisions Made
+
+- **IndexedDB via `idb` library** (1.3KB): Clean Promise-based wrapper, better than raw IndexedDB
+- **Server-wins conflict resolution**: Simple and safe for 2-person household where conflicts are rare
+- **Retry backoff**: Immediate → 5s → 30s → 5min → 15min (max 10 attempts)
+- **Sync triggers**: Online event, visibility change, manual button, periodic (5 min)
+- **Offline store mirrors demoStore pattern**: Consistent API for offline operations
+
+### What's Next
+
+- Add translation keys for offline-related strings (savedOffline, willSyncWhenOnline, etc.)
+- Consider unit tests for offlineStore.js and syncQueue.js
+- Manual testing of offline flow and sync behavior
+- Bank-specific CSV parsing (waiting on examples)
+
+---
+
 ## 2026-01-19 — Unified Item Format for Backlog & GitHub Issues
 
 ### Summary

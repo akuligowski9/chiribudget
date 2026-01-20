@@ -32,10 +32,6 @@ No critical items currently.
 
 ## High
 
-No high priority items currently in progress.
-
----
-
 ## Medium
 
 No medium priority items currently in progress.
@@ -325,30 +321,143 @@ N/A — Documented gap, not implementing.
 
 ---
 
-### CB-016: Offline Support
+## Done
+
+### CB-039: Offline Storage Foundation
 
 #### Description
 
-The app is installable as a Progressive Web App (PWA) but requires an active internet connection to function. True offline support would allow users to add and view transactions while disconnected, then sync when connectivity returns. This would be valuable for entering expenses immediately after purchase in areas with poor connectivity.
+Create the core infrastructure for offline data storage using IndexedDB. This includes an offlineStore module that mirrors the demoStore.js API pattern, a sync queue for tracking pending mutations, and React hooks/context for accessing offline state. The `idb` library (1.3KB) provides a clean Promise-based wrapper around IndexedDB.
 
-However, implementing offline support requires significant complexity: service workers for caching, IndexedDB for local storage, conflict resolution when offline changes sync with server changes, and UI to indicate sync status. Given that most modern mobile devices have consistent connectivity and the app is used primarily at home, this complexity isn't justified for v1.
+The offlineStore supports the same operations as demoStore: get, add, update, delete transactions filtered by month/currency. The sync queue tracks create/update/delete operations made while offline for replay when connectivity returns. This foundation enables all subsequent offline features.
 
 #### Acceptance Criteria
 
-N/A — Documented gap, not implementing.
+- [x] `idb` package installed
+- [x] `src/lib/offlineStore.js` created with IndexedDB operations
+- [x] `src/lib/syncQueue.js` created for queue management
+- [x] `src/hooks/useNetworkStatus.js` created for online/offline detection
+- [x] `src/contexts/OfflineContext.js` created
 
 #### Metadata
 
-- **Status:** Documented
-- **Priority:** Won't Fix
+- **Status:** Done
+- **Priority:** High
 - **Type:** Feature
-- **Version:** N/A
-- **Assignee:** N/A
+- **Version:** v1
+- **Assignee:** Claude
 - **GitHub Issue:** No
 
 ---
 
-## Done
+### CB-040: Offline Transaction Writes
+
+#### Description
+
+Modify transaction components to write to local IndexedDB when offline instead of failing. The primary use case is logging expenses immediately after a purchase when there's no internet. QuickAddForm detects offline status and writes to offlineStore, showing "Saved offline" feedback instead of an error.
+
+TransactionList and TodayTransactions merge offline pending transactions with synced data for display. Offline transactions show a pending indicator (cloud-off icon) until synced. This provides a seamless experience where users don't need to think about connectivity.
+
+#### Acceptance Criteria
+
+- [x] QuickAddForm writes to offlineStore when offline
+- [x] "Saved offline" toast shown for offline saves
+- [x] TransactionList merges offline + synced transactions
+- [x] TodayTransactions includes offline transactions
+- [x] Pending indicator shown on unsynced transactions
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** High
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
+### CB-041: Service Worker Setup
+
+#### Description
+
+Create a service worker to cache the app shell (HTML, JS, CSS) so the app loads offline. The PWA manifest existed but there was no service worker - the app failed to load without connectivity. With the service worker, users can open the app and interact with cached data even when offline.
+
+Uses caching strategies: Precache + StaleWhileRevalidate for app shell, CacheFirst for static assets (icons, fonts), NetworkFirst with fallback for API reads. Service worker registered in layout.js via ServiceWorkerRegistration component.
+
+#### Acceptance Criteria
+
+- [x] `public/sw.js` created with caching strategies
+- [x] Service worker registered in `src/app/layout.js`
+- [x] App shell loads when offline
+- [x] Static assets cached for fast loads
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** High
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
+### CB-042: Sync & Conflict Resolution
+
+#### Description
+
+Implement the sync logic that replays queued offline changes when connectivity returns. Sync triggers on: online event, app visibility change while online, manual button press, and periodic check (every 5 minutes). Queue items processed FIFO to maintain chronological consistency.
+
+For conflict resolution, uses server-wins strategy: before syncing an update, checks server's updated_at timestamp. If server data is newer, discards local change and notifies user. Implements retry with backoff: immediate → 5s → 30s → 5min → 15min, max 10 attempts.
+
+#### Acceptance Criteria
+
+- [x] Sync triggers on online event and visibility change
+- [x] Queue processed FIFO with retry backoff
+- [x] Conflict detection compares updated_at timestamps
+- [x] Server-wins resolution with user notification
+- [x] Failed syncs retry with exponential backoff
+- [x] Manual "Sync Now" button available
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** High
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
+### CB-043: Offline UI Indicators
+
+#### Description
+
+Add visual indicators so users know their connectivity status and sync state. A NetworkStatus component shows an orange banner when offline ("Offline - changes sync when connected") with pending count. When online with pending items, shows a yellow badge. Sync errors show a red badge with retry option.
+
+SyncConflictModal displays conflict details when server-wins resolution discards a local change. Header component includes NetworkStatus. Individual transactions with pending sync status show a cloud-off icon.
+
+#### Acceptance Criteria
+
+- [x] `src/components/NetworkStatus.jsx` created
+- [x] Offline banner shown when disconnected
+- [x] Pending count badge shown when items queued
+- [x] `src/components/SyncConflictModal.jsx` created
+- [x] Conflict notification shown when local change discarded
+- [x] Header includes NetworkStatus component
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** High
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
 
 ### CB-001: Dead Code Removal
 

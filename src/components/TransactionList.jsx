@@ -11,6 +11,7 @@ import {
   ArrowUpDown,
   ChevronLeft,
   ChevronRight,
+  CloudOff,
 } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,7 @@ import {
 } from '@/components/ui/select';
 import { SkeletonTransactionList } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
+import { useOffline } from '@/contexts/OfflineContext';
 import { useDemo } from '@/hooks/useDemo';
 import { ALL_CATEGORIES, CURRENCIES } from '@/lib/categories';
 import { TRANSACTIONS_PER_PAGE } from '@/lib/constants';
@@ -62,7 +64,8 @@ export default function TransactionList({
 }) {
   const t = useTranslations();
   const { isDemoMode } = useDemo();
-  const { conversionRate, payerOptions } = useAuth();
+  const { conversionRate = 1, payerOptions = [] } = useAuth();
+  const { getOfflineTxns, isOffline, pendingCount } = useOffline();
   const [toast, setToast] = useState(null);
   const [_householdId, setHouseholdId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
@@ -88,7 +91,17 @@ export default function TransactionList({
 
   useEffect(() => {
     loadTransactions();
-  }, [startDate, endDate, currency, searchQuery, sortField, sortAsc, page]);
+    // Also reload when pendingCount changes (after sync)
+  }, [
+    startDate,
+    endDate,
+    currency,
+    searchQuery,
+    sortField,
+    sortAsc,
+    page,
+    pendingCount,
+  ]);
 
   async function loadTransactions() {
     setLoading(true);
@@ -185,8 +198,50 @@ export default function TransactionList({
     const { data: tx, error, count } = await query;
 
     if (!error) {
-      setRows(tx || []);
-      setTotalCount(count || 0);
+      // Merge with offline transactions
+      const month = startDate.slice(0, 7);
+      let allRows = tx || [];
+
+      try {
+        // Get offline transactions for both currencies in this date range
+        const offlineUsd = await getOfflineTxns({ month, currency: 'USD' });
+        const offlinePen = await getOfflineTxns({ month, currency: 'PEN' });
+        const offlineTxns = [...offlineUsd, ...offlinePen].filter(
+          (t) => t.txn_date >= startDate && t.txn_date <= endDate
+        );
+
+        if (offlineTxns.length > 0) {
+          // Add offline transactions (they have _syncStatus field)
+          allRows = [...offlineTxns, ...allRows];
+
+          // Re-apply search filter to merged data
+          if (searchQuery.trim()) {
+            const q = searchQuery.toLowerCase();
+            allRows = allRows.filter(
+              (t) =>
+                t.description?.toLowerCase().includes(q) ||
+                t.category?.toLowerCase().includes(q)
+            );
+          }
+
+          // Re-apply sorting
+          allRows.sort((a, b) => {
+            let cmp = 0;
+            if (sortField === 'txn_date') {
+              cmp = a.txn_date.localeCompare(b.txn_date);
+            } else if (sortField === 'amount') {
+              cmp = Math.abs(a.amount) - Math.abs(b.amount);
+            }
+            return sortAsc ? cmp : -cmp;
+          });
+        }
+      } catch (offlineErr) {
+        // Offline store not available or error, continue with server data only
+        console.warn('Could not fetch offline transactions:', offlineErr);
+      }
+
+      setRows(allRows);
+      setTotalCount((count || 0) + (allRows.length - (tx?.length || 0)));
     }
     setLoading(false);
   }
@@ -482,7 +537,16 @@ export default function TransactionList({
                           )}
                           <div className="text-xs text-warm-gray mt-0.5">
                             {r.txn_date}
-                            {!isDemoMode && r.created_by && (
+                            {r._syncStatus === 'pending' && (
+                              <span className="ml-1.5 inline-flex items-center gap-1 text-warning">
+                                <CloudOff
+                                  className="w-3 h-3"
+                                  aria-hidden="true"
+                                />
+                                {t('common.pendingSync') || 'Pending sync'}
+                              </span>
+                            )}
+                            {!isDemoMode && r.created_by && !r._syncStatus && (
                               <span className="ml-1.5">
                                 •{' '}
                                 {r.created_by === currentUserId

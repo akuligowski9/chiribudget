@@ -13,6 +13,7 @@ jest.mock('@/hooks/useDemo', () => ({
 jest.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
     conversionRate: 3.25,
+    payerOptions: ['Partner 1', 'Partner 2', 'Together'],
     user: null,
     profile: null,
     household: null,
@@ -46,6 +47,8 @@ jest.mock('@/lib/demoStore', () => ({
     if (currency === 'PEN') return mockTransactionsPEN;
     return [];
   }),
+  updateDemoTransaction: jest.fn(),
+  deleteDemoTransaction: jest.fn(),
 }));
 
 describe('TransactionList', () => {

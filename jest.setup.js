@@ -84,3 +84,25 @@ beforeEach(() => {
   localStorageMock.setItem.mockClear();
   localStorageMock.removeItem.mockClear();
 });
+
+// Mock OfflineContext for tests
+jest.mock('@/contexts/OfflineContext', () => ({
+  useOffline: () => ({
+    isOnline: true,
+    isOffline: false,
+    isSyncing: false,
+    pendingCount: 0,
+    lastSyncAt: null,
+    syncError: null,
+    conflicts: [],
+    syncNow: jest.fn(),
+    addTransaction: jest.fn(),
+    updateTransaction: jest.fn(),
+    deleteTransaction: jest.fn(),
+    getOfflineTxns: jest.fn().mockResolvedValue([]),
+    clearOfflineData: jest.fn(),
+    refreshPendingCount: jest.fn(),
+    isInitialized: true,
+  }),
+  OfflineProvider: ({ children }) => children,
+}));
