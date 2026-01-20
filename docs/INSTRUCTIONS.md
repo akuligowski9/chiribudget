@@ -198,18 +198,33 @@ Must include:
    - Documented Gaps (optional — for known limitations accepted as "Won't Fix")
    - Done
 
-### Backlog Item Format
+### Item Format (Backlog & GitHub Issues)
+
+This format is used consistently in BACKLOG.md and when creating GitHub Issues.
 
 ```markdown
-- [ ] <PREFIX>-### Short title
-  - Description: combined problem + intended solution (1–4 sentences)
-  - Status: Planned | In Progress | Blocked | Done | Archived
-  - Priority: Critical | High | Medium | Low
-  - Version: v1 | v2 | Unassigned (optional)
-  - Assignee: Alex | <name> | Unassigned
-  - GitHub Issue: No OR #<issue_number>
-  - Notes / Links: optional
+## <PREFIX>-###: <Short title>
+
+### Description
+
+<1-4 sentences: problem, solution, relevant details. Notes/links go here.>
+
+### Acceptance Criteria
+
+- [ ] <Specific, testable criterion>
+- [ ] <Specific, testable criterion>
+
+### Metadata
+
+- **Status:** Planned | In Progress | Blocked | Done | Archived
+- **Priority:** Critical | High | Medium | Low
+- **Type:** Feature | Bug | Maintenance
+- **Version:** v1 | v2 | Unassigned
+- **Assignee:** <name> | Unassigned
+- **GitHub Issue:** No | #<issue_number>
 ```
+
+When an item is promoted to GitHub Issues, copy this format directly. Keep backlog and issue in sync.
 
 ### Version Field
 
@@ -439,31 +454,7 @@ If yes:
 
 Promote backlog items **only when explicitly instructed**.
 
-### Issue Template
-
-```markdown
-## <PREFIX>-###: <Short title>
-
-## Description
-
-<1-4 sentences: problem, solution, relevant details. Include notes/links here.>
-
-## Acceptance Criteria
-
-- [ ] <Specific, testable criterion>
-- [ ] <Specific, testable criterion>
-- [ ] <Specific, testable criterion>
-
-## Metadata
-
-- **Priority:** Critical | High | Medium | Low
-- **Type:** Feature | Bug | Maintenance
-- **Version:** v1 | v2 | Unassigned
-- **Assignee:** <name> | Unassigned
-- **GitHub Issue:** #<issue_number>
-```
-
-After promotion, update BACKLOG.md with issue number and keep states aligned.
+Use the same Item Format defined in "BACKLOG.md Required Structure" above. Copy the item directly from backlog to GitHub Issue. After promotion, update the backlog item's GitHub Issue field with the issue number and keep states aligned.
 
 ---
 
