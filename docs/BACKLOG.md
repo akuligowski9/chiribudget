@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** January 19, 2026
+**Last Updated:** January 20, 2026
 
 ---
 
@@ -204,7 +204,9 @@ Ideas worth remembering but not yet committed to implementation.
 
 #### Description
 
-Convert codebase from JavaScript to TypeScript for improved type safety and IDE support. Significant effort (40+ files). Can be done incrementally; generate Supabase types from schema.
+Convert codebase from JavaScript to TypeScript for improved type safety and IDE support. TypeScript catches type errors at compile time, provides better autocomplete in editors, and makes refactoring safer by surfacing breaking changes immediately. The current JavaScript codebase has 40+ files that would need conversion.
+
+Migration can be done incrementally by renaming files to `.tsx`/`.ts` and adding types progressively. Supabase provides tools to generate TypeScript types directly from the database schema, which would eliminate manual type definitions for database entities. This is a significant effort better suited to a dedicated refactoring phase rather than alongside feature work.
 
 #### Acceptance Criteria
 
@@ -227,7 +229,9 @@ Convert codebase from JavaScript to TypeScript for improved type safety and IDE 
 
 #### Description
 
-Add basic usage analytics (Plausible/Umami) without PII. Track active users, transactions/month, feature usage. Low value for 2-person households; privacy implications need careful design.
+Add basic usage analytics using a privacy-respecting platform like Plausible or Umami that doesn't collect personally identifiable information. This would track aggregate metrics like active users, transactions per month, and which features are most used. Understanding usage patterns helps prioritize development efforts.
+
+However, for a 2-person household app, the value of analytics is limited since direct feedback is easy to obtain. Privacy implications need careful design to ensure no PII (emails, transaction amounts, descriptions) is ever captured. Self-hosted Umami would give full control over data, while Plausible's hosted option is simpler but requires a paid plan.
 
 #### Acceptance Criteria
 
@@ -250,7 +254,9 @@ Add basic usage analytics (Plausible/Umami) without PII. Track active users, tra
 
 #### Description
 
-Optionally auto-translate descriptions using translation API. Would add latency and ongoing costs. Both household members likely bilingual; cache translations to reduce API calls.
+Optionally auto-translate transaction descriptions between English and Spanish using a translation API like Google Translate or DeepL. This would help when one partner enters a transaction in their native language and the other prefers reading in theirs. A toggle in Settings would enable/disable translation.
+
+However, this adds latency to every transaction display and incurs ongoing API costs per translation. Both household members are likely bilingual, reducing the practical need. Translations should be cached (keyed by hash of original text) to avoid repeated API calls for the same description. This is lower priority given the bilingual context.
 
 #### Acceptance Criteria
 
@@ -277,7 +283,9 @@ Known limitations accepted for v1.
 
 #### Description
 
-No rate limiting on import endpoint. Acceptable risk for 2-person household app. RLS prevents cross-household abuse.
+No rate limiting exists on the import endpoint or any other API routes. An attacker could theoretically flood the endpoint with requests to cause denial of service or exhaust database resources. However, Row-Level Security (RLS) prevents any cross-household data access, limiting damage to the attacker's own household.
+
+For a 2-person household app with no public registration, the attack surface is minimal. Supabase applies its own default rate limits at the infrastructure level. Adding application-level rate limiting would require additional infrastructure (Redis/Upstash) that isn't justified for this use case.
 
 #### Acceptance Criteria
 
@@ -298,7 +306,9 @@ N/A — Documented gap, not implementing.
 
 #### Description
 
-No 2FA. Magic link provides reasonable security—single-use, expires in 1 hour.
+No two-factor authentication is implemented beyond the magic link email flow. Traditional 2FA (TOTP apps, SMS codes) would add an extra layer of security requiring something the user knows and something they have. This protects against compromised email accounts being the single point of failure.
+
+However, magic links already provide reasonable security for this use case. Each link is single-use, expires in 1 hour, and requires access to the user's email inbox. For a household budget app without financial transactions, the security/convenience tradeoff favors simplicity. If users have strong email security (2FA on their email provider), that protection extends to this app.
 
 #### Acceptance Criteria
 
@@ -319,7 +329,9 @@ N/A — Documented gap, not implementing.
 
 #### Description
 
-PWA installs but requires internet. Full offline support would require significant complexity.
+The app is installable as a Progressive Web App (PWA) but requires an active internet connection to function. True offline support would allow users to add and view transactions while disconnected, then sync when connectivity returns. This would be valuable for entering expenses immediately after purchase in areas with poor connectivity.
+
+However, implementing offline support requires significant complexity: service workers for caching, IndexedDB for local storage, conflict resolution when offline changes sync with server changes, and UI to indicate sync status. Given that most modern mobile devices have consistent connectivity and the app is used primarily at home, this complexity isn't justified for v1.
 
 #### Acceptance Criteria
 
@@ -342,7 +354,9 @@ N/A — Documented gap, not implementing.
 
 #### Description
 
-Remove unused files (supabaseServer.js, export/route.js) that add confusion and maintenance burden.
+Remove unused files that were created during development but never integrated into the final application. Specifically, `supabaseServer.js` (server-side Supabase client that was replaced by client-side approach) and `export/route.js` (API route that was superseded by client-side CSV generation). These files added confusion when navigating the codebase and created maintenance burden when updating dependencies.
+
+Dead code removal improves codebase clarity and reduces the surface area for potential bugs. New contributors won't waste time trying to understand code that isn't actually used. The removal was straightforward since no other files imported these modules.
 
 #### Acceptance Criteria
 
@@ -364,7 +378,9 @@ Remove unused files (supabaseServer.js, export/route.js) that add confusion and 
 
 #### Description
 
-Prove household join flow and RLS isolation work correctly. Automates "partner joins household" scenario. See TECH_SPEC.md#security-model.
+Add integration tests that verify the multi-user household flow works correctly end-to-end. This includes testing that User A can create a household and receive a join code, User B can join with that code, and both users can then see the same transactions. Most importantly, the tests verify that Row-Level Security (RLS) properly isolates households so User C cannot see User A and B's data.
+
+These tests are critical because RLS policies are easy to misconfigure and failures are silent (queries just return empty results). The tests use Supabase's test helpers to simulate multiple authenticated users and verify isolation. See TECH_SPEC.md#security-model for the security architecture these tests validate.
 
 #### Acceptance Criteria
 
@@ -386,7 +402,9 @@ Prove household join flow and RLS isolation work correctly. Automates "partner j
 
 #### Description
 
-Add HTTP security headers (X-Frame-Options, CSP, etc.) to prevent common web attacks. See TECH_SPEC.md#security-model.
+Configure HTTP security headers to protect against common web vulnerabilities. This includes X-Frame-Options to prevent clickjacking (embedding the app in malicious iframes), Content-Security-Policy to control which resources can load, X-Content-Type-Options to prevent MIME sniffing, and Referrer-Policy to limit information leakage. These headers are defense-in-depth measures recommended by OWASP.
+
+Headers are configured in `next.config.js` and applied to all responses. The Content-Security-Policy is tuned to allow Supabase connections while blocking inline scripts and external resources. See TECH_SPEC.md#security-model for the complete security architecture.
 
 #### Acceptance Criteria
 
@@ -408,7 +426,9 @@ Add HTTP security headers (X-Frame-Options, CSP, etc.) to prevent common web att
 
 #### Description
 
-Final verification that all changes work together—tests pass, build succeeds, manual verification on production.
+Final verification checkpoint to ensure all v1 changes work correctly together before considering the release complete. This includes running the full test suite (130+ Jest tests, 20 Playwright E2E tests), verifying the production build completes without errors, and manual smoke testing on the deployed Vercel instance. Each feature was tested individually, but integration issues can emerge when combined.
+
+Manual verification covers the critical user paths: sign up, create household, add transaction, flag review, export CSV, and the partner join flow. This step catches any environment-specific issues that automated tests might miss, such as CSP headers blocking legitimate requests or auth redirects failing in production.
 
 #### Acceptance Criteria
 
@@ -431,7 +451,9 @@ Final verification that all changes work together—tests pass, build succeeds, 
 
 #### Description
 
-Add ARIA labels to form inputs for screen reader support. Required for WCAG 2.1 Level A.
+Add ARIA (Accessible Rich Internet Applications) labels to all form inputs and interactive elements to support screen reader users. This includes `aria-label` for icon-only buttons, `aria-describedby` for inputs with helper text, and proper `aria-labelledby` associations for form groups. These attributes are required for WCAG 2.1 Level A compliance, the minimum accessibility standard.
+
+Screen readers rely on these labels to announce what an element does when focused. Without them, users hear generic descriptions like "button" or "edit text" instead of "Add transaction" or "Enter amount." The app's forms, dialogs, and navigation were audited and labeled to ensure screen reader users can complete all core tasks.
 
 #### Acceptance Criteria
 
@@ -453,7 +475,9 @@ Add ARIA labels to form inputs for screen reader support. Required for WCAG 2.1 
 
 #### Description
 
-Remove exports for components never imported (CardDescription, SelectGroup, SelectLabel, SelectSeparator).
+Remove exported UI components that were generated by shadcn/ui but never actually used in the application. Specifically, CardDescription, SelectGroup, SelectLabel, and SelectSeparator were exported from their respective component files but no other file imported them. These exports add noise to the codebase and can confuse developers about which components are intended for use.
+
+The shadcn/ui CLI generates comprehensive component files with all possible subcomponents, but most projects only need a subset. Removing unused exports keeps the component API surface clean and signals which parts of each component are actually used. The removal was safe since a grep confirmed no imports existed.
 
 #### Acceptance Criteria
 
@@ -475,7 +499,9 @@ Remove exports for components never imported (CardDescription, SelectGroup, Sele
 
 #### Description
 
-Add visible focus indicators for keyboard navigation using :focus-visible styles.
+Add visible focus indicators for keyboard navigation to ensure users who navigate without a mouse can see which element is currently focused. This is an accessibility requirement (WCAG 2.1) and essential for users with motor disabilities who rely on keyboard navigation. Without visible focus, users lose track of their position in the interface.
+
+The implementation uses `:focus-visible` rather than `:focus` to show focus rings only during keyboard navigation, not mouse clicks. This provides the accessibility benefit without the visual noise of focus rings appearing on every click. Focus styles use a consistent ring color that contrasts with the background and matches the app's design system.
 
 #### Acceptance Criteria
 
@@ -497,7 +523,9 @@ Add visible focus indicators for keyboard navigation using :focus-visible styles
 
 #### Description
 
-Add validation for category/payer/currency fields to prevent invalid data even if client bypassed.
+Add server-side validation for enumerated fields (category, payer, currency) to ensure data integrity even if client-side validation is bypassed. While the React forms validate these fields before submission, a malicious user could craft direct API requests with invalid values. PostgreSQL enum types provide one layer of protection, but explicit validation gives clearer error messages.
+
+The validation happens in the Supabase RPC functions that handle transaction inserts and updates. Invalid category, payer, or currency values are rejected with a descriptive error before the database query runs. This defense-in-depth approach ensures the database never contains invalid enum values regardless of how the request originated.
 
 #### Acceptance Criteria
 
@@ -519,7 +547,9 @@ Add validation for category/payer/currency fields to prevent invalid data even i
 
 #### Description
 
-Add UI to view/remove household members and display join code in Settings.
+Add a user interface in Settings to manage household membership, including viewing current members, displaying the join code for inviting partners, and removing members if needed. Previously, household management required direct database access, which was impractical for non-technical users. The join code was only visible during initial household creation.
+
+The Settings page now shows a member list with display names and join dates, the household join code (with copy button), and a remove member button for each member. Removing a member revokes their access immediately via RLS policy updates. The UI prevents self-removal and warns about the implications of removing the last other member.
 
 #### Acceptance Criteria
 
@@ -542,7 +572,9 @@ Add UI to view/remove household members and display join code in Settings.
 
 #### Description
 
-Add end-to-end tests for critical flows (login, create household, add transaction, export). 20 tests across 4 specs.
+Add end-to-end tests using Playwright to verify that critical user flows work correctly in a real browser environment. E2E tests catch integration issues that unit tests miss, such as CSS hiding buttons, network timing problems, or browser-specific behavior. The test suite covers the four most important flows: login via magic link, household creation, transaction entry, and CSV export.
+
+The 20 tests across 4 spec files run against a test Supabase instance with seeded data. Playwright's auto-waiting and retry logic handle the async nature of the app without flaky explicit waits. Tests run in CI on every push to catch regressions before deployment. The test data is reset between runs to ensure isolation.
 
 #### Acceptance Criteria
 
@@ -566,7 +598,9 @@ Add end-to-end tests for critical flows (login, create household, add transactio
 
 #### Description
 
-Implement batch insert for imports using Supabase RPC with transaction rollback on failure. Migration 003_batch_insert_function.sql.
+Implement atomic batch insert for the import workflow so that either all transactions in an import succeed or none do. Previously, imports used individual INSERT statements, which could leave partial data if a failure occurred mid-import (e.g., network error, constraint violation). Users would need to manually clean up the partial import before retrying.
+
+The solution is a PostgreSQL function (`batch_insert_transactions`) that wraps all inserts in a transaction. If any insert fails, the entire batch rolls back automatically. The function is called via Supabase RPC from the client. Migration `003_batch_insert_function.sql` creates this function with proper security definer settings to run with elevated privileges while still respecting RLS for the calling user.
 
 #### Acceptance Criteria
 
@@ -588,7 +622,9 @@ Implement batch insert for imports using Supabase RPC with transaction rollback 
 
 #### Description
 
-Add soft deletes with 30-day recovery. Deleted transactions visible in Trash view with restore option. Migration 004_soft_deletes.sql.
+Implement soft deletes so that deleted transactions can be recovered within 30 days instead of being permanently lost. Accidental deletions happen, and in a shared household app, one partner might delete a transaction the other wanted to keep. Soft deletes provide a safety net without requiring complex backup/restore procedures.
+
+The implementation adds a `deleted_at` timestamp column to the transactions table. DELETE operations set this timestamp instead of removing the row. A Trash view shows soft-deleted transactions with restore and permanent delete options. A scheduled job (or manual cleanup) permanently removes transactions older than 30 days. Migration `004_soft_deletes.sql` adds the column and updates RLS policies to filter deleted rows by default.
 
 #### Acceptance Criteria
 
@@ -611,7 +647,9 @@ Add soft deletes with 30-day recovery. Deleted transactions visible in Trash vie
 
 #### Description
 
-Show warning when trying to mark month discussed with unresolved flags. Require confirmation to proceed.
+Improve the "Mark Discussed" workflow to warn users when they try to close out a month that still has unresolved flagged transactions. Flagged transactions are meant to prompt discussion (e.g., large unexpected expenses), so marking a month as discussed while flags remain defeats the purpose. However, blocking the action entirely would be too rigid—sometimes couples decide a flag doesn't need explanation.
+
+The solution shows a confirmation dialog when unresolved flags exist, listing how many are pending and asking "Are you sure you want to mark this month discussed? X flagged transactions still have no explanation." Users can proceed or go back to add explanations. This balances guidance with flexibility, nudging users toward the intended workflow without forcing it.
 
 #### Acceptance Criteria
 
@@ -633,7 +671,9 @@ Show warning when trying to mark month discussed with unresolved flags. Require 
 
 #### Description
 
-Fix mobile layout issues on small screens (<360px). Ensure 44px touch targets.
+Fix layout issues on small mobile screens (under 360px width) and ensure all interactive elements meet the 44px minimum touch target size recommended by Apple and Google. The app is designed mobile-first for quick transaction entry, so usability on small devices is critical. Testing revealed text overflow, cramped buttons, and touch targets too small for reliable tapping.
+
+Fixes included adding responsive text truncation, increasing button padding on mobile breakpoints, and spacing out grouped actions. The minimum supported width is now 320px (iPhone SE/5 size). Touch targets were audited using browser dev tools to verify 44x44px minimums. These changes improve usability for real-world mobile usage where users are often entering transactions on the go.
 
 #### Acceptance Criteria
 
@@ -655,7 +695,9 @@ Fix mobile layout issues on small screens (<360px). Ensure 44px touch targets.
 
 #### Description
 
-Add created_by, updated_by, updated_at columns to track who made changes. UI shows "by you"/"by partner". Migration 001_add_audit_columns.sql.
+Add audit columns to the transactions table to track who created and last modified each record. In a shared household app, knowing who added or changed a transaction helps with accountability and debugging. Without this, disputes about "I didn't add that" have no resolution, and troubleshooting sync issues is difficult.
+
+The implementation adds `created_by`, `updated_by` (both foreign keys to auth.users), and `updated_at` (timestamp auto-updated via trigger) columns. The UI displays this as "Added by you" or "Added by [Partner Name]" in transaction details. Migration `001_add_audit_columns.sql` adds the columns and creates the trigger function that sets `updated_by` and `updated_at` on every UPDATE.
 
 #### Acceptance Criteria
 
@@ -677,7 +719,9 @@ Add created_by, updated_by, updated_at columns to track who made changes. UI sho
 
 #### Description
 
-Remove unused `rejected` value from import_status_t enum. Never used in code. Migration 002_remove_rejected_enum.sql.
+Remove the unused `rejected` value from the `import_status_t` PostgreSQL enum type. This value was added during initial design anticipating a workflow where users could reject individual imported transactions, but that workflow was never implemented. The import flow simply confirms or discards entire batches. Keeping unused enum values adds confusion about what states are actually possible.
+
+PostgreSQL enums are tricky to modify (you can add values easily but removing requires recreating the type), so this was done via migration `002_remove_rejected_enum.sql`. The migration creates a new enum without `rejected`, migrates all columns to use it, then drops the old type. No data migration was needed since no rows ever had the `rejected` status.
 
 #### Acceptance Criteria
 
@@ -699,7 +743,9 @@ Remove unused `rejected` value from import_status_t enum. Never used in code. Mi
 
 #### Description
 
-Set up GitHub Actions to auto-deploy to Vercel on push to main. Tests run before deploy.
+Set up GitHub Actions workflows for continuous integration and deployment to Vercel. Manual deployments are error-prone and easy to forget, leading to production diverging from the repository. Automated deployment ensures every push to main is deployed after passing quality checks.
+
+Two workflows were created: CI (`.github/workflows/ci.yml`) runs on every push and PR, checking formatting, running lint, running tests, and verifying the build. Deploy (`.github/workflows/deploy.yml`) runs after CI passes on main/master and triggers a Vercel deployment using the Vercel CLI. This requires a `VERCEL_TOKEN` secret in GitHub. The setup ensures no broken code reaches production and reduces the "works on my machine" problem.
 
 #### Acceptance Criteria
 
@@ -722,7 +768,9 @@ Set up GitHub Actions to auto-deploy to Vercel on push to main. Tests run before
 
 #### Description
 
-Document Supabase backup schedule, manual backup, and restore procedures. See docs/OPS.md.
+Document the database backup and recovery procedures so that data can be restored if something goes wrong. Supabase provides automatic daily backups, but understanding the retention period, how to trigger manual backups, and how to restore from a backup is critical operational knowledge. Without documentation, a data loss incident could result in scrambling to figure out recovery options under pressure.
+
+The documentation in `docs/OPS.md` covers Supabase's automatic backup schedule by plan tier, how to access backups in the dashboard, manual backup options (CLI dump, CSV export via app), and step-by-step restore procedures. It also documents post-restore integrity checks to verify data is complete. This operational knowledge is separate from feature documentation and lives in the OPS runbook.
 
 #### Acceptance Criteria
 
@@ -744,7 +792,9 @@ Document Supabase backup schedule, manual backup, and restore procedures. See do
 
 #### Description
 
-Extract magic numbers (thresholds, FX rate, categories) into centralized constants file. See src/lib/constants.js.
+Extract magic numbers and configuration values scattered throughout the codebase into a centralized constants file. Values like the flagging threshold ($500 USD / 1625 PEN), the USD/PEN exchange rate (3.25), and the category lists were hardcoded in multiple places. This made changes error-prone—updating the threshold meant finding and updating every occurrence.
+
+The new `src/lib/constants.js` file exports all configuration values from one place: `THRESHOLD_USD`, `THRESHOLD_PEN`, `FX_RATE`, `CURRENCIES`, `EXPENSE_CATEGORIES`, `INCOME_CATEGORIES`, and `PAYER_OPTIONS`. Components import what they need, and changes only require updating one file. The file also serves as documentation of the app's business rules in one readable location.
 
 #### Acceptance Criteria
 
@@ -766,7 +816,9 @@ Extract magic numbers (thresholds, FX rate, categories) into centralized constan
 
 #### Description
 
-Add eslint-plugin-import for consistent import ordering. Auto-fix via lint-staged.
+Add eslint-plugin-import to enforce consistent import statement ordering across the codebase. Without a standard, import sections become messy—mixing React imports with local files with third-party libraries in random order. This makes it harder to scan files and leads to inconsistent style between developers. Consistent ordering also makes merge conflicts in import sections less common.
+
+The plugin is configured to group imports in a logical order: React first, then external packages, then internal aliases (`@/`), then relative imports. Within each group, imports are sorted alphabetically. The `lint-staged` configuration runs the auto-fixer on commit, so developers don't need to manually sort imports—they're automatically organized when code is committed.
 
 #### Acceptance Criteria
 
@@ -788,7 +840,9 @@ Add eslint-plugin-import for consistent import ordering. Auto-fix via lint-stage
 
 #### Description
 
-Document deployment process for Vercel + Supabase setup in README.
+Document the complete deployment process for running ChiriBudget on Vercel with Supabase so that others can fork and deploy their own instance. The app is designed to be fork-friendly—couples should be able to run their own private deployment without depending on a central service. Without clear documentation, the setup process would require reverse-engineering from the codebase.
+
+The README now includes step-by-step instructions for: creating a Supabase project, running the schema SQL, configuring auth settings, obtaining API keys, setting environment variables, deploying to Vercel, and optional GitHub Actions CI/CD setup. It also includes a troubleshooting section for common issues like magic links not arriving or RLS errors. This documentation makes the project genuinely usable by others, not just a portfolio piece.
 
 #### Acceptance Criteria
 
@@ -810,7 +864,9 @@ Document deployment process for Vercel + Supabase setup in README.
 
 #### Description
 
-Add Spanish translations using next-intl. Language toggle in Settings saves to localStorage. See messages/en.json, messages/es.json.
+Add Spanish language support using next-intl for internationalization. The app is used by a bilingual household where one partner prefers Spanish, so offering both languages improves usability for both users. Translations cover all UI text including button labels, form fields, error messages, and dashboard sections.
+
+The implementation uses next-intl's client-side approach with translation JSON files (`messages/en.json`, `messages/es.json`). A language toggle in Settings lets users switch between English and Spanish, with the preference saved to localStorage so it persists across sessions. The toggle updates immediately without requiring a page reload. Translation keys are organized by component/section for maintainability.
 
 #### Acceptance Criteria
 
@@ -833,7 +889,9 @@ Add Spanish translations using next-intl. Language toggle in Settings saves to l
 
 #### Description
 
-Change payer from hardcoded enum to dynamic options from household member display names. "Together" only shows with 2+ members. Changed payer column from enum to text.
+Change the payer field from a hardcoded enum ("alex", "adriana", "together") to dynamic options based on actual household member display names. The hardcoded approach assumed specific users and wouldn't work for other households using the app. This change makes the app genuinely usable by any two-person household, not just the original developers.
+
+The implementation queries household members on auth context load and builds payer options from their display names. The "Together" option only appears when 2+ members exist in the household. The database column was changed from enum to text type (via migration) to support arbitrary names. All components using payer dropdowns (QuickAddForm, ImportUpload, TransactionList, etc.) were updated to use the dynamic options.
 
 #### Acceptance Criteria
 
@@ -856,7 +914,9 @@ Change payer from hardcoded enum to dynamic options from household member displa
 
 #### Description
 
-CSV imports create import_batches records with metadata (display_name, source_bank, date_range). Batches show as separate sections.
+Track CSV imports as batches with metadata so users can see where transactions came from and manage imports as logical groups. Previously, imported transactions were indistinguishable from manually entered ones after import. Users had no way to review or undo a specific import session, and troubleshooting duplicate imports was difficult.
+
+The implementation creates an `import_batches` table record for each import with metadata: display name, source bank, default payer, transaction year, and date range of included transactions. The Review page shows batches as collapsible sections with their metadata. Users can confirm or discard entire batches. This makes the import history transparent and manageable, especially when importing from multiple bank accounts.
 
 #### Acceptance Criteria
 
@@ -879,7 +939,9 @@ CSV imports create import_batches records with metadata (display_name, source_ba
 
 #### Description
 
-Add toggle to show/hide confirmed batches in Review page. Default shows only pending batches.
+Add a toggle to the Review page that shows or hides already-confirmed import batches. By default, only pending (unconfirmed) batches are shown since those are what need attention. However, users sometimes need to reference past imports to check what was included or verify that a previous import completed correctly.
+
+The toggle is labeled "Show History" and when enabled displays confirmed batches in a visually distinct style (muted colors, collapsed by default). This keeps the default view focused on actionable items while still providing access to historical data when needed. The toggle state is not persisted—it resets to hidden on page reload to keep the default experience clean.
 
 #### Acceptance Criteria
 
@@ -901,7 +963,9 @@ Add toggle to show/hide confirmed batches in Review page. Default shows only pen
 
 #### Description
 
-Fix demo mode so changes (add, flag, explain) sync to demoStore and reflect across views.
+Fix bugs in demo mode where changes made in one view didn't reflect in other views. Demo mode uses an in-memory store (`demoStore.js`) instead of Supabase, but components weren't consistently calling the store's update methods. Adding a transaction via QuickAddForm wouldn't appear in TodayTransactions. Flagging a transaction in one view wouldn't show the flag in another.
+
+The fix required updating all components that modify transactions (QuickAddForm, FlaggedReview, TodayTransactions, TransactionList) to call the appropriate demoStore methods (`addDemoTransaction`, `updateDemoTransaction`) when in demo mode. This ensures the in-memory store stays in sync and all views read from the same source of truth. Demo mode now behaves identically to authenticated mode from the user's perspective.
 
 #### Acceptance Criteria
 
