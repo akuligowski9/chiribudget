@@ -439,7 +439,31 @@ If yes:
 
 Promote backlog items **only when explicitly instructed**.
 
-Use backlog item format plus Acceptance Criteria (checkbox list). After promotion, update BACKLOG.md with issue number and keep states aligned.
+### Issue Template
+
+```markdown
+## <PREFIX>-###: <Short title>
+
+## Description
+
+<1-4 sentences: problem, solution, relevant details. Include notes/links here.>
+
+## Acceptance Criteria
+
+- [ ] <Specific, testable criterion>
+- [ ] <Specific, testable criterion>
+- [ ] <Specific, testable criterion>
+
+## Metadata
+
+- **Priority:** Critical | High | Medium | Low
+- **Type:** Feature | Bug | Maintenance
+- **Version:** v1 | v2 | Unassigned
+- **Assignee:** <name> | Unassigned
+- **GitHub Issue:** #<issue_number>
+```
+
+After promotion, update BACKLOG.md with issue number and keep states aligned.
 
 ---
 
