@@ -94,7 +94,9 @@ Refactor ImportPanel.jsx (330+ lines) into smaller components. Split into Import
 
 #### Description
 
-Auto-populate recurring transactions like monthly bills, rent, and subscriptions. Reduces manual entry for predictable expenses. Need to design recurrence UI (monthly, weekly, custom); option to skip/edit each occurrence.
+Auto-populate recurring transactions like monthly bills, rent, and subscriptions. Many household expenses are predictable - rent, utilities, subscriptions, loan payments. Currently users must manually enter these every month, which is tedious and easy to forget.
+
+This feature would allow users to define a transaction template with recurrence rules. The system would auto-generate transactions on scheduled dates. Users should be able to skip individual occurrences (e.g., skipped a subscription month) or edit them (e.g., utility bill varies). Need to design a clear UI for setting recurrence patterns - monthly, weekly, biweekly, or custom intervals.
 
 #### Acceptance Criteria
 
@@ -118,7 +120,9 @@ Auto-populate recurring transactions like monthly bills, rent, and subscriptions
 
 #### Description
 
-Set monthly spending caps per category. Warn users when approaching or exceeding limits. Helps enforce household budget agreements. Store in budget_config table; visual indicator on dashboard.
+Set monthly spending caps per category to help enforce household budget agreements. Couples often have informal agreements about spending limits - "let's keep food under $800" or "entertainment shouldn't exceed $200." Currently there's no way to track progress toward these goals or get warnings when approaching limits.
+
+This feature would let users set a monthly budget for each category. The dashboard would show a progress bar or indicator for each category. When spending approaches the limit (e.g., 80%), show a visual warning. When exceeded, make it clearly visible. Store limits in the budget_config table. Consider whether limits should reset monthly or roll over.
 
 #### Acceptance Criteria
 
@@ -142,7 +146,9 @@ Set monthly spending caps per category. Warn users when approaching or exceeding
 
 #### Description
 
-Show spending trends compared to previous months. "You spent 20% more on Food this month." Helps identify patterns. Could be a new dashboard section or toggle on existing charts.
+Show spending trends compared to previous months to help identify patterns and inform budget discussions. Users currently see only the current month's totals. Without historical context, it's hard to know if spending is trending up, down, or stable. Questions like "are we spending more on food lately?" require manual comparison.
+
+This feature would add trend indicators to the dashboard. For each category, show the percentage change from last month - "You spent 20% more on Food this month" or "Entertainment down 15% from last month." Could be a new dashboard section, a toggle on existing charts, or inline badges. Helps couples have data-driven budget conversations.
 
 #### Acceptance Criteria
 
@@ -165,7 +171,9 @@ Show spending trends compared to previous months. "You spent 20% more on Food th
 
 #### Description
 
-Simple shared list for household shopping needs. Complements expense tracking by capturing intent before purchase. New table needed; consider whether items convert to transactions.
+Simple shared list for household shopping needs that complements expense tracking by capturing intent before purchase. Currently the app only tracks what was spent, not what needs to be bought. Households often maintain informal shopping lists - on paper, in notes apps, or in their heads. This leads to duplicate purchases or forgotten items.
+
+This feature would add a shared shopping list that both household members can edit in real-time. Items can be added, checked off, or removed. Consider whether completed items should optionally convert to transactions (e.g., check off "groceries" and prompt to log the expense). Requires a new database table and real-time sync between household members.
 
 #### Acceptance Criteria
 
