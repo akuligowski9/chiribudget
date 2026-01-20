@@ -4,6 +4,36 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-19 — INSTRUCTIONS.md Template Optimization
+
+### Summary
+
+Refined INSTRUCTIONS.md to reduce token overhead while preserving utility as a reusable template for future projects.
+
+### Work Completed
+
+- Trimmed Purpose section (6 goals → 3)
+- Condensed OPS intro and "What Does NOT Belong" sections
+- Simplified GitHub Issues section
+- Changed documentation sync interval from 60min to 90min
+- Removed ROADMAP.md as required doc (roadmap gleaned from BACKLOG/PROGRESS)
+- Deleted `docs/ROADMAP.md`
+- Added testing guidance to TECH_SPEC requirements
+
+### Decisions Made
+
+- **ROADMAP.md removed**: Now/Next/Later info derivable from BACKLOG priorities and PROGRESS session logs
+- **90-minute sync**: Better balance — gives heads-up midway through a 3-hour session
+- **Template is for functional apps**: Not intended for weekend scripts; appropriate overhead for real applications with ongoing AI collaboration
+
+### What's Next
+
+- Apply INSTRUCTIONS.md template to other projects
+- Bank-specific CSV parsing (waiting on examples)
+- Terminal B tasks (ConfirmDialog, demoStore tests, etc.)
+
+---
+
 ## 2026-01-19 — Future Features Added to Backlog
 
 ### Summary
