@@ -9,7 +9,7 @@ Preferences:
 - Ask clarifying questions instead of assuming.
 - Surface inconsistencies explicitly.
 - Prefer structured markdown.
-- Pause every ~60 minutes to ask about a documentation sync.
+- Pause every ~90 minutes to ask about a documentation sync.
 - If the user says "muffins", immediately stop and summarize state.
 
 Tone:
