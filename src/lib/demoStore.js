@@ -7,6 +7,7 @@ let demoThresholds = {
   usdThreshold: USD_THRESHOLD,
   fxRate: FX_USD_TO_PEN,
 };
+let demoCategoryLimits = {};
 
 // Get demo transactions filtered by month and currency
 export function getDemoTransactions({ month, currency }) {
@@ -47,6 +48,16 @@ export function getDemoThresholds() {
 // Set demo thresholds
 export function setDemoThresholds({ usdThreshold, fxRate }) {
   demoThresholds = { usdThreshold, fxRate };
+}
+
+// Get current demo category limits
+export function getDemoCategoryLimits() {
+  return { ...demoCategoryLimits };
+}
+
+// Set demo category limits
+export function setDemoCategoryLimits(limits) {
+  demoCategoryLimits = { ...limits };
 }
 
 // Get transactions that would be affected by threshold change
@@ -154,4 +165,5 @@ export function resetDemoStore() {
     usdThreshold: USD_THRESHOLD,
     fxRate: FX_USD_TO_PEN,
   };
+  demoCategoryLimits = {};
 }

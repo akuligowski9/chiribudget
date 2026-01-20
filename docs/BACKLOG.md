@@ -144,28 +144,32 @@ This feature would allow users to define a transaction template with recurrence 
 
 ---
 
-### CB-036: Category Budget Limits
+### CB-036: Category Spending Limits
 
 #### Description
 
-Set monthly spending caps per category to help enforce household budget agreements. Couples often have informal agreements about spending limits - "let's keep food under $800" or "entertainment shouldn't exceed $200." Currently there's no way to track progress toward these goals or get warnings when approaching limits.
+Add per-category spending limits with configurable auto-flagging behavior. Users set monthly limits per expense category (Food, Fixed Expenses, etc.), and transactions that push spending over the limit can optionally be flagged for discussion. This extends the existing threshold-based flagging system to support category-specific budgets.
 
-This feature would let users set a monthly budget for each category. The dashboard would show a progress bar or indicator for each category. When spending approaches the limit (e.g., 80%), show a visual warning. When exceeded, make it clearly visible. Store limits in the budget_config table. Consider whether limits should reset monthly or roll over.
+The feature adds a JSONB `category_limits` column to `budget_config` storing limit and flag mode per category. Flag modes include: "off" (dashboard warnings only), "crossing" (flag only the transaction that crosses the limit), and "all_after" (flag all transactions after limit is reached). Dashboard shows color-coded progress bars (green/yellow/red) for each category with limits set.
 
 #### Acceptance Criteria
 
-- [ ] User can set a monthly budget limit for each category
-- [ ] Dashboard shows progress toward each category limit
-- [ ] Visual warning when approaching limit (80%)
-- [ ] Visual warning when limit exceeded
+- [ ] User can set a monthly spending limit per expense category
+- [ ] Toggle controls auto-flagging behavior (off, flag crossing, flag all after)
+- [ ] New "Category Limits" section in Settings page (collapsible card)
+- [ ] Dashboard shows progress toward each category limit with color-coded indicators
+- [ ] Green (0-79%), Yellow (80-99%), Red (100%+) progress bars
+- [ ] Auto-flagging works based on configured flag mode
+- [ ] Works in both demo mode and authenticated mode
+- [ ] Translations added for English and Spanish
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** In Progress
 - **Priority:** Low
 - **Type:** Feature
 - **Version:** v2
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** #2
 
 ---

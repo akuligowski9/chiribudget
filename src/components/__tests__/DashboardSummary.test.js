@@ -12,6 +12,7 @@ jest.mock('@/contexts/AuthContext', () => ({
   useAuth: () => ({
     conversionRate: 3.25,
     payerOptions: ['alex', 'adriana', 'together'],
+    categoryLimits: {},
     user: null,
     profile: null,
     household: null,
@@ -59,6 +60,7 @@ const getDemoTransactionsMock = jest.fn(({ currency }) => {
 
 jest.mock('@/lib/demoStore', () => ({
   getDemoTransactions: (...args) => getDemoTransactionsMock(...args),
+  getDemoCategoryLimits: () => ({}),
 }));
 
 // Mock dynamic import for charts

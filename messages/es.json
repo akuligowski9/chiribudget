@@ -312,5 +312,18 @@
     "demoModeDescription": "Estás en modo demo. Los cambios no se guardarán.",
     "exitDemo": "Salir de Demo",
     "trashNotAvailable": "La papelera no está disponible en modo demo."
+  },
+  "categoryLimits": {
+    "title": "Límites por Categoría",
+    "description": "Establece límites de gasto mensuales por categoría con marcado automático opcional",
+    "help": "Establece un límite en USD para cada categoría de gastos. Cuando el gasto se acerque o exceda el límite, verás advertencias con colores en el panel.",
+    "limitLabel": "límite",
+    "flagModeLabel": "modo de marcado",
+    "flagModeOff": "Apagado",
+    "flagModeCrossing": "Marcar al cruzar",
+    "flagModeAllAfter": "Marcar todos después",
+    "exceeded": "Excedido por ${amount}",
+    "approaching": "Acercándose al límite",
+    "remaining": "{amount} restante"
   }
 }

@@ -312,5 +312,18 @@
     "demoModeDescription": "You're in demo mode. Changes won't be saved.",
     "exitDemo": "Exit Demo",
     "trashNotAvailable": "Trash is not available in demo mode."
+  },
+  "categoryLimits": {
+    "title": "Category Limits",
+    "description": "Set monthly spending limits per category with optional auto-flagging",
+    "help": "Set a USD limit for each expense category. When spending approaches or exceeds the limit, you'll see color-coded warnings on the dashboard.",
+    "limitLabel": "limit",
+    "flagModeLabel": "flag mode",
+    "flagModeOff": "Off",
+    "flagModeCrossing": "Flag crossing",
+    "flagModeAllAfter": "Flag all after",
+    "exceeded": "Over by ${amount}",
+    "approaching": "Approaching limit",
+    "remaining": "{amount} remaining"
   }
 }

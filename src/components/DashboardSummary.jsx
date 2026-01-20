@@ -8,8 +8,9 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
+import { calculateCategoryStatus } from '@/lib/categoryLimits';
 import { convertAmount } from '@/lib/currency';
-import { getDemoTransactions } from '@/lib/demoStore';
+import { getDemoCategoryLimits, getDemoTransactions } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
 import { cn } from '@/lib/utils';
 
@@ -60,7 +61,11 @@ export default function DashboardSummary({
   refreshKey,
 }) {
   const t = useTranslations();
-  const { conversionRate = 1, payerOptions = [] } = useAuth();
+  const {
+    conversionRate = 1,
+    payerOptions = [],
+    categoryLimits: contextCategoryLimits = {},
+  } = useAuth();
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
   const [rawRows, setRawRows] = useState([]);
@@ -146,6 +151,24 @@ export default function DashboardSummary({
   const totalIncome = sum(Object.values(incomeByCat));
   const totalExpenses = sum(Object.values(expenseByCat));
   const net = totalIncome - totalExpenses;
+
+  // Get category limits (demo mode reads from demo store)
+  const categoryLimits = demoMode
+    ? getDemoCategoryLimits()
+    : contextCategoryLimits;
+
+  // Calculate category spending status
+  const categoryStatus = useMemo(() => {
+    if (!categoryLimits || Object.keys(categoryLimits).length === 0) {
+      return {};
+    }
+    return calculateCategoryStatus(
+      rows,
+      categoryLimits,
+      currency,
+      conversionRate
+    );
+  }, [rows, categoryLimits, currency, conversionRate]);
 
   return (
     <>
@@ -260,24 +283,83 @@ export default function DashboardSummary({
               <div className="space-y-2">
                 {EXPENSE_CATEGORIES.map((c) => {
                   const val = Number(expenseByCat[c] || 0);
-                  const pct =
-                    totalExpenses > 0 ? (val / totalExpenses) * 100 : 0;
+                  const status = categoryStatus[c];
+                  const hasLimit = status && status.limit > 0;
+
+                  // Progress bar percentage based on limit if set, otherwise total expenses
+                  const pct = hasLimit
+                    ? Math.min(status.percentage, 100)
+                    : totalExpenses > 0
+                      ? (val / totalExpenses) * 100
+                      : 0;
+
+                  // Color based on limit status
+                  let barColorClass = 'from-error to-rose-400';
+                  let bgColorClass = 'bg-error/10';
+                  if (hasLimit) {
+                    if (status.status === 'exceeded') {
+                      barColorClass = 'from-error to-rose-400';
+                      bgColorClass = 'bg-error/10';
+                    } else if (status.status === 'approaching') {
+                      barColorClass = 'from-warning to-amber-400';
+                      bgColorClass = 'bg-warning/10';
+                    } else {
+                      barColorClass = 'from-success to-emerald-400';
+                      bgColorClass = 'bg-success/10';
+                    }
+                  }
+
                   return (
                     <div key={c}>
                       <div className="flex justify-between text-sm mb-1">
                         <span className="text-stone">
                           {t(`categories.${CATEGORY_KEYS[c]}`)}
                         </span>
-                        <span className="font-semibold text-error">
-                          {currency} {val.toFixed(2)}
+                        <span
+                          className={cn(
+                            'font-semibold',
+                            hasLimit && status.status === 'exceeded'
+                              ? 'text-error'
+                              : hasLimit && status.status === 'approaching'
+                                ? 'text-warning'
+                                : hasLimit
+                                  ? 'text-success'
+                                  : 'text-error'
+                          )}
+                        >
+                          {hasLimit ? (
+                            <>
+                              {currency} {val.toFixed(0)} /{' '}
+                              {status.limit.toFixed(0)}
+                            </>
+                          ) : (
+                            <>
+                              {currency} {val.toFixed(2)}
+                            </>
+                          )}
                         </span>
                       </div>
-                      <div className="h-1.5 bg-error/10 rounded-full overflow-hidden">
+                      <div
+                        className={cn(
+                          'h-1.5 rounded-full overflow-hidden',
+                          bgColorClass
+                        )}
+                      >
                         <div
-                          className="h-full bg-gradient-to-r from-error to-rose-400 rounded-full transition-all duration-500"
+                          className={cn(
+                            'h-full bg-gradient-to-r rounded-full transition-all duration-500',
+                            barColorClass
+                          )}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
+                      {hasLimit && status.status === 'exceeded' && (
+                        <p className="text-xs text-error mt-0.5">
+                          {t('categoryLimits.exceeded', {
+                            amount: (val - status.limit).toFixed(0),
+                          })}
+                        </p>
+                      )}
                     </div>
                   );
                 })}

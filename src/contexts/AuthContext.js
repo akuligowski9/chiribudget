@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getDemoMode } from '@/lib/auth';
 import { FX_USD_TO_PEN } from '@/lib/categories';
+import { getDemoCategoryLimits } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext(null);
@@ -16,6 +17,7 @@ export function AuthProvider({ children }) {
   const [household, setHousehold] = useState(null);
   const [members, setMembers] = useState([]); // Household members with display names
   const [conversionRate, setConversionRate] = useState(FX_USD_TO_PEN);
+  const [categoryLimits, setCategoryLimits] = useState({});
   const [loading, setLoading] = useState(true);
   // Track current user ID without triggering re-renders
   const userIdRef = useRef(null);
@@ -23,6 +25,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     // Skip auth in demo mode
     if (getDemoMode()) {
+      setCategoryLimits(getDemoCategoryLimits());
       setLoading(false);
       return;
     }
@@ -72,16 +75,19 @@ export function AuthProvider({ children }) {
               .filter(Boolean);
             setMembers(memberNames);
 
-            // Load conversion rate from budget_config
+            // Load conversion rate and category limits from budget_config
             const { data: configData } = await supabase
               .from('budget_config')
-              .select('fx_usd_to_pen')
+              .select('fx_usd_to_pen, category_limits')
               .eq('household_id', profileData.household_id)
               .maybeSingle();
 
             if (!mounted) return;
             if (configData?.fx_usd_to_pen) {
               setConversionRate(configData.fx_usd_to_pen);
+            }
+            if (configData?.category_limits) {
+              setCategoryLimits(configData.category_limits);
             }
           }
         }
@@ -129,6 +135,7 @@ export function AuthProvider({ children }) {
     setHousehold(null);
     setMembers([]);
     setConversionRate(FX_USD_TO_PEN);
+    setCategoryLimits({});
   }
 
   // Compute payer options from household members
@@ -189,6 +196,28 @@ export function AuthProvider({ children }) {
     }
   }
 
+  async function refreshCategoryLimits() {
+    // Reload category limits from budget_config after settings change
+    if (getDemoMode()) {
+      setCategoryLimits(getDemoCategoryLimits());
+      return;
+    }
+
+    if (profile?.household_id) {
+      const { data: configData } = await supabase
+        .from('budget_config')
+        .select('category_limits')
+        .eq('household_id', profile.household_id)
+        .maybeSingle();
+
+      if (configData?.category_limits) {
+        setCategoryLimits(configData.category_limits);
+      } else {
+        setCategoryLimits({});
+      }
+    }
+  }
+
   const value = {
     user,
     profile,
@@ -196,11 +225,13 @@ export function AuthProvider({ children }) {
     members,
     payerOptions,
     conversionRate,
+    categoryLimits,
     loading,
     signOut,
     sendMagicLink,
     refreshProfile,
     refreshConversionRate,
+    refreshCategoryLimits,
     isAuthenticated: !!user,
     hasHousehold: !!profile?.household_id,
   };
