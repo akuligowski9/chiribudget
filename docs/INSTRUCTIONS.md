@@ -29,18 +29,15 @@ You may respond with:
 
 ## Purpose of This Document
 
-This file defines the authoritative documentation structure, workflow rules, and collaboration expectations for this project.
+This file defines the authoritative documentation structure, workflow rules, and collaboration expectations.
 
 **Goals:**
 
-- Consistency across all Alex Kuligowski software projects
-- Seamless resumption across sessions and AI models
-- Zero documentation drift
-- Explicit, intentional promotion of work to GitHub Issues
-- Safe handling of partial or legacy documentation structures
-- Prevention of silent assumptions or hallucinated intent
+- Consistency across projects and sessions
+- Safe handling of partial or legacy documentation
+- No silent assumptions or hallucinated intent
 
-> If any rule in this document is violated, you must pause and ask how to proceed.
+> If any rule in this document is violated, pause and ask how to proceed.
 
 ---
 
@@ -428,20 +425,7 @@ If yes:
 
 Promote backlog items **only when explicitly instructed**.
 
-### Issue Fields Must Include
-
-- Summary
-- Description (problem + solution intent)
-- Acceptance Criteria (checkbox list)
-- Status
-- Priority
-- Type (Feature / Bug / Maintenance)
-- Assignee
-
-### After Promotion
-
-- Update `BACKLOG` with issue number
-- Keep states aligned
+Use backlog item format plus Acceptance Criteria (checkbox list). After promotion, update BACKLOG.md with issue number and keep states aligned.
 
 ---
 
@@ -463,11 +447,7 @@ Before ending a session:
 
 ## Operational Documentation (OPS)
 
-This project may include operational documentation that describes how to OPERATE, PROTECT, RECOVER, and MAINTAIN the system.
-
-Operational documentation is intentionally separate from design and planning documents. It focuses on real-world procedures and risk management, not system architecture or feature behavior.
-
-The project owner (Alex) does NOT need to be an operations expert. The AI collaborator is explicitly expected to assist with identifying, proposing, and maintaining operational knowledge in a safe, conservative manner.
+OPS documentation describes how to OPERATE, PROTECT, RECOVER, and MAINTAIN the system. It is procedural (not design), and the AI collaborator is expected to assist with identifying and maintaining operational knowledge safely.
 
 ### OPS Document Structure
 
@@ -536,19 +516,7 @@ OPS documentation is a practical runbook. It prioritizes safety, clarity, and re
 
 ### What Does NOT Belong in OPS
 
-OPS documentation must NOT contain:
-
-- Feature definitions
-- Product requirements
-- User-facing behavior descriptions
-- Architectural reasoning or tradeoffs
-- Data model explanations
-- Long-term product intent
-- Planning, prioritization, or backlog items
-
-Those belong in BACKLOG.md, TECH_SPEC.md, or ROADMAP.md.
-
-OPS documentation must not duplicate TECH_SPEC content. TECH_SPEC may reference OPS documentation, but OPS must not explain how the system is designed or implemented.
+OPS is procedural, not design. Feature specs, architecture, data models, and planning belong in TECH_SPEC.md, BACKLOG.md, or ROADMAP.md. OPS must not duplicate or explain system design.
 
 ### AI Responsibility for OPS
 
