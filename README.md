@@ -272,22 +272,29 @@ If you need to start fresh:
 
 ## Contributing
 
-This is a personal project for household use, but contributions are welcome.
+Contributions are welcome.
+
+**Report bugs:** Open an issue with steps to reproduce.
+
+**Suggest features:** Open an issue describing the use case. Check [BACKLOG.md](./docs/BACKLOG.md) first to see what's already planned.
+
+**Submit PRs:**
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/my-feature`)
+2. Create a branch (`feature/description` or `fix/description`)
 3. Make your changes
 4. Run tests (`npm test`) and lint (`npm run lint`)
-5. Commit with a descriptive message
+5. Commit with a concise, imperative message (e.g., "Add export button to dashboard")
 6. Open a pull request
 
-Please read the existing code style and follow established patterns.
+**Code style:** Run `npm run lint` before submitting. Follow existing patterns.
+
+**Testing:** Run `npm test` before submitting. Add tests for new features.
 
 ---
 
 ## Documentation
 
 - [BACKLOG.md](./docs/BACKLOG.md) — Task tracking and priorities
-- [ROADMAP.md](./docs/ROADMAP.md) — High-level planning (Now/Next/Later)
 - [TECH_SPEC.md](./docs/TECH_SPEC.md) — Technical specification and architecture
 - [INSTRUCTIONS.md](./docs/INSTRUCTIONS.md) — AI collaboration guidelines
