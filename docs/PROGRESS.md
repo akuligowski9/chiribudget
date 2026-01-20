@@ -4,13 +4,15 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
-## 2026-01-19 — INSTRUCTIONS.md Template Optimization
+## 2026-01-19 — INSTRUCTIONS.md Template Finalization
 
 ### Summary
 
-Refined INSTRUCTIONS.md to reduce token overhead while preserving utility as a reusable template for future projects.
+Extended session finalizing INSTRUCTIONS.md as a reusable template for AI collaboration across projects. Added backlog enhancements, contributing guidelines, and refined status system.
 
 ### Work Completed
+
+**Template Optimization**
 
 - Trimmed Purpose section (6 goals → 3)
 - Condensed OPS intro and "What Does NOT Belong" sections
@@ -20,11 +22,25 @@ Refined INSTRUCTIONS.md to reduce token overhead while preserving utility as a r
 - Deleted `docs/ROADMAP.md`
 - Added testing guidance to TECH_SPEC requirements
 
+**Backlog Enhancements**
+
+- Added optional "Documented Gaps" section for known Won't Fix limitations
+- Added optional Version field (v1, v2, Unassigned) for release planning
+- Added Archived status for abandoned/superseded tasks
+- Fixed CB-023 note (BACKUP.md → OPS.md)
+
+**Contributing Guidelines**
+
+- Added Contributing section standard to INSTRUCTIONS.md
+- Updated ChiriBudget README with full contributing guide
+
 ### Decisions Made
 
-- **ROADMAP.md removed**: Now/Next/Later info derivable from BACKLOG priorities and PROGRESS session logs
-- **90-minute sync**: Better balance — gives heads-up midway through a 3-hour session
-- **Template is for functional apps**: Not intended for weekend scripts; appropriate overhead for real applications with ongoing AI collaboration
+- **ROADMAP.md removed**: Now/Next/Later derivable from BACKLOG priorities and PROGRESS logs
+- **90-minute sync**: Gives heads-up midway through a 3-hour session
+- **Version as field, not section**: Simplest approach, keeps priority organization intact
+- **Archived vs Documented Gaps**: Archived = planned then abandoned; Documented Gaps = known limitations by design
+- **Template for functional apps**: Not weekend scripts; appropriate overhead for real applications
 
 ### What's Next
 
