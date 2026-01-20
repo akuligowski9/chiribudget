@@ -190,6 +190,7 @@ Must include:
    - Medium
    - Low
    - Parking Lot
+   - Documented Gaps (optional — for known limitations accepted as "Won't Fix")
    - Done
 
 ### Backlog Item Format

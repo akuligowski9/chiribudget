@@ -282,7 +282,7 @@ Known limitations accepted for v1.
   - Priority: Low
   - Assignee: Terminal B
   - GitHub Issue: No
-  - Notes: docs/BACKUP.md
+  - Notes: docs/OPS.md
 
 - [x] CB-024: Constants File
   - Description: Extract magic numbers (thresholds, FX rate, categories) into centralized constants file.
