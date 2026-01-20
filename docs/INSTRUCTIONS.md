@@ -297,7 +297,7 @@ For each Feature or View:
 - Key Flows
 - External Integrations
 - Security & Privacy Notes
-- Testing Strategy
+- Testing Strategy (where tests live, how to run them, coverage goals)
 - Open Questions / Risks
 
 ---
