@@ -200,10 +200,21 @@ Must include:
   - Description: combined problem + intended solution (1–4 sentences)
   - Status: Planned | In Progress | Blocked | Done
   - Priority: Critical | High | Medium | Low
+  - Version: v1 | v2 | Unassigned (optional)
   - Assignee: Alex | <name> | Unassigned
   - GitHub Issue: No OR #<issue_number>
   - Notes / Links: optional
 ```
+
+### Version Field
+
+The Version field groups tasks by release without restructuring the backlog. This approach is simplest and most flexible — you can visually scan for version while keeping priority-based organization intact. It doesn't require restructuring existing backlogs when adding version tracking later.
+
+- Use `v1`, `v2`, etc. for committed versions
+- Use `Unassigned` for tasks not yet slotted into a version
+- The **Parking Lot** section already serves as "not versioned yet" for ideas that aren't committed
+
+The Version field is optional. Omit it entirely for projects that don't need version-based planning.
 
 ### Rules
 
