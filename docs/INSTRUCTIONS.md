@@ -236,10 +236,26 @@ It must include:
 - Tech stack
 - Quickstart (run locally)
 - Environment variables
-- Contribution guidance
+- Contributing section (see below)
 - Links to BACKLOG, TECH_SPEC
 
 > If README content becomes inaccurate, it must be updated during the next documentation sync.
+
+### Contributing Section
+
+Include a Contributing section to guide outside contributors. For personal projects where contributions aren't expected, this section may be omitted.
+
+Standard Contributing content:
+
+- How to report bugs (open an issue with steps to reproduce)
+- How to suggest features (open an issue describing the use case)
+- How to submit PRs (fork, branch, test, submit)
+- Code style expectations (link to linter config or note "run `npm run lint`")
+- Testing expectations (run tests before submitting, add tests for new features)
+- Branch naming convention (e.g., `feature/description`, `fix/description`)
+- Commit message guidance (concise, imperative mood)
+
+Keep it brief — a few sentences per item is sufficient. Link to BACKLOG.md so contributors can see what's planned.
 
 ---
 
