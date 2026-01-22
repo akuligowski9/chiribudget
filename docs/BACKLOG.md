@@ -44,6 +44,34 @@ No high priority items currently.
 
 ## Medium
 
+### CB-047: Tabbed Settings Page
+
+#### Description
+
+Reorganize the Settings page from a single vertical list of 9 collapsible cards to a tabbed interface with 4 category tabs. The current layout requires excessive scrolling and makes it difficult to find specific settings. A tabbed interface groups related settings logically and reduces cognitive load by showing only 2-3 cards at a time.
+
+The tabs will be: Account (Profile, Language), Household (Members, Guidelines), Budget (Conversion Rate, Thresholds, Category Limits), and Data (Backup, Trash). This pattern mirrors iOS/Android settings apps that users are familiar with. Tab state should persist during the session but doesn't need to persist across page reloads.
+
+#### Acceptance Criteria
+
+- [ ] Horizontal tab navigation at top of Settings page
+- [ ] 4 tabs: Account, Household, Budget, Data
+- [ ] Only active tab's settings components render
+- [ ] Tab styling matches app design system
+- [ ] Mobile-friendly tab layout (horizontal scroll if needed)
+- [ ] English and Spanish translations for tab labels
+
+#### Metadata
+
+- **Status:** In Progress
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
 ### CB-044: PNC Bank CSV Parser
 
 #### Description

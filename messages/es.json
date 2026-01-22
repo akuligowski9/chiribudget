@@ -10,7 +10,10 @@
     "confirm": "Confirmar",
     "close": "Cerrar",
     "search": "Buscar...",
-    "noResults": "No se encontraron resultados"
+    "noResults": "No se encontraron resultados",
+    "dismiss": "Descartar",
+    "savedOffline": "Guardado sin conexión",
+    "willSyncWhenOnline": "Se sincronizará cuando vuelvas a estar en línea"
   },
   "nav": {
     "home": "Inicio",
@@ -162,6 +165,12 @@
   },
   "settings": {
     "title": "Ajustes",
+    "tabs": {
+      "account": "Cuenta",
+      "household": "Hogar",
+      "budget": "Presupuesto",
+      "data": "Datos"
+    },
     "profile": "Perfil",
     "yourProfile": "Tu Perfil",
     "personalSettings": "Configuración personal de tu cuenta",
@@ -353,5 +362,19 @@
     "backupDetails": "Detalles del respaldo:",
     "backupDate": "Fecha",
     "confirmRestore": "Restaurar"
+  },
+  "offline": {
+    "offlineMode": "Modo sin conexión",
+    "syncing": "Sincronizando...",
+    "syncFailed": "Error de sincronización",
+    "pendingSingular": "1 pendiente",
+    "pendingPlural": "{count} pendientes",
+    "syncNow": "Sincronizar ahora",
+    "willSyncSingular": "1 cambio se sincronizará cuando vuelvas a estar en línea",
+    "willSyncPlural": "{count} cambios se sincronizarán cuando vuelvas a estar en línea",
+    "syncConflict": "Conflicto de Sincronización",
+    "conflictDescription": "Tu pareja actualizó esta transacción mientras estabas sin conexión. Tus cambios no pudieron aplicarse.",
+    "currentValue": "Valor actual (del servidor):",
+    "acceptServer": "Aceptar versión del servidor"
   }
 }

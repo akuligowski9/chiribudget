@@ -10,7 +10,10 @@
     "confirm": "Confirm",
     "close": "Close",
     "search": "Search...",
-    "noResults": "No results found"
+    "noResults": "No results found",
+    "dismiss": "Dismiss",
+    "savedOffline": "Saved offline",
+    "willSyncWhenOnline": "Will sync when back online"
   },
   "nav": {
     "home": "Home",
@@ -162,6 +165,12 @@
   },
   "settings": {
     "title": "Settings",
+    "tabs": {
+      "account": "Account",
+      "household": "Household",
+      "budget": "Budget",
+      "data": "Data"
+    },
     "profile": "Profile",
     "yourProfile": "Your Profile",
     "personalSettings": "Personal settings for your account",
@@ -353,5 +362,19 @@
     "backupDetails": "Backup details:",
     "backupDate": "Date",
     "confirmRestore": "Restore"
+  },
+  "offline": {
+    "offlineMode": "Offline mode",
+    "syncing": "Syncing...",
+    "syncFailed": "Sync failed",
+    "pendingSingular": "1 pending",
+    "pendingPlural": "{count} pending",
+    "syncNow": "Sync now",
+    "willSyncSingular": "1 change will sync when back online",
+    "willSyncPlural": "{count} changes will sync when back online",
+    "syncConflict": "Sync Conflict",
+    "conflictDescription": "Your partner updated this transaction while you were offline. Your changes could not be applied.",
+    "currentValue": "Current value (from server):",
+    "acceptServer": "Accept server version"
   }
 }
