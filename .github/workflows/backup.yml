@@ -1,0 +1,115 @@
+name: Weekly Database Backup
+
+on:
+  schedule:
+    # Run every Sunday at midnight UTC
+    - cron: '0 0 * * 0'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+
+      - name: Create backup script
+        run: |
+          cat << 'EOF' > backup.js
+          const { createClient } = require('@supabase/supabase-js');
+          const fs = require('fs');
+
+          const supabase = createClient(
+            process.env.SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_KEY
+          );
+
+          async function backup() {
+            const timestamp = new Date().toISOString().split('T')[0];
+            const backup = {
+              timestamp: new Date().toISOString(),
+              tables: {}
+            };
+
+            // Tables to backup
+            const tables = [
+              'households',
+              'profiles',
+              'transactions',
+              'budget_config',
+              'guidelines',
+              'month_status',
+              'import_batches'
+            ];
+
+            for (const table of tables) {
+              console.log(`Backing up ${table}...`);
+              const { data, error } = await supabase
+                .from(table)
+                .select('*');
+
+              if (error) {
+                console.error(`Error backing up ${table}:`, error.message);
+                backup.tables[table] = { error: error.message };
+              } else {
+                backup.tables[table] = data;
+                console.log(`  ${data.length} rows`);
+              }
+            }
+
+            // Write backup file
+            const filename = `backup-${timestamp}.json`;
+            fs.writeFileSync(filename, JSON.stringify(backup, null, 2));
+            console.log(`\nBackup saved to ${filename}`);
+
+            // Output filename for next step
+            fs.appendFileSync(process.env.GITHUB_OUTPUT, `filename=${filename}\n`);
+          }
+
+          backup().catch(err => {
+            console.error('Backup failed:', err);
+            process.exit(1);
+          });
+          EOF
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Run backup
+        id: backup
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: node backup.js
+
+      - name: Clone backup repository
+        run: |
+          git clone https://x-access-token:${{ secrets.BACKUP_REPO_TOKEN }}@github.com/akuligowski9/chiribudget-backups.git
+          cd chiribudget-backups
+          mkdir -p backups
+
+      - name: Copy backup and commit
+        run: |
+          cp ${{ steps.backup.outputs.filename }} chiribudget-backups/backups/
+          cd chiribudget-backups
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add backups/
+          git commit -m "Backup ${{ steps.backup.outputs.filename }}"
+          git push
+
+      - name: Cleanup old backups (keep last 12)
+        run: |
+          cd chiribudget-backups/backups
+          ls -t *.json | tail -n +13 | xargs -r rm --
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "Cleanup: retain last 12 backups"
+            git push
+          fi
