@@ -173,6 +173,32 @@ Implementation requires a `NEXT_PUBLIC_DEMO_ONLY` environment variable, modifica
 
 ---
 
+### CB-049: SEO & Google Discoverability
+
+#### Description
+
+Make ChiriBudget discoverable via Google search for portfolio visibility. Currently the site has no sitemap.xml or robots.txt, so search engines may not index it properly. For a portfolio project, being findable via search ("chiribudget budget app" or similar) adds credibility and discoverability.
+
+Next.js App Router has built-in support for generating sitemap.xml and robots.txt via special files in the app directory. The sitemap should include public pages (landing/login, demo mode entry). Authenticated routes don't need indexing. After deployment, submit the sitemap to Google Search Console to accelerate indexing.
+
+#### Acceptance Criteria
+
+- [ ] `sitemap.xml` generated via Next.js App Router
+- [ ] `robots.txt` allows crawling of public pages
+- [ ] Meta tags (title, description, og:image) on public pages
+- [ ] Sitemap submitted to Google Search Console
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Low
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+
+---
+
 ## Low
 
 ### CB-013: Error Monitoring (Sentry)
