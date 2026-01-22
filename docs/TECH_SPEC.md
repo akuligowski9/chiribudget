@@ -607,19 +607,19 @@ ChiriBudget intentionally avoids third-party services for:
 
 ### Core Libraries
 
-| File                        | Purpose                       |
-| --------------------------- | ----------------------------- |
-| `src/lib/supabaseClient.js` | Browser Supabase client       |
-| `src/lib/categories.js`     | Enums, thresholds, FX rates   |
-| `src/lib/constants.js`      | Magic numbers and config      |
-| `src/lib/demoStore.js`      | In-memory demo storage        |
-| `src/lib/offlineStore.js`   | IndexedDB offline storage     |
-| `src/lib/syncQueue.js`      | Offline sync queue management |
-| `src/lib/format.js`         | Currency/date formatting      |
-| `src/lib/csv.js`            | CSV generation                |
-| `src/lib/csvParserUtils.js` | Bank CSV parsing helpers      |
-| `src/lib/importUtils.js`    | Import fingerprinting         |
-| `src/lib/transactionUtils.js` | Transaction helpers         |
+| File                          | Purpose                       |
+| ----------------------------- | ----------------------------- |
+| `src/lib/supabaseClient.js`   | Browser Supabase client       |
+| `src/lib/categories.js`       | Enums, thresholds, FX rates   |
+| `src/lib/constants.js`        | Magic numbers and config      |
+| `src/lib/demoStore.js`        | In-memory demo storage        |
+| `src/lib/offlineStore.js`     | IndexedDB offline storage     |
+| `src/lib/syncQueue.js`        | Offline sync queue management |
+| `src/lib/format.js`           | Currency/date formatting      |
+| `src/lib/csv.js`              | CSV generation                |
+| `src/lib/csvParserUtils.js`   | Bank CSV parsing helpers      |
+| `src/lib/importUtils.js`      | Import fingerprinting         |
+| `src/lib/transactionUtils.js` | Transaction helpers           |
 
 ### Contexts & Hooks
 
@@ -632,23 +632,23 @@ ChiriBudget intentionally avoids third-party services for:
 
 ### Key Components
 
-| File                                     | Purpose                      |
-| ---------------------------------------- | ---------------------------- |
-| `src/components/QuickAddForm.jsx`        | Transaction entry form       |
-| `src/components/TransactionList.jsx`     | Transaction list orchestrator|
-| `src/components/TransactionCard.jsx`     | Single transaction display   |
-| `src/components/ImportPanel.jsx`         | JSON import orchestrator     |
-| `src/components/ImportUpload.jsx`        | CSV upload orchestrator      |
-| `src/components/NetworkStatus.jsx`       | Offline banner UI            |
-| `src/components/CategoryLimitsSettings.jsx` | Category limit config     |
-| `src/components/BackupSettings.jsx`      | Backup download/restore      |
+| File                                        | Purpose                       |
+| ------------------------------------------- | ----------------------------- |
+| `src/components/QuickAddForm.jsx`           | Transaction entry form        |
+| `src/components/TransactionList.jsx`        | Transaction list orchestrator |
+| `src/components/TransactionCard.jsx`        | Single transaction display    |
+| `src/components/ImportPanel.jsx`            | JSON import orchestrator      |
+| `src/components/ImportUpload.jsx`           | CSV upload orchestrator       |
+| `src/components/NetworkStatus.jsx`          | Offline banner UI             |
+| `src/components/CategoryLimitsSettings.jsx` | Category limit config         |
+| `src/components/BackupSettings.jsx`         | Backup download/restore       |
 
 ### Infrastructure
 
-| File                              | Purpose                |
-| --------------------------------- | ---------------------- |
-| `public/sw.js`                    | Service worker         |
-| `scripts/restore-backup.js`       | CLI restore script     |
-| `.github/workflows/backup.yml`    | Automated backup       |
-| `.github/workflows/ci.yml`        | CI/CD pipeline         |
-| `supabase/schema.sql`             | Database schema        |
+| File                           | Purpose            |
+| ------------------------------ | ------------------ |
+| `public/sw.js`                 | Service worker     |
+| `scripts/restore-backup.js`    | CLI restore script |
+| `.github/workflows/backup.yml` | Automated backup   |
+| `.github/workflows/ci.yml`     | CI/CD pipeline     |
+| `supabase/schema.sql`          | Database schema    |
