@@ -29,8 +29,8 @@ export default function Home() {
     setRefreshKey((k) => k + 1);
   }
 
-  // Show loading skeleton while checking auth
-  if (loading) {
+  // Show loading skeleton while checking auth (but not in demo-only mode)
+  if (loading && !isDemoOnly) {
     return (
       <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
         <Skeleton className="h-16 w-full rounded-xl" />
@@ -42,11 +42,8 @@ export default function Home() {
     );
   }
 
-  // In demo-only mode, skip login screen entirely
-  if (isDemoOnly) {
-    // Don't show login screen, proceed to main app (will enter demo mode via useEffect)
-  } else if (!user && !isDemoMode) {
-    // Show login screen if not authenticated and not in demo mode
+  // Show login screen ONLY if not demo-only mode and not authenticated
+  if (!isDemoOnly && !user && !isDemoMode) {
     return <LoginScreen />;
   }
 
