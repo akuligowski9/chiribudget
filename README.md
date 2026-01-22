@@ -87,7 +87,7 @@ This is designed to make it safe to showcase publicly in a portfolio.
 - **Next.js (App Router)** — JavaScript
 - **Supabase** — Auth (magic link) + Postgres + Row Level Security (RLS)
 - **Vercel** — hosting
-- **PWA installable** — manifest + icons (no offline support)
+- **PWA installable** — offline support with IndexedDB sync
 
 ---
 

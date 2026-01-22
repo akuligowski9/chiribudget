@@ -24,7 +24,7 @@ ChiriBudget is a shared household budgeting application designed for two-person 
 - Complex multi-account banking integrations
 - Investment portfolio tracking
 - Bill reminders or recurring transaction automation
-- Offline-first functionality
+- Offline-first architecture (basic offline support exists, but app is online-primary)
 
 ---
 
@@ -38,7 +38,7 @@ ChiriBudget is a shared household budgeting application designed for two-person 
 | UI       | Tailwind CSS + Radix UI | Styling, accessible primitives       |
 | Backend  | Supabase (PostgreSQL)   | Database, Auth, RLS                  |
 | Hosting  | Vercel                  | Edge deployment, CDN                 |
-| PWA      | next-pwa                | Installable app (no offline support) |
+| PWA      | Service Worker + idb    | Installable app with offline support |
 
 ### 2.2 Directory Structure
 
@@ -53,16 +53,21 @@ src/
 │   ├── ui/               # Reusable UI primitives
 │   ├── QuickAddForm.jsx  # Transaction entry form
 │   ├── TransactionList.jsx
+│   ├── NetworkStatus.jsx # Offline status banner
 │   ├── ImportPanel.jsx
 │   └── ...
 ├── contexts/             # React Context providers
-│   └── AuthContext.js    # Authentication state
+│   ├── AuthContext.js    # Authentication state
+│   └── OfflineContext.js # Offline state and sync
 ├── hooks/                # Custom React hooks
-│   └── useDemo.js        # Demo mode detection
+│   ├── useDemo.js        # Demo mode detection
+│   └── useNetworkStatus.js # Online/offline detection
 └── lib/                  # Utilities & business logic
     ├── supabaseClient.js # Supabase browser client
     ├── categories.js     # Enums and constants
     ├── demoStore.js      # In-memory demo storage
+    ├── offlineStore.js   # IndexedDB offline storage
+    ├── syncQueue.js      # Offline sync queue
     ├── format.js         # Number/date formatting
     ├── csv.js            # CSV generation
     └── constants.js      # Magic numbers
@@ -76,10 +81,9 @@ src/
 │  (Next.js)  │◀────│    Auth     │◀────│    + RLS    │
 └─────────────┘     └─────────────┘     └─────────────┘
        │
-       ▼
-┌─────────────┐
-│  Demo Mode  │  (localStorage flag → in-memory store)
-└─────────────┘
+       ├──▶ Demo Mode (localStorage flag → in-memory store)
+       │
+       └──▶ Offline Mode (IndexedDB → sync queue → Supabase)
 ```
 
 ---
@@ -348,6 +352,44 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 - Demo payers use fallback list since no real household members exist
 - Demo mode indicated by banner at top of screen
 
+### 5.6 Offline Support
+
+**Purpose**: Allow transaction entry without internet connectivity
+
+**Detection**: `navigator.onLine` and `online`/`offline` events via `useNetworkStatus` hook
+
+**Behavior**:
+
+- When offline, QuickAddForm writes to IndexedDB via offlineStore
+- Pending transactions shown with cloud-off indicator
+- NetworkStatus banner shows offline state and pending count
+- When online, sync queue replays pending changes to Supabase
+
+**Sync Triggers**:
+
+- Browser `online` event
+- App visibility change (tab becomes active)
+- Manual "Sync now" button
+- Periodic check (every 5 minutes)
+
+**Conflict Resolution**:
+
+- Server-wins strategy: if server data is newer, local change is discarded
+- SyncConflictModal notifies user when their change couldn't be applied
+- Retry backoff: immediate → 5s → 30s → 5min → 15min (max 10 attempts)
+
+**Edge Cases**:
+
+- Network fails mid-sync: Transaction stays in queue, retries later
+- Partner edits same transaction: Server version wins, user notified
+- IndexedDB unavailable: Falls back to online-only mode
+
+**Decisions**:
+
+- IndexedDB via `idb` library (1.3KB) for clean Promise-based API
+- Server-wins conflict resolution: simple and safe for 2-person household
+- Offline store mirrors demoStore API pattern for consistency
+
 ---
 
 ## 6. API Design
@@ -507,19 +549,24 @@ ChiriBudget intentionally avoids third-party services for:
 
 - No rate limiting (low risk for 2-person app, RLS prevents abuse)
 - No two-factor auth (magic link is single-use, expires in 1 hour)
-- No offline support (requires internet; PWA caches static assets only)
 
 ---
 
 ## Appendix A: File Reference
 
-| File                          | Purpose                     |
-| ----------------------------- | --------------------------- |
-| `src/lib/supabaseClient.js`   | Browser Supabase client     |
-| `src/lib/categories.js`       | Enums, thresholds, FX rates |
-| `src/lib/demoStore.js`        | In-memory demo storage      |
-| `src/lib/format.js`           | Currency/date formatting    |
-| `src/lib/csv.js`              | CSV generation              |
-| `src/contexts/AuthContext.js` | Auth state provider         |
-| `src/hooks/useDemo.js`        | Demo mode hook              |
-| `supabase/schema.sql`         | Complete database schema    |
+| File                               | Purpose                       |
+| ---------------------------------- | ----------------------------- |
+| `src/lib/supabaseClient.js`        | Browser Supabase client       |
+| `src/lib/categories.js`            | Enums, thresholds, FX rates   |
+| `src/lib/demoStore.js`             | In-memory demo storage        |
+| `src/lib/offlineStore.js`          | IndexedDB offline storage     |
+| `src/lib/syncQueue.js`             | Offline sync queue management |
+| `src/lib/format.js`                | Currency/date formatting      |
+| `src/lib/csv.js`                   | CSV generation                |
+| `src/contexts/AuthContext.js`      | Auth state provider           |
+| `src/contexts/OfflineContext.js`   | Offline state and sync        |
+| `src/hooks/useDemo.js`             | Demo mode hook                |
+| `src/hooks/useNetworkStatus.js`    | Online/offline detection      |
+| `src/components/NetworkStatus.jsx` | Offline banner UI             |
+| `public/sw.js`                     | Service worker                |
+| `supabase/schema.sql`              | Complete database schema      |

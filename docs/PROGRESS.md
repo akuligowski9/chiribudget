@@ -4,6 +4,40 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — Offline Translation Keys & Settings Tabs
+
+### Summary
+
+Added translation keys for all offline-related UI strings and reorganized Settings page with tabbed interface.
+
+### Work Completed
+
+**Offline Translation Keys**
+
+Added English and Spanish translations for offline functionality:
+
+- `messages/en.json` and `messages/es.json` updated
+- New `offline` section with 12 keys: `offlineMode`, `syncing`, `syncFailed`, `pendingSingular`, `pendingPlural`, `syncNow`, `willSyncSingular`, `willSyncPlural`, `syncConflict`, `conflictDescription`, `currentValue`, `acceptServer`
+- Added to `common` section: `dismiss`, `savedOffline`, `willSyncWhenOnline`
+
+**Settings Page Reorganization (CB-047)**
+
+- Reorganized Settings from 9 vertical cards to 4 category tabs
+- Account tab: Profile, Language
+- Household tab: Members, Guidelines
+- Budget tab: Conversion Rate, Thresholds, Category Limits
+- Data tab: Backup, Trash
+- Reduces scrolling and groups related settings logically
+
+### What's Next
+
+- Consider unit tests for offlineStore.js and syncQueue.js
+- Manual testing of offline flow and sync behavior
+- Bank-specific CSV parsing (waiting on examples)
+- Test restore backup feature (reminder in BACKLOG.md)
+
+---
+
 ## 2026-01-20 — Offline Support Implementation
 
 ### Summary
@@ -49,7 +83,7 @@ Implemented full offline support (CB-039 through CB-043) so users can log transa
 
 ### What's Next
 
-- Add translation keys for offline-related strings (savedOffline, willSyncWhenOnline, etc.)
+- ~~Add translation keys for offline-related strings~~ ✓ Done 2026-01-22
 - Consider unit tests for offlineStore.js and syncQueue.js
 - Manual testing of offline flow and sync behavior
 - Bank-specific CSV parsing (waiting on examples)
