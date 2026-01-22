@@ -7,10 +7,35 @@ import Providers from '@/components/Providers';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 export const metadata = {
+  metadataBase: new URL('https://chiribudget.vercel.app'),
   title: 'ChiriBudget',
   description:
     "Create a friendly, shared view of our family's financial health.",
   manifest: '/manifest.webmanifest',
+  openGraph: {
+    title: 'ChiriBudget',
+    description:
+      'A friendly, shared view of your family finances. Track expenses, flag big purchases, and have monthly budget discussions together.',
+    url: 'https://chiribudget.vercel.app',
+    siteName: 'ChiriBudget',
+    images: [
+      {
+        url: '/apple-touch-icon.png',
+        width: 180,
+        height: 180,
+        alt: 'ChiriBudget logo',
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary',
+    title: 'ChiriBudget',
+    description:
+      'A friendly, shared view of your family finances. Track expenses, flag big purchases, and have monthly budget discussions together.',
+    images: ['/apple-touch-icon.png'],
+  },
 };
 
 export const viewport = {
