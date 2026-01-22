@@ -125,21 +125,21 @@ The parser should auto-detect Interbank format based on headers (`Fecha,Comercio
 
 #### Acceptance Criteria
 
-- [ ] Auto-detect Interbank CSV format from headers (`Fecha,Comercio,S/,US$`)
-- [ ] Map Interbank columns to transaction fields
-- [ ] Handle DD-Mon date format with Spanish month abbreviations
-- [ ] Strip `S/ ` prefix and commas from amounts
-- [ ] Filter out non-transaction rows (INTERESES, SEGURO, TOTAL)
-- [ ] Default currency to PEN (or USD if US$ column has value)
-- [ ] Unit tests for Interbank parser
+- [x] Auto-detect Interbank CSV format from headers (`Fecha,Comercio,S/,US$`)
+- [x] Map Interbank columns to transaction fields
+- [x] Handle DD-Mon date format with Spanish month abbreviations
+- [x] Strip `S/ ` prefix and commas from amounts
+- [x] Filter out non-transaction rows (INTERESES, SEGURO, TOTAL)
+- [x] Default currency to PEN (or USD if US$ column has value)
+- [x] Unit tests for Interbank parser
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Feature
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
 
 ---
