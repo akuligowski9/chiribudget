@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** January 20, 2026
+**Last Updated:** January 22, 2026
 
 ---
 
@@ -21,6 +21,12 @@ Planned → In Progress → Done
 | **Blocked**     | Cannot proceed without input, decision, or dependency |
 | **Done**        | Complete                                              |
 | **Archived**    | Was planned, no longer pursuing (kept for history)    |
+
+---
+
+## Reminders
+
+- [ ] **Test restore backup feature** — Upload a backup JSON file via Settings > Data Backup > Restore Backup and verify data restores correctly. _(Added: Jan 22, 2026)_
 
 ---
 
