@@ -4,6 +4,36 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — Demo Mode Separation Planning
+
+### Summary
+
+Discussed UX concerns about demo mode and created a backlog item for separating demo and production experiences.
+
+### Work Completed
+
+**CB-048: Separate Demo Mode Deployment (Planned)**
+
+- Identified UX problem: Adriana might accidentally enter demo mode and lose transactions
+- Decided on two-part solution:
+  1. Separate demo URL (`demo.chiribudget.vercel.app`) for portfolio visitors
+  2. Hide "Try Demo Mode" button for returning users on main app
+- Added CB-048 to BACKLOG.md as Medium priority
+
+### Decisions Made
+
+- **Separate URLs over cluttered UI**: Prefer clean login screen for household members over adding warnings/confirmations
+- **localStorage detection**: Will check for previous auth to determine returning user status
+
+### What's Next
+
+- CB-048 implementation when ready
+- Unit tests for offlineStore.js and syncQueue.js
+- Manual testing of offline flow
+- Bank-specific CSV parsing (blocked on samples)
+
+---
+
 ## 2026-01-22 — Offline Translation Keys & Settings Tabs
 
 ### Summary

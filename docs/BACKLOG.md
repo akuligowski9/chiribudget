@@ -129,6 +129,35 @@ The parser should auto-detect Interbank format and map fields appropriately, def
 
 ---
 
+### CB-048: Separate Demo Mode Deployment
+
+#### Description
+
+Currently the main app URL (`chiribudget.vercel.app`) shows both login and "Try Demo Mode" options, creating risk that Adriana accidentally enters demo mode and loses entered transactions. Portfolio visitors and household members use the same entry point, which clutters the UX and creates confusion.
+
+The solution is two-fold: (1) Create a separate demo deployment at `demo.chiribudget.vercel.app` that forces demo mode with no login option, for portfolio visitors. (2) On the main app, hide the "Try Demo Mode" button for returning users who have previously authenticated, prioritizing the login flow.
+
+Implementation requires a `NEXT_PUBLIC_DEMO_ONLY` environment variable, modifications to `LoginScreen.jsx`, and a second Vercel project deployment pointing to the same codebase.
+
+#### Acceptance Criteria
+
+- [ ] `NEXT_PUBLIC_DEMO_ONLY` env var controls demo-only mode
+- [ ] When `DEMO_ONLY=true`, app auto-enters demo mode with no login UI
+- [ ] Main app hides "Try Demo Mode" for returning users (localStorage check)
+- [ ] `demo.chiribudget.vercel.app` deployed with demo-only config
+- [ ] Main app login screen remains clean for Adriana
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+
+---
+
 ## Low
 
 ### CB-013: Error Monitoring (Sentry)
