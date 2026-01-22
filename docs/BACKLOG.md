@@ -32,6 +32,35 @@ No critical items currently.
 
 ## High
 
+### CB-046: Automated Data Backup System
+
+#### Description
+
+Protect household financial data with automated weekly backups stored in a separate private GitHub repository (`chiribudget-backups`). Before uploading real transaction data, having a reliable backup system ensures that database issues, accidental deletions, or migration problems don't result in permanent data loss. This is especially important since Supabase free tier has limited backup retention.
+
+A GitHub Action runs weekly from the main repo, exports all household data from Supabase as JSON, and commits it to the private backup repository. This provides version-controlled backup history at zero cost while keeping financial data separate from the public codebase. The backup includes all discussion history (flagged transaction explanations, monthly discussion notes) so conversation context is never lost.
+
+#### Acceptance Criteria
+
+- [ ] Create private `chiribudget-backups` GitHub repo
+- [ ] GitHub Action workflow runs weekly (e.g., Sunday midnight)
+- [ ] Exports all tables: transactions (including explanations, flag reasons), budget_config, guidelines, month_status (including discussion_notes), profiles, households
+- [ ] Commits backup as timestamped JSON to private backup repo
+- [ ] Retains backup history via git (all versions preserved)
+- [ ] Action sends notification on failure (GitHub email)
+- [ ] Documentation for manual restore process from backup
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** High
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+
+---
+
 ## Medium
 
 ### CB-044: PNC Bank CSV Parser
