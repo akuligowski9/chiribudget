@@ -40,6 +40,11 @@ export function addDemoTransaction(transaction) {
   return id;
 }
 
+// Set all demo transactions (for restore)
+export function setDemoTransactions(transactions) {
+  demoTransactions = [...transactions];
+}
+
 // Get current demo thresholds
 export function getDemoThresholds() {
   return { ...demoThresholds };

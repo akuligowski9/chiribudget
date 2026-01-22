@@ -341,6 +341,17 @@
     "downloadFailed": "Error en respaldo",
     "rowCount": "{count} registros totales",
     "noHousehold": "No se encontró hogar",
-    "autoBackupNote": "Los respaldos automáticos se ejecutan cada 3 días en una ubicación segura."
+    "autoBackupNote": "Los respaldos automáticos se ejecutan cada 3 días en una ubicación segura.",
+    "restoreButton": "Restaurar Respaldo",
+    "restoring": "Restaurando...",
+    "restoreSuccess": "Respaldo restaurado",
+    "restoreFailed": "Error al restaurar",
+    "restorePartial": "Restauración parcialmente completada",
+    "invalidFormat": "Formato de archivo inválido",
+    "confirmRestoreTitle": "Restaurar desde Respaldo",
+    "confirmRestoreMessage": "Esto restaurará datos desde tu archivo de respaldo. Los registros existentes con IDs coincidentes serán sobrescritos.",
+    "backupDetails": "Detalles del respaldo:",
+    "backupDate": "Fecha",
+    "confirmRestore": "Restaurar"
   }
 }

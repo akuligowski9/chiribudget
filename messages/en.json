@@ -341,6 +341,17 @@
     "downloadFailed": "Backup failed",
     "rowCount": "{count} total records",
     "noHousehold": "No household found",
-    "autoBackupNote": "Automatic backups run every 3 days to a secure location."
+    "autoBackupNote": "Automatic backups run every 3 days to a secure location.",
+    "restoreButton": "Restore Backup",
+    "restoring": "Restoring...",
+    "restoreSuccess": "Backup restored",
+    "restoreFailed": "Restore failed",
+    "restorePartial": "Restore partially completed",
+    "invalidFormat": "Invalid backup file format",
+    "confirmRestoreTitle": "Restore from Backup",
+    "confirmRestoreMessage": "This will restore data from your backup file. Existing records with matching IDs will be overwritten.",
+    "backupDetails": "Backup details:",
+    "backupDate": "Date",
+    "confirmRestore": "Restore"
   }
 }
