@@ -10,9 +10,15 @@ jobs:
   ci:
     uses: ./.github/workflows/ci.yml
 
-  # Deploy only if CI passes
-  deploy:
+  # Run backup before deploy (safety net for migrations)
+  pre-deploy-backup:
     needs: ci
+    uses: ./.github/workflows/backup.yml
+    secrets: inherit
+
+  # Deploy only if CI passes and backup completes
+  deploy:
+    needs: [ci, pre-deploy-backup]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 

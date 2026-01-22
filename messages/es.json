@@ -325,5 +325,22 @@
     "exceeded": "Excedido por ${amount}",
     "approaching": "Acercándose al límite",
     "remaining": "{amount} restante"
+  },
+  "backup": {
+    "title": "Respaldo de Datos",
+    "description": "Descarga un respaldo completo de los datos de tu hogar",
+    "help": "Descarga un archivo JSON con todos tus datos. Guarda este archivo en un lugar seguro - puedes usarlo para restaurar tus datos si es necesario.",
+    "includes": "El respaldo incluye:",
+    "includesTransactions": "Todas las transacciones (incluyendo eliminadas)",
+    "includesConfig": "Configuración de presupuesto y límites por categoría",
+    "includesGuidelines": "Guías del hogar",
+    "includesDiscussions": "Notas de discusión y explicaciones",
+    "downloadButton": "Descargar Respaldo",
+    "downloading": "Creando respaldo...",
+    "downloadSuccess": "Respaldo descargado",
+    "downloadFailed": "Error en respaldo",
+    "rowCount": "{count} registros totales",
+    "noHousehold": "No se encontró hogar",
+    "autoBackupNote": "Los respaldos automáticos se ejecutan cada 3 días en una ubicación segura."
   }
 }

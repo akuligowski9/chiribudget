@@ -2,6 +2,7 @@
 
 import { Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import BackupSettings from '@/components/BackupSettings';
 import BudgetSettings from '@/components/BudgetSettings';
 import CategoryLimitsSettings from '@/components/CategoryLimitsSettings';
 import ConversionRateSettings from '@/components/ConversionRateSettings';
@@ -62,6 +63,7 @@ export default function SettingsPage() {
         <ConversionRateSettings />
         <BudgetSettings />
         <CategoryLimitsSettings />
+        <BackupSettings />
         <Guidelines />
         <TrashView />
       </div>

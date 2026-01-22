@@ -325,5 +325,22 @@
     "exceeded": "Over by ${amount}",
     "approaching": "Approaching limit",
     "remaining": "{amount} remaining"
+  },
+  "backup": {
+    "title": "Data Backup",
+    "description": "Download a full backup of your household data",
+    "help": "Download a JSON file containing all your data. Keep this file safe - you can use it to restore your data if needed.",
+    "includes": "Backup includes:",
+    "includesTransactions": "All transactions (including deleted)",
+    "includesConfig": "Budget settings & category limits",
+    "includesGuidelines": "Household guidelines",
+    "includesDiscussions": "Discussion notes & explanations",
+    "downloadButton": "Download Backup",
+    "downloading": "Creating backup...",
+    "downloadSuccess": "Backup downloaded",
+    "downloadFailed": "Backup failed",
+    "rowCount": "{count} total records",
+    "noHousehold": "No household found",
+    "autoBackupNote": "Automatic backups run every 3 days to a secure location."
   }
 }
