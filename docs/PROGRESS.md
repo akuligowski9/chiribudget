@@ -38,6 +38,124 @@ Added English and Spanish translations for offline functionality:
 
 ---
 
+## 2026-01-21 — Automated Backup System & Restore Feature
+
+### Summary
+
+Implemented automated backup system (CB-046) with GitHub Actions workflow that backs up all Supabase data to a private repository every 3 days. Added manual backup download and restore features to the Settings UI.
+
+### Work Completed
+
+**Automated Backup Workflow (CB-046)**
+
+- `.github/workflows/backup.yml` — Runs every 3 days, exports all tables to JSON
+- Backs up to private `chiribudget-backups` repository
+- Pre-deploy backup trigger ensures backup before each deployment
+- Failure notification creates GitHub issue with `backup-failure` label
+
+**Manual Backup & Restore**
+
+- `src/components/BackupSettings.jsx` — Download and restore UI
+- `scripts/restore-backup.js` — CLI restore script with dry-run support
+- Download button shows row counts for verification
+- Restore validates file format and filters to current household
+- Confirmation dialog before restore with backup details
+- Added `setDemoTransactions` to demoStore for demo mode restore
+
+**Translations**
+
+- Full English and Spanish translations for backup UI
+- Keys: `backup.title`, `downloadButton`, `restoreButton`, `confirmRestoreTitle`, etc.
+
+### Decisions Made
+
+- **3-day backup frequency**: Balance between data safety and storage/API usage
+- **Private repo for backups**: Financial data stays separate from public codebase
+- **Household filtering on restore**: Prevents accidental cross-household data restoration
+- **GitHub issue on failure**: Email notification via GitHub's built-in alerts
+
+---
+
+## 2026-01-21 — Category Spending Limits (CB-036)
+
+### Summary
+
+Added per-category spending limits with configurable auto-flagging behavior. Users can set monthly USD limits for expense categories and choose how transactions are flagged when limits are approached or exceeded.
+
+### Work Completed
+
+**Database Changes**
+
+- Added `category_limits` JSONB column to `budget_config` table
+- Stores limit amount and flag mode per category
+
+**New Components**
+
+- `src/components/CategoryLimitsSettings.jsx` — Settings UI for configuring limits
+- Dashboard shows color-coded progress bars (green 0-79%, yellow 80-99%, red 100%+)
+
+**Flag Modes**
+
+- **Off**: Dashboard warnings only, no auto-flagging
+- **Flag crossing**: Only flag the transaction that crosses the limit
+- **Flag all after**: Flag all transactions after limit is reached
+
+**Translations**
+
+- Full English and Spanish support for category limits UI
+
+### Decisions Made
+
+- **USD-only limits**: Simplifies UX; PEN amounts converted using household FX rate
+- **Three flag modes**: Balances strictness with flexibility for different spending styles
+
+---
+
+## 2026-01-21 — Component Refactoring
+
+### Summary
+
+Major refactoring session to break down large components into smaller, focused modules. Improves maintainability and testability.
+
+### Work Completed
+
+**ImportPanel Refactor (CB-019)**
+
+Split `ImportPanel.js` (426 lines) into:
+- `ImportJsonInput.jsx` (63 lines) — Currency selector and JSON textarea
+- `ImportPreview.jsx` (148 lines) — Preview stats and transaction table
+- `importUtils.js` (49 lines) — Fingerprinting and normalization helpers
+
+**ImportUpload Refactor**
+
+Split `ImportUpload.jsx` (690 → 416 lines, 40% reduction) into:
+- `ImportFileDropzone.jsx` (66 lines) — File drop zone with drag/drop
+- `ImportOptionsForm.jsx` (94 lines) — Bank, year, payer selectors
+- `ImportResults.jsx` (70 lines) — Results and unparseable rows display
+- `csvParserUtils.js` (125 lines) — Bank mappings and parsing helpers
+
+**TransactionList Refactor**
+
+Split `TransactionList.jsx` (772 → 412 lines) into:
+- `TransactionCard.jsx` — Individual transaction with inline editing
+- `TransactionSearchSort.jsx` — Search input and sort controls
+- `TransactionSummaryBar.jsx` — Count and totals display
+- `TransactionPagination.jsx` — Pagination controls
+- `transactionUtils.js` — Shared utility functions
+
+**Lint Fixes**
+
+- Reordered useCallback definitions before dependent useEffects in OfflineContext.js
+- Prefixed unused variables with underscores in syncQueue.js and test files
+
+### Decisions Made
+
+- **Single responsibility**: Each component handles one concern
+- **Utilities extracted**: Reusable logic moved to separate files
+- **Consistent naming**: All extracted components follow `[Parent][Purpose].jsx` pattern
+
+---
+
 ## 2026-01-20 — Offline Support Implementation
 
 ### Summary
