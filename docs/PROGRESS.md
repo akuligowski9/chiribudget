@@ -122,6 +122,7 @@ Major refactoring session to break down large components into smaller, focused m
 **ImportPanel Refactor (CB-019)**
 
 Split `ImportPanel.js` (426 lines) into:
+
 - `ImportJsonInput.jsx` (63 lines) — Currency selector and JSON textarea
 - `ImportPreview.jsx` (148 lines) — Preview stats and transaction table
 - `importUtils.js` (49 lines) — Fingerprinting and normalization helpers
@@ -129,6 +130,7 @@ Split `ImportPanel.js` (426 lines) into:
 **ImportUpload Refactor**
 
 Split `ImportUpload.jsx` (690 → 416 lines, 40% reduction) into:
+
 - `ImportFileDropzone.jsx` (66 lines) — File drop zone with drag/drop
 - `ImportOptionsForm.jsx` (94 lines) — Bank, year, payer selectors
 - `ImportResults.jsx` (70 lines) — Results and unparseable rows display
@@ -137,6 +139,7 @@ Split `ImportUpload.jsx` (690 → 416 lines, 40% reduction) into:
 **TransactionList Refactor**
 
 Split `TransactionList.jsx` (772 → 412 lines) into:
+
 - `TransactionCard.jsx` — Individual transaction with inline editing
 - `TransactionSearchSort.jsx` — Search input and sort controls
 - `TransactionSummaryBar.jsx` — Count and totals display
