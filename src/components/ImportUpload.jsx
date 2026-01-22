@@ -133,8 +133,10 @@ export default function ImportUpload({ onClose, onSuccess }) {
           (k) => k.toLowerCase() === mapping.descriptionCol.toLowerCase()
         );
 
-        // Try to find amount - handle PNC's separate columns
+        // Try to find amount - handle bank-specific columns
         let amount = 0;
+        let currency = mapping.currency;
+
         if (bank === 'pnc') {
           const withdrawalKey = Object.keys(row).find((k) =>
             k.toLowerCase().includes('withdrawal')
@@ -145,6 +147,20 @@ export default function ImportUpload({ onClose, onSuccess }) {
           const withdrawal = parseAmount(row[withdrawalKey]);
           const deposit = parseAmount(row[depositKey]);
           amount = deposit > 0 ? deposit : -Math.abs(withdrawal);
+        } else if (bank === 'interbank') {
+          // Interbank has separate S/ and US$ columns
+          const penKey = Object.keys(row).find((k) => k.trim() === 'S/');
+          const usdKey = Object.keys(row).find((k) => k.trim() === 'US$');
+          const penAmount = parseAmount(row[penKey]);
+          const usdAmount = parseAmount(row[usdKey]);
+
+          if (usdAmount !== 0) {
+            amount = -Math.abs(usdAmount); // Credit card charges are negative
+            currency = 'USD';
+          } else if (penAmount !== 0) {
+            amount = -Math.abs(penAmount); // Credit card charges are negative
+            currency = 'PEN';
+          }
         } else {
           const amountKey = Object.keys(row).find(
             (k) => k.toLowerCase() === mapping.amountCol.toLowerCase()
@@ -175,7 +191,7 @@ export default function ImportUpload({ onClose, onSuccess }) {
         transactions.push({
           household_id: profile?.household_id,
           txn_date: txnDate,
-          currency: mapping.currency,
+          currency,
           description,
           amount,
           category: 'Unexpected',
@@ -185,7 +201,7 @@ export default function ImportUpload({ onClose, onSuccess }) {
           status: 'pending',
           fingerprint: generateFingerprint(
             profile?.household_id,
-            mapping.currency,
+            currency,
             txnDate,
             amount,
             description

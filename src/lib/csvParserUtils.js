@@ -2,14 +2,32 @@
  * CSV Parser utilities for bank statement imports
  */
 
+// Spanish month abbreviations for Interbank date parsing
+const SPANISH_MONTHS = {
+  ene: '01',
+  feb: '02',
+  mar: '03',
+  abr: '04',
+  may: '05',
+  jun: '06',
+  jul: '07',
+  ago: '08',
+  sep: '09',
+  oct: '10',
+  nov: '11',
+  dic: '12',
+};
+
 // Bank CSV column mappings
 export const BANK_MAPPINGS = {
   interbank: {
     dateCol: 'Fecha',
-    descriptionCol: 'Descripción',
-    amountCol: 'Monto',
-    dateFormat: 'DD/MM/YYYY',
+    descriptionCol: 'Comercio',
+    penAmountCol: 'S/',
+    usdAmountCol: 'US$',
+    dateFormat: 'DD-Mon',
     currency: 'PEN',
+    isInterbank: true,
   },
   bcp: {
     dateCol: 'Fecha',
@@ -63,6 +81,27 @@ export const CURRENT_YEAR = new Date().getFullYear();
 export const YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
 
 /**
+ * Parse Interbank date format (DD-Mon with Spanish months)
+ * Examples: "21-Sep", "4-Oct", "12-Dic"
+ */
+export function parseInterbankDate(dateStr, year) {
+  if (!dateStr) return null;
+
+  const cleanDate = dateStr.trim();
+  const match = cleanDate.match(/^(\d{1,2})-([A-Za-z]{3})$/);
+
+  if (!match) return null;
+
+  const day = match[1].padStart(2, '0');
+  const monthAbbr = match[2].toLowerCase();
+  const month = SPANISH_MONTHS[monthAbbr];
+
+  if (!month) return null;
+
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Parse date string to YYYY-MM-DD format
  */
 export function parseDate(dateStr, format, year) {
@@ -70,6 +109,11 @@ export function parseDate(dateStr, format, year) {
 
   const cleanDate = dateStr.trim();
   let day, month, yearPart;
+
+  // Handle Interbank DD-Mon format
+  if (format === 'DD-Mon') {
+    return parseInterbankDate(cleanDate, year);
+  }
 
   if (format === 'DD/MM/YYYY') {
     const parts = cleanDate.split('/');
