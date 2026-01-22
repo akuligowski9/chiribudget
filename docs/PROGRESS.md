@@ -4,11 +4,11 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
-## 2026-01-22 — SEO Implementation & Safety Rules
+## 2026-01-22 — SEO, Safety Rules & Interbank Parser
 
 ### Summary
 
-Implemented CB-049 (SEO & Google Discoverability) and drafted safety improvements to CLAUDE.md and INSTRUCTIONS.md.
+Completed CB-049 (SEO), CB-045 (Interbank parser), committed safety rules to CLAUDE.md/INSTRUCTIONS.md, and discussed future CLI import tooling.
 
 ### Work Completed
 
@@ -22,30 +22,37 @@ Implemented CB-049 (SEO & Google Discoverability) and drafted safety improvement
 - Verified ownership in Google Search Console (URL prefix method)
 - Submitted sitemap — Status: Success, 1 page discovered
 
-**CB-045: Interbank CSV Parser (Unblocked)**
+**CB-045: Interbank CSV Parser (Done)**
 
-- Received sample CSV from Adriana's Interbank account
-- Documented format details in BACKLOG.md (headers, date format, amount parsing, edge cases)
-- Status changed from Blocked → Planned
+- Added Spanish month map and `parseInterbankDate()` for DD-Mon format
+- Updated Interbank mapping to actual headers (`Comercio`, `S/`, `US$`)
+- Handle dual-currency columns (PEN vs USD per row)
+- Added 10 unit tests for date and amount parsing
+- Tested with real CSV: 17 transactions parsed, 4 rows filtered (INTERESES, SEGURO, TOTAL, empty)
 
-**Safety Rules Draft (uncommitted)**
+**Safety Rules (Committed)**
 
 - Updated CLAUDE.md with Hard Stops, Action-Based Check-ins, Task Scoping
-- Updated INSTRUCTIONS.md with Task Scoping Rule, Destructive Action Protocol
+- Updated INSTRUCTIONS.md (v1.1) with Task Scoping Rule, Destructive Action Protocol
 - Changed 90-minute sync → action-based (5 backlog items, end of session, muffins)
-- Awaiting testing before committing
 
 ### Decisions Made
 
 - **URL prefix for Search Console**: Domain verification requires DNS access; URL prefix uses HTML meta tag
 - **Action-based over time-based sync**: Claude can't reliably track elapsed time
 - **Hard stops require explicit "yes"**: Destructive actions need user confirmation
+- **Separate dev Supabase project**: Most sustainable approach for isolating test data from production (parked for later)
+
+### Parked for Later
+
+- **CLI import script**: `scripts/import-csv.js` for terminal-based CSV imports
+- **Dev Supabase project**: Separate free project for development/testing
+- Consider switching to Sonnet model if Opus latency issues persist
 
 ### What's Next
 
-- Test safety rules in future sessions, then commit if effective
-- CB-045: Implement Interbank CSV parser
 - CB-048: Separate demo mode deployment
+- CLI import script + dev Supabase setup (when ready)
 - Unit tests for offlineStore.js and syncQueue.js
 
 ---
