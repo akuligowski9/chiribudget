@@ -8,6 +8,9 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 
 export const metadata = {
   metadataBase: new URL('https://chiribudget.vercel.app'),
+  verification: {
+    google: '-gkMD__5u9mitv1mkYKCtWi9AWLirjKUV0g5kDK3REE',
+  },
   title: 'ChiriBudget',
   description:
     "Create a friendly, shared view of our family's financial health.",
