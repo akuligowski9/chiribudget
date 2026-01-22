@@ -42,3 +42,7 @@ docs/OPS_PRIVATE.md
 # Terminal task files (for parallel Claude sessions)
 TERMINAL_A_TASKS.md
 TERMINAL_B_TASKS.md
+.env*.local
+
+# Utility scripts with credentials (not for version control)
+fix-*.js

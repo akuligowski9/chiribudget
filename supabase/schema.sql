@@ -60,7 +60,7 @@ create table if not exists households (
 -- Members
 create table if not exists household_members (
   household_id uuid not null references households(id) on delete cascade,
-  user_id uuid not null,
+  user_id uuid not null references profiles(user_id) on delete cascade,
   created_at timestamptz not null default now(),
   primary key (household_id, user_id)
 );
@@ -405,10 +405,18 @@ for delete using (
   and auth.uid() != user_id
 );
 
--- Profiles: user can read/write their own
+-- Profiles: user can read their own profile and profiles of household members
 drop policy if exists profiles_self on profiles;
 create policy profiles_self on profiles
-for select using (auth.uid() = user_id);
+for select using (
+  auth.uid() = user_id
+  or exists (
+    select 1 from household_members hm1, household_members hm2
+    where hm1.user_id = auth.uid()
+      and hm2.user_id = profiles.user_id
+      and hm1.household_id = hm2.household_id
+  )
+);
 
 drop policy if exists profiles_upsert_self on profiles;
 create policy profiles_upsert_self on profiles

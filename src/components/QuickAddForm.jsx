@@ -128,13 +128,15 @@ export default function QuickAddForm({ onSuccess }) {
   // Set default payer when options are loaded
   useEffect(() => {
     if (payerOptions.length > 0 && !payer) {
-      // Default to "Together" if available, otherwise first option
-      const defaultPayer = payerOptions.includes('Together')
-        ? 'Together'
-        : payerOptions[0];
+      // Default to logged-in user's display name, fall back to first option
+      const userDisplayName = profile?.display_name;
+      const defaultPayer =
+        userDisplayName && payerOptions.includes(userDisplayName)
+          ? userDisplayName
+          : payerOptions[0];
       setPayer(defaultPayer);
     }
-  }, [payerOptions, payer]);
+  }, [payerOptions, payer, profile?.display_name]);
 
   const thr = useMemo(
     () =>

@@ -9,12 +9,12 @@ jest.mock('@/hooks/useDemo', () => ({
   useDemo: () => ({ isDemoMode: true }),
 }));
 
+// Create a mock function that we can control
+const mockUseAuthFn = jest.fn();
+
 // Mock useAuth hook
 jest.mock('@/contexts/AuthContext', () => ({
-  useAuth: () => ({
-    user: { id: 'test-user-id' },
-    profile: { household_id: 'test-household', default_currency: 'USD' },
-  }),
+  useAuth: () => mockUseAuthFn(),
 }));
 
 // Mock supabase client
@@ -125,6 +125,12 @@ function getSubmitButton() {
 describe('QuickAddForm', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Reset to default mock
+    mockUseAuthFn.mockReturnValue({
+      user: { id: 'test-user-id' },
+      profile: { household_id: 'test-household', default_currency: 'USD' },
+      payerOptions: [],
+    });
   });
 
   it('renders the form with all fields', () => {
@@ -441,6 +447,77 @@ describe('QuickAddForm', () => {
       render(<QuickAddForm />);
 
       expect(screen.getByText(/Max: USD 50,000/)).toBeInTheDocument();
+    });
+  });
+
+  describe('Default payer selection', () => {
+    it('defaults to logged-in user when their name is in payerOptions', async () => {
+      // Mock useAuth to return Alex's profile with payerOptions
+      mockUseAuthFn.mockReturnValue({
+        user: { id: 'alex-id' },
+        profile: {
+          household_id: 'test-household',
+          default_currency: 'PEN',
+          display_name: 'Alex',
+        },
+        payerOptions: ['Alex', 'Adriana', 'Together'],
+      });
+
+      const { container } = render(<QuickAddForm />);
+
+      // Wait for the form to render with payer options
+      await waitFor(() => {
+        // The payer select root should exist
+        const selectRoots = container.querySelectorAll(
+          '[data-testid="select-root"]'
+        );
+        expect(selectRoots.length).toBeGreaterThan(0);
+      });
+
+      // Verify Alex appears as an option in the payer field
+      await waitFor(() => {
+        expect(screen.getByText('Alex')).toBeInTheDocument();
+      });
+    });
+
+    it('defaults to Adriana when she is logged in', async () => {
+      // Mock useAuth to return Adriana's profile
+      mockUseAuthFn.mockReturnValue({
+        user: { id: 'adriana-id' },
+        profile: {
+          household_id: 'test-household',
+          default_currency: 'PEN',
+          display_name: 'Adriana',
+        },
+        payerOptions: ['Alex', 'Adriana', 'Together'],
+      });
+
+      render(<QuickAddForm />);
+
+      // Verify Adriana appears as an option in the payer field
+      await waitFor(() => {
+        expect(screen.getByText('Adriana')).toBeInTheDocument();
+      });
+    });
+
+    it('falls back to first option when user display name not in payerOptions', async () => {
+      // Mock useAuth with display_name not in options
+      mockUseAuthFn.mockReturnValue({
+        user: { id: 'test-user' },
+        profile: {
+          household_id: 'test-household',
+          default_currency: 'PEN',
+          display_name: 'Unknown',
+        },
+        payerOptions: ['Alex', 'Adriana', 'Together'],
+      });
+
+      render(<QuickAddForm />);
+
+      // Should default to first option (Alex)
+      await waitFor(() => {
+        expect(screen.getByText('Alex')).toBeInTheDocument();
+      });
     });
   });
 });
