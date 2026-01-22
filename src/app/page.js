@@ -18,13 +18,6 @@ export default function Home() {
   // Check if this is a demo-only deployment
   const isDemoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === 'true';
 
-  // Auto-enter demo mode if DEMO_ONLY env var is set
-  useEffect(() => {
-    if (isDemoOnly && !isDemoMode) {
-      enterDemo();
-    }
-  }, [isDemoOnly, isDemoMode, enterDemo]);
-
   function handleTransactionAdded() {
     setRefreshKey((k) => k + 1);
   }

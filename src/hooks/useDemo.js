@@ -29,14 +29,10 @@ export function useDemo() {
 
   const enterDemo = useCallback(() => {
     setDemoMode(true);
-    // Reload to ensure all components pick up the new state
-    window.location.reload();
   }, [setDemoMode]);
 
   const exitDemo = useCallback(() => {
     setDemoMode(false);
-    // Reload to ensure all components pick up the new state
-    window.location.reload();
   }, [setDemoMode]);
 
   return {
