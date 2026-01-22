@@ -104,28 +104,43 @@ The parser should auto-detect PNC format based on header columns and map fields 
 
 #### Description
 
-Add CSV parsing support for Interbank (Peru) export format. Interbank is a Peruvian bank with Spanish-language exports and PEN currency transactions. The export format likely uses different column names, date formats (DD/MM/YYYY vs MM/DD/YYYY), and possibly includes additional fields like reference numbers or branch codes.
+Add CSV parsing support for Interbank (Peru) export format. Interbank is a Peruvian bank with Spanish-language exports and PEN currency transactions.
 
-The parser should auto-detect Interbank format and map fields appropriately, defaulting to PEN currency for all transactions. Spanish column headers should be recognized. This enables direct import from Interbank account exports without manual reformatting.
+The parser should auto-detect Interbank format based on headers (`Fecha,Comercio,S/,US$`) and map fields appropriately, defaulting to PEN currency. Spanish column headers should be recognized. This enables direct import from Interbank account exports without manual reformatting.
+
+**Format Details (from sample analysis):**
+
+| Field       | Header     | Format                  | Example                    |
+| ----------- | ---------- | ----------------------- | -------------------------- |
+| Date        | `Fecha`    | DD-Mon (Spanish abbrev) | `21-Sep`, `4-Oct`          |
+| Description | `Comercio` | Free text               | `Veterinaria My Pet`       |
+| PEN Amount  | `S/`       | `S/ ###.##` with commas | `S/ 105.79`, `S/ 3,392.28` |
+| USD Amount  | `US$`      | Same format             | (empty if PEN)             |
+
+**Edge cases:**
+
+- Rows without date (INTERESES, SEGURO, TOTAL) should be filtered out
+- Amounts need `S/ ` prefix and commas stripped
+- Year not in file — infer from context or prompt user
 
 #### Acceptance Criteria
 
-- [ ] Auto-detect Interbank CSV format from headers
+- [ ] Auto-detect Interbank CSV format from headers (`Fecha,Comercio,S/,US$`)
 - [ ] Map Interbank columns to transaction fields
-- [ ] Handle Peruvian date format (DD/MM/YYYY)
-- [ ] Default currency to PEN
-- [ ] Handle Spanish column names
+- [ ] Handle DD-Mon date format with Spanish month abbreviations
+- [ ] Strip `S/ ` prefix and commas from amounts
+- [ ] Filter out non-transaction rows (INTERESES, SEGURO, TOTAL)
+- [ ] Default currency to PEN (or USD if US$ column has value)
 - [ ] Unit tests for Interbank parser
 
 #### Metadata
 
-- **Status:** Blocked
+- **Status:** Planned
 - **Priority:** Medium
 - **Type:** Feature
 - **Version:** v1
 - **Assignee:** Unassigned
 - **GitHub Issue:** No
-- **Blocked By:** Waiting for sample Interbank CSV export
 
 ---
 
