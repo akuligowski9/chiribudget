@@ -144,36 +144,6 @@ This feature would allow users to define a transaction template with recurrence 
 
 ---
 
-### CB-036: Category Spending Limits
-
-#### Description
-
-Add per-category spending limits with configurable auto-flagging behavior. Users set monthly limits per expense category (Food, Fixed Expenses, etc.), and transactions that push spending over the limit can optionally be flagged for discussion. This extends the existing threshold-based flagging system to support category-specific budgets.
-
-The feature adds a JSONB `category_limits` column to `budget_config` storing limit and flag mode per category. Flag modes include: "off" (dashboard warnings only), "crossing" (flag only the transaction that crosses the limit), and "all_after" (flag all transactions after limit is reached). Dashboard shows color-coded progress bars (green/yellow/red) for each category with limits set.
-
-#### Acceptance Criteria
-
-- [ ] User can set a monthly spending limit per expense category
-- [ ] Toggle controls auto-flagging behavior (off, flag crossing, flag all after)
-- [ ] New "Category Limits" section in Settings page (collapsible card)
-- [ ] Dashboard shows progress toward each category limit with color-coded indicators
-- [ ] Green (0-79%), Yellow (80-99%), Red (100%+) progress bars
-- [ ] Auto-flagging works based on configured flag mode
-- [ ] Works in both demo mode and authenticated mode
-- [ ] Translations added for English and Spanish
-
-#### Metadata
-
-- **Status:** In Progress
-- **Priority:** Low
-- **Type:** Feature
-- **Version:** v2
-- **Assignee:** Claude
-- **GitHub Issue:** #2
-
----
-
 ### CB-037: Month-over-Month Comparison
 
 #### Description
@@ -354,6 +324,36 @@ N/A — Documented gap, not implementing.
 ---
 
 ## Done
+
+### CB-036: Category Spending Limits
+
+#### Description
+
+Add per-category spending limits with configurable auto-flagging behavior. Users set monthly limits per expense category (Food, Fixed Expenses, etc.), and transactions that push spending over the limit can optionally be flagged for discussion. This extends the existing threshold-based flagging system to support category-specific budgets.
+
+The feature adds a JSONB `category_limits` column to `budget_config` storing limit and flag mode per category. Flag modes include: "off" (dashboard warnings only), "crossing" (flag only the transaction that crosses the limit), and "all_after" (flag all transactions after limit is reached). Dashboard shows color-coded progress bars (green/yellow/red) for each category with limits set.
+
+#### Acceptance Criteria
+
+- [x] User can set a monthly spending limit per expense category
+- [x] Toggle controls auto-flagging behavior (off, flag crossing, flag all after)
+- [x] New "Category Limits" section in Settings page (collapsible card)
+- [x] Dashboard shows progress toward each category limit with color-coded indicators
+- [x] Green (0-79%), Yellow (80-99%), Red (100%+) progress bars
+- [x] Auto-flagging works based on configured flag mode
+- [x] Works in both demo mode and authenticated mode
+- [x] Translations added for English and Spanish
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Low
+- **Type:** Feature
+- **Version:** v2
+- **Assignee:** Claude
+- **GitHub Issue:** #2
+
+---
 
 ### CB-019: Extract Large Components
 
