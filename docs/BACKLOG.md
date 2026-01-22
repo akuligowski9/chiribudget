@@ -54,16 +54,16 @@ The tabs will be: Account (Profile, Language), Household (Members, Guidelines), 
 
 #### Acceptance Criteria
 
-- [ ] Horizontal tab navigation at top of Settings page
-- [ ] 4 tabs: Account, Household, Budget, Data
-- [ ] Only active tab's settings components render
-- [ ] Tab styling matches app design system
-- [ ] Mobile-friendly tab layout (horizontal scroll if needed)
-- [ ] English and Spanish translations for tab labels
+- [x] Horizontal tab navigation at top of Settings page
+- [x] 4 tabs: Account, Household, Budget, Data
+- [x] Only active tab's settings components render
+- [x] Tab styling matches app design system
+- [x] Mobile-friendly tab layout (horizontal scroll if needed)
+- [x] English and Spanish translations for tab labels
 
 #### Metadata
 
-- **Status:** In Progress
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Feature
 - **Version:** v1
