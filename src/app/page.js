@@ -15,13 +15,15 @@ export default function Home() {
   const { isDemoMode, enterDemo } = useDemo();
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Check if this is a demo-only deployment
+  const isDemoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === 'true';
+
   // Auto-enter demo mode if DEMO_ONLY env var is set
   useEffect(() => {
-    const isDemoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === 'true';
     if (isDemoOnly && !isDemoMode) {
       enterDemo();
     }
-  }, [isDemoMode, enterDemo]);
+  }, [isDemoOnly, isDemoMode, enterDemo]);
 
   function handleTransactionAdded() {
     setRefreshKey((k) => k + 1);
@@ -40,8 +42,11 @@ export default function Home() {
     );
   }
 
-  // Show login screen if not authenticated and not in demo mode
-  if (!user && !isDemoMode) {
+  // In demo-only mode, skip login screen entirely
+  if (isDemoOnly) {
+    // Don't show login screen, proceed to main app (will enter demo mode via useEffect)
+  } else if (!user && !isDemoMode) {
+    // Show login screen if not authenticated and not in demo mode
     return <LoginScreen />;
   }
 
