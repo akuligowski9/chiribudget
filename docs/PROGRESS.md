@@ -4,6 +4,52 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — SEO Implementation & Safety Rules
+
+### Summary
+
+Implemented CB-049 (SEO & Google Discoverability) and drafted safety improvements to CLAUDE.md and INSTRUCTIONS.md.
+
+### Work Completed
+
+**CB-049: SEO & Google Discoverability (Done)**
+
+- Created `src/app/sitemap.js` — generates `/sitemap.xml` with root URL
+- Created `src/app/robots.js` — generates `/robots.txt`, disallows auth pages
+- Added Open Graph and Twitter meta tags to `layout.js`
+- Added `metadataBase` for proper image URL resolution
+- Added Google site verification meta tag
+- Verified ownership in Google Search Console (URL prefix method)
+- Submitted sitemap — Status: Success, 1 page discovered
+
+**CB-045: Interbank CSV Parser (Unblocked)**
+
+- Received sample CSV from Adriana's Interbank account
+- Documented format details in BACKLOG.md (headers, date format, amount parsing, edge cases)
+- Status changed from Blocked → Planned
+
+**Safety Rules Draft (uncommitted)**
+
+- Updated CLAUDE.md with Hard Stops, Action-Based Check-ins, Task Scoping
+- Updated INSTRUCTIONS.md with Task Scoping Rule, Destructive Action Protocol
+- Changed 90-minute sync → action-based (5 backlog items, end of session, muffins)
+- Awaiting testing before committing
+
+### Decisions Made
+
+- **URL prefix for Search Console**: Domain verification requires DNS access; URL prefix uses HTML meta tag
+- **Action-based over time-based sync**: Claude can't reliably track elapsed time
+- **Hard stops require explicit "yes"**: Destructive actions need user confirmation
+
+### What's Next
+
+- Test safety rules in future sessions, then commit if effective
+- CB-045: Implement Interbank CSV parser
+- CB-048: Separate demo mode deployment
+- Unit tests for offlineStore.js and syncQueue.js
+
+---
+
 ## 2026-01-22 — Demo Mode Separation Planning
 
 ### Summary
