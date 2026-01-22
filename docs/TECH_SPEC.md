@@ -44,33 +44,47 @@ ChiriBudget is a shared household budgeting application designed for two-person 
 
 ```
 src/
-├── app/                    # Next.js App Router
-│   ├── page.js            # Home (transaction entry)
-│   ├── dashboard/         # Analytics & review
-│   ├── layout.js          # Root layout with providers
-│   └── globals.css        # Global styles
-├── components/            # React components ("use client")
-│   ├── ui/               # Reusable UI primitives
-│   ├── QuickAddForm.jsx  # Transaction entry form
-│   ├── TransactionList.jsx
-│   ├── NetworkStatus.jsx # Offline status banner
-│   ├── ImportPanel.jsx
+├── app/                         # Next.js App Router
+│   ├── page.js                 # Home (transaction entry)
+│   ├── dashboard/              # Analytics & review
+│   ├── settings/               # Settings page with tabs
+│   ├── layout.js               # Root layout with providers
+│   └── globals.css             # Global styles
+├── components/                  # React components ("use client")
+│   ├── ui/                     # Reusable UI primitives
+│   ├── QuickAddForm.jsx        # Transaction entry form
+│   ├── TransactionList.jsx     # Transaction list (orchestrator)
+│   ├── TransactionCard.jsx     # Single transaction display
+│   ├── TransactionSearchSort.jsx
+│   ├── TransactionPagination.jsx
+│   ├── ImportPanel.jsx         # JSON import (orchestrator)
+│   ├── ImportJsonInput.jsx     # JSON textarea + currency
+│   ├── ImportPreview.jsx       # Import preview table
+│   ├── ImportUpload.jsx        # CSV upload (orchestrator)
+│   ├── ImportFileDropzone.jsx  # File drag/drop zone
+│   ├── ImportOptionsForm.jsx   # Bank/year/payer selectors
+│   ├── NetworkStatus.jsx       # Offline status banner
+│   ├── CategoryLimitsSettings.jsx
+│   ├── BackupSettings.jsx      # Backup download/restore
 │   └── ...
-├── contexts/             # React Context providers
-│   ├── AuthContext.js    # Authentication state
-│   └── OfflineContext.js # Offline state and sync
-├── hooks/                # Custom React hooks
-│   ├── useDemo.js        # Demo mode detection
-│   └── useNetworkStatus.js # Online/offline detection
-└── lib/                  # Utilities & business logic
-    ├── supabaseClient.js # Supabase browser client
-    ├── categories.js     # Enums and constants
-    ├── demoStore.js      # In-memory demo storage
-    ├── offlineStore.js   # IndexedDB offline storage
-    ├── syncQueue.js      # Offline sync queue
-    ├── format.js         # Number/date formatting
-    ├── csv.js            # CSV generation
-    └── constants.js      # Magic numbers
+├── contexts/                    # React Context providers
+│   ├── AuthContext.js          # Authentication state
+│   └── OfflineContext.js       # Offline state and sync
+├── hooks/                       # Custom React hooks
+│   ├── useDemo.js              # Demo mode detection
+│   └── useNetworkStatus.js     # Online/offline detection
+└── lib/                         # Utilities & business logic
+    ├── supabaseClient.js       # Supabase browser client
+    ├── categories.js           # Enums and constants
+    ├── demoStore.js            # In-memory demo storage
+    ├── offlineStore.js         # IndexedDB offline storage
+    ├── syncQueue.js            # Offline sync queue
+    ├── csvParserUtils.js       # Bank CSV parsing helpers
+    ├── importUtils.js          # Import fingerprinting
+    ├── transactionUtils.js     # Transaction helpers
+    ├── format.js               # Number/date formatting
+    ├── csv.js                  # CSV generation
+    └── constants.js            # Magic numbers
 ```
 
 ### 2.3 Data Flow
@@ -390,6 +404,43 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 - Server-wins conflict resolution: simple and safe for 2-person household
 - Offline store mirrors demoStore API pattern for consistency
 
+### 5.7 Category Spending Limits
+
+**Purpose**: Set monthly spending caps per category with optional auto-flagging
+
+**Data Storage**: `budget_config.category_limits` JSONB column storing:
+
+```json
+{
+  "Food": { "limit": 500, "flagMode": "crossing" },
+  "Adventure": { "limit": 200, "flagMode": "off" }
+}
+```
+
+**Flag Modes**:
+
+- `off`: Dashboard warnings only, no auto-flagging
+- `crossing`: Flag only the transaction that crosses the limit
+- `all_after`: Flag all transactions after limit is reached
+
+**Dashboard Display**:
+
+- Progress bars for each category with a limit set
+- Color coding: green (0-79%), yellow (80-99%), red (100%+)
+- Shows amount remaining or amount over limit
+
+**Edge Cases**:
+
+- Limit changed mid-month: Recalculates flags on next transaction
+- Multiple transactions in same request: Each evaluated sequentially
+- Currency mismatch: Limits in USD, PEN converted using household FX rate
+
+**Decisions**:
+
+- USD-only limits: Simplifies UX; conversion handled automatically
+- Limits stored per-household in budget_config, not per-user
+- Flag mode gives flexibility for different spending philosophies
+
 ---
 
 ## 6. API Design
@@ -554,19 +605,50 @@ ChiriBudget intentionally avoids third-party services for:
 
 ## Appendix A: File Reference
 
-| File                               | Purpose                       |
-| ---------------------------------- | ----------------------------- |
-| `src/lib/supabaseClient.js`        | Browser Supabase client       |
-| `src/lib/categories.js`            | Enums, thresholds, FX rates   |
-| `src/lib/demoStore.js`             | In-memory demo storage        |
-| `src/lib/offlineStore.js`          | IndexedDB offline storage     |
-| `src/lib/syncQueue.js`             | Offline sync queue management |
-| `src/lib/format.js`                | Currency/date formatting      |
-| `src/lib/csv.js`                   | CSV generation                |
-| `src/contexts/AuthContext.js`      | Auth state provider           |
-| `src/contexts/OfflineContext.js`   | Offline state and sync        |
-| `src/hooks/useDemo.js`             | Demo mode hook                |
-| `src/hooks/useNetworkStatus.js`    | Online/offline detection      |
-| `src/components/NetworkStatus.jsx` | Offline banner UI             |
-| `public/sw.js`                     | Service worker                |
-| `supabase/schema.sql`              | Complete database schema      |
+### Core Libraries
+
+| File                        | Purpose                       |
+| --------------------------- | ----------------------------- |
+| `src/lib/supabaseClient.js` | Browser Supabase client       |
+| `src/lib/categories.js`     | Enums, thresholds, FX rates   |
+| `src/lib/constants.js`      | Magic numbers and config      |
+| `src/lib/demoStore.js`      | In-memory demo storage        |
+| `src/lib/offlineStore.js`   | IndexedDB offline storage     |
+| `src/lib/syncQueue.js`      | Offline sync queue management |
+| `src/lib/format.js`         | Currency/date formatting      |
+| `src/lib/csv.js`            | CSV generation                |
+| `src/lib/csvParserUtils.js` | Bank CSV parsing helpers      |
+| `src/lib/importUtils.js`    | Import fingerprinting         |
+| `src/lib/transactionUtils.js` | Transaction helpers         |
+
+### Contexts & Hooks
+
+| File                             | Purpose                  |
+| -------------------------------- | ------------------------ |
+| `src/contexts/AuthContext.js`    | Auth state provider      |
+| `src/contexts/OfflineContext.js` | Offline state and sync   |
+| `src/hooks/useDemo.js`           | Demo mode hook           |
+| `src/hooks/useNetworkStatus.js`  | Online/offline detection |
+
+### Key Components
+
+| File                                     | Purpose                      |
+| ---------------------------------------- | ---------------------------- |
+| `src/components/QuickAddForm.jsx`        | Transaction entry form       |
+| `src/components/TransactionList.jsx`     | Transaction list orchestrator|
+| `src/components/TransactionCard.jsx`     | Single transaction display   |
+| `src/components/ImportPanel.jsx`         | JSON import orchestrator     |
+| `src/components/ImportUpload.jsx`        | CSV upload orchestrator      |
+| `src/components/NetworkStatus.jsx`       | Offline banner UI            |
+| `src/components/CategoryLimitsSettings.jsx` | Category limit config     |
+| `src/components/BackupSettings.jsx`      | Backup download/restore      |
+
+### Infrastructure
+
+| File                              | Purpose                |
+| --------------------------------- | ---------------------- |
+| `public/sw.js`                    | Service worker         |
+| `scripts/restore-backup.js`       | CLI restore script     |
+| `.github/workflows/backup.yml`    | Automated backup       |
+| `.github/workflows/ci.yml`        | CI/CD pipeline         |
+| `supabase/schema.sql`             | Database schema        |

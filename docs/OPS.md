@@ -8,6 +8,38 @@ For sensitive details (keys, internal URLs), see `OPS_PRIVATE.md` (gitignored).
 
 ## 1. Backup
 
+### Automated GitHub Actions Backup (Primary)
+
+A GitHub Actions workflow automatically backs up all data every 3 days to a private repository (`chiribudget-backups`).
+
+**What's backed up:**
+
+- All transactions (including explanations and flag reasons)
+- Budget config and category limits
+- Household guidelines
+- Month status and discussion notes
+- User profiles
+
+**Workflow:** `.github/workflows/backup.yml`
+
+**Schedule:** Every 3 days + before each deployment
+
+**Failure handling:** Creates GitHub issue with `backup-failure` label, triggering email notification.
+
+**Accessing backups:**
+
+1. Go to private `chiribudget-backups` repository
+2. Each backup is a timestamped JSON file
+3. Git history provides version control for all backups
+
+### In-App Backup Download
+
+Users can download a full backup from **Settings > Data > Download Backup**.
+
+- Downloads JSON file with all household data
+- Shows row counts for verification
+- Works in both demo and authenticated modes
+
 ### Automatic Backups (Supabase)
 
 | Plan | Frequency             | Retention |
@@ -20,7 +52,7 @@ Backups run daily at ~00:00 UTC. Each backup is a full database snapshot includi
 
 **Free tier note:** Restoration requires contacting Supabase support.
 
-### Accessing Backups
+### Accessing Supabase Backups
 
 1. Go to [supabase.com](https://supabase.com) and log in
 2. Select your project
@@ -44,24 +76,40 @@ supabase link --project-ref <PROJECT_REF>
 supabase db dump -f backup.sql
 ```
 
-**Option 3: Direct SQL**
-
-```sql
--- Export transactions for a household
-COPY (SELECT * FROM transactions WHERE household_id = '<HOUSEHOLD_ID>')
-TO '/tmp/transactions.csv' WITH CSV HEADER;
-```
-
 ### Backup Best Practices
 
-- **Weekly:** Export transactions via CSV
-- **Monthly:** Run `supabase db dump` for full backup
-- **Before migrations:** Always create a backup first
-- **Store backups** in multiple locations
+- **Automated:** GitHub Actions runs every 3 days (no action needed)
+- **Before migrations:** Download backup via Settings first
+- **Monthly:** Verify backup workflow is running in GitHub Actions tab
 
 ---
 
 ## 2. Recovery
+
+### Restore from In-App Backup (Recommended)
+
+1. Go to **Settings > Data > Restore Backup**
+2. Upload JSON backup file (from Download Backup or GitHub backup repo)
+3. Review backup details in confirmation dialog
+4. Confirm restore
+
+**Notes:**
+
+- Restores only data belonging to current household
+- Existing records with matching IDs are overwritten
+- Safe to use — won't affect other households
+
+### Restore via CLI Script
+
+For advanced restore scenarios:
+
+```bash
+# Dry run first
+node scripts/restore-backup.js backup.json --dry-run
+
+# Actual restore (requires SUPABASE_URL and SUPABASE_SERVICE_KEY)
+node scripts/restore-backup.js backup.json
+```
 
 ### Restore from Supabase Backup
 
@@ -79,17 +127,6 @@ TO '/tmp/transactions.csv' WITH CSV HEADER;
 
 ```bash
 psql -h <HOST> -U postgres -d postgres < backup.sql
-```
-
-### Restore from CSV
-
-```sql
--- Clear existing (careful!)
-DELETE FROM transactions WHERE household_id = '<HOUSEHOLD_ID>';
-
--- Import
-COPY transactions (txn_date, currency, amount, category, payer, description, household_id)
-FROM '/tmp/transactions.csv' WITH CSV HEADER;
 ```
 
 ### Data Integrity Checks (Post-Restore)
