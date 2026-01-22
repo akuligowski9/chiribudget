@@ -16,9 +16,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
       - name: Create backup script
         run: |
           cat << 'EOF' > backup.js
