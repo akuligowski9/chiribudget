@@ -115,10 +115,17 @@ export function AuthProvider({ children }) {
         setHousehold(null);
         setMembers([]);
         userIdRef.current = null;
-      } else if (newUser.id !== userIdRef.current) {
-        // User changed, reload profile
-        userIdRef.current = newUser.id;
-        loadUserData();
+      } else {
+        // User signed in successfully - mark as returning user
+        if (typeof window !== 'undefined') {
+          window.localStorage.setItem('chiribudget_hasAuthenticated', 'true');
+        }
+
+        if (newUser.id !== userIdRef.current) {
+          // User changed, reload profile
+          userIdRef.current = newUser.id;
+          loadUserData();
+        }
       }
     });
 

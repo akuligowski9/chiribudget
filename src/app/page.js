@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import HouseholdSetup from '@/components/HouseholdSetup';
 import LoginScreen from '@/components/LoginScreen';
@@ -12,8 +12,16 @@ import { useDemo } from '@/hooks/useDemo';
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const { isDemoMode } = useDemo();
+  const { isDemoMode, enterDemo } = useDemo();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Auto-enter demo mode if DEMO_ONLY env var is set
+  useEffect(() => {
+    const isDemoOnly = process.env.NEXT_PUBLIC_DEMO_ONLY === 'true';
+    if (isDemoOnly && !isDemoMode) {
+      enterDemo();
+    }
+  }, [isDemoMode, enterDemo]);
 
   function handleTransactionAdded() {
     setRefreshKey((k) => k + 1);
