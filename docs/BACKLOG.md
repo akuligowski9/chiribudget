@@ -183,18 +183,18 @@ Next.js App Router has built-in support for generating sitemap.xml and robots.tx
 
 #### Acceptance Criteria
 
-- [ ] `sitemap.xml` generated via Next.js App Router
-- [ ] `robots.txt` allows crawling of public pages
-- [ ] Meta tags (title, description, og:image) on public pages
-- [ ] Sitemap submitted to Google Search Console
+- [x] `sitemap.xml` generated via Next.js App Router
+- [x] `robots.txt` allows crawling of public pages
+- [x] Meta tags (title, description, og:image) on public pages
+- [x] Sitemap submitted to Google Search Console
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Low
 - **Type:** Feature
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
 
 ---
