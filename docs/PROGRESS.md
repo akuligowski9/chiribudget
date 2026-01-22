@@ -34,11 +34,11 @@ Discussed UX concerns about demo mode and created a backlog item for separating 
 
 ---
 
-## 2026-01-22 — Offline Translation Keys & Settings Tabs
+## 2026-01-22 — Offline Translation Keys, Settings Tabs & Documentation Sync
 
 ### Summary
 
-Added translation keys for all offline-related UI strings and reorganized Settings page with tabbed interface.
+Added translation keys for offline UI strings, reorganized Settings page with tabbed interface, and synced all documentation to reflect work completed Jan 20-22.
 
 ### Work Completed
 
@@ -59,11 +59,20 @@ Added English and Spanish translations for offline functionality:
 - Data tab: Backup, Trash
 - Reduces scrolling and groups related settings logically
 
+**Documentation Sync**
+
+Updated all documentation to reflect recent feature work:
+
+- `TECH_SPEC.md`: Added section 5.7 Category Spending Limits, updated directory structure with 15+ refactored components, reorganized File Reference into 4 categories
+- `OPS.md`: Added GitHub Actions automated backup, in-app backup/restore procedures, CLI restore script documentation
+- `README.md`: Updated PWA description to reflect offline support
+- `PROGRESS.md`: Added missing entries for Jan 21 work (backup system, category limits, component refactoring)
+
 ### What's Next
 
 - Consider unit tests for offlineStore.js and syncQueue.js
 - Manual testing of offline flow and sync behavior
-- Bank-specific CSV parsing (waiting on examples)
+- Bank-specific CSV parsing (waiting on PNC and Interbank examples)
 - Test restore backup feature (reminder in BACKLOG.md)
 
 ---
