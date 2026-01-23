@@ -4,6 +4,41 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — Default Payer & Household Member Fixes
+
+### Summary
+
+Fixed default payer selection to use logged-in user's name instead of "Together". Fixed critical database bugs preventing household members from seeing each other's profiles. Fixed mobile layout overlap.
+
+### Work Completed
+
+**CB-051: Default Payer to Logged-In User (Done)**
+
+- Updated QuickAddForm to default payer to logged-in user's display name
+- Falls back to first option if user name not in payerOptions
+- Added 3 unit tests verifying Alex→Alex, Adriana→Adriana, fallback behavior
+- Fixed timing bug: Required both `profile.display_name` AND `payerOptions` before setting default
+- Fixed mobile layout: Changed grid from 2-column to 1-column on mobile to prevent overlap
+
+**Database Schema Fixes (Critical)**
+
+- Added foreign key constraint: `household_members.user_id` → `profiles.user_id` (enables JOIN in PostgREST)
+- Updated RLS policy on `profiles` table to allow household members to read each other's profiles
+- These fixes enabled payer dropdown to populate with household member names
+
+### Decisions Made
+
+- **Wait for both values**: Only set default payer when both `profile.display_name` and `payerOptions` are loaded
+- **Mobile-first stacking**: Single column on mobile prevents field overlap, maintains 3-column layout on desktop
+
+### What's Next
+
+- CB-048: Separate demo mode deployment
+- CLI import script when ready
+- Continue with planned backlog items
+
+---
+
 ## 2026-01-22 — SEO, Safety Rules & Interbank Parser
 
 ### Summary

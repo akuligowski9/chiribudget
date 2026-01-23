@@ -302,6 +302,43 @@ This feature would add a shared shopping list that both household members can ed
 
 ---
 
+## Done
+
+### CB-051: Default Payer to Logged-In User
+
+#### Description
+
+The payer dropdown in QuickAddForm should default to the logged-in user's name instead of defaulting to "Together" or the first alphabetical option. When Alex logs in, the payer should default to "Alex". When Adriana logs in, it should default to "Adriana". This matches the expected behavior - most transactions are individual expenses, so defaulting to the current user reduces friction.
+
+The existing CB-031 work made payer options dynamic based on household members, but didn't address the default selection logic. The form originally defaulted to "Together" if available, otherwise the first option. This required users to manually change the payer on most transactions.
+
+Implementation updates the useEffect in QuickAddForm to check `profile.display_name` and select it from `payerOptions` if present. Falls back to first option if user's name isn't in the list (edge case).
+
+**Bug Fix:** Initial implementation had a timing issue where `payerOptions` loaded before `profile.display_name`, causing it to default to first option and never update. Fixed by requiring both values before setting default.
+
+**Mobile Fix:** Changed QuickAddForm grid from 2 columns to 1 column on mobile to prevent date/currency field overlap.
+
+#### Acceptance Criteria
+
+- [x] Payer defaults to logged-in user's display name
+- [x] Falls back to first option if user name not in payerOptions
+- [x] Unit tests verify Alex defaults to Alex, Adriana defaults to Adriana
+- [x] Database fixes: Added FK constraint household_members.user_id -> profiles.user_id
+- [x] Database fixes: Updated RLS policy to allow household members to read each other's profiles
+- [x] Fixed timing bug where default wasn't setting correctly in production
+- [x] Fixed mobile layout overlap (1-column on mobile, 3-column on desktop)
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
 ## Parking Lot
 
 Ideas worth remembering but not yet committed to implementation.
