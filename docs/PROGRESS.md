@@ -4,6 +4,36 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — Number Formatting on Dashboard
+
+### Summary
+
+Added thousand separators (commas) to all currency amounts on Dashboard for better readability.
+
+### Work Completed
+
+**CB-052: Add Thousand Separators to Dashboard (Done)**
+
+- Replaced all `.toFixed()` calls with `.toLocaleString('en-US', { minimumFractionDigits: X, maximumFractionDigits: X })`
+- Updated summary cards: Income, Expenses, Net
+- Updated income by category amounts
+- Updated expenses by category amounts (both with and without limits)
+- Updated net by payer amounts
+- Updated exceeded amount messages
+- Updated test expectations in DashboardSummary.test.js
+
+### Decisions Made
+
+- **Use en-US locale**: Standardized on US number format with commas as thousand separators
+- **Maintain decimal precision**: Income/expense totals show 2 decimals, category limits show whole numbers (0 decimals)
+
+### What's Next
+
+- CB-048: Separate demo mode deployment
+- Continue with planned backlog items
+
+---
+
 ## 2026-01-22 — Default Payer & Household Member Fixes
 
 ### Summary

@@ -470,6 +470,34 @@ N/A — Documented gap, not implementing.
 
 ## Done
 
+### CB-052: Add Thousand Separators to Dashboard
+
+#### Description
+
+Dashboard numbers should display with comma thousand separators for better readability. Currently all currency amounts show as raw numbers like "8731.69" or "6320.18" which are harder to read at a glance, especially for larger amounts. Standard financial UIs use thousand separators like "8,731.69" and "6,320.18" to improve scanability.
+
+This affects all numeric displays in DashboardSummary: summary cards (income, expenses, net), category breakdowns (both income and expense), and net by payer. Numbers should use `toLocaleString('en-US', { minimumFractionDigits: X, maximumFractionDigits: X })` instead of `toFixed(X)` to add comma separators while maintaining consistent decimal places.
+
+#### Acceptance Criteria
+
+- [x] Summary cards show commas (Income, Expenses, Net)
+- [x] Income by category amounts show commas
+- [x] Expenses by category amounts show commas
+- [x] Category limit display shows commas (e.g., "3,062 / 5,000")
+- [x] Net by payer amounts show commas
+- [x] Test expectations updated to match new format
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Low
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
 ### CB-046: Automated Data Backup System
 
 #### Description
