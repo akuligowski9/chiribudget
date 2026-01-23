@@ -41,7 +41,7 @@ jobs:
               'profiles',
               'transactions',
               'budget_config',
-              'guidelines',
+              'household_members',
               'month_status',
               'import_batches'
             ];
