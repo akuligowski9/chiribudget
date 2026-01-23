@@ -1,13 +1,20 @@
 'use client';
 
-import { useDemo } from '@/hooks/useDemo';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { FlaskConical, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useDemo } from '@/hooks/useDemo';
 
 export default function DemoModeBanner() {
   const { isDemoMode, exitDemo } = useDemo();
+  const [mounted, setMounted] = useState(false);
 
-  if (!isDemoMode) return null;
+  // Wait for client-side hydration to avoid mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !isDemoMode) return null;
 
   return (
     <div className="bg-warning/20 border-b border-warning/30 px-4 py-2">
