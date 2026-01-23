@@ -196,7 +196,11 @@ export default function DashboardSummary({
                 </span>
               </div>
               <div className="text-xl font-bold text-success">
-                {currency} {totalIncome.toFixed(2)}
+                {currency}{' '}
+                {totalIncome.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
             </div>
 
@@ -208,7 +212,11 @@ export default function DashboardSummary({
                 </span>
               </div>
               <div className="text-xl font-bold text-error">
-                {currency} {totalExpenses.toFixed(2)}
+                {currency}{' '}
+                {totalExpenses.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
             </div>
 
@@ -237,7 +245,11 @@ export default function DashboardSummary({
                   net >= 0 ? 'text-slate' : 'text-warning'
                 )}
               >
-                {currency} {net.toFixed(2)}
+                {currency}{' '}
+                {net.toLocaleString('en-US', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })}
               </div>
             </div>
           </div>
@@ -260,7 +272,11 @@ export default function DashboardSummary({
                           {t(`categories.${CATEGORY_KEYS[c]}`)}
                         </span>
                         <span className="font-semibold text-success">
-                          {currency} {val.toFixed(2)}
+                          {currency}{' '}
+                          {val.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
                         </span>
                       </div>
                       <div className="h-1.5 bg-success/10 rounded-full overflow-hidden">
@@ -329,12 +345,24 @@ export default function DashboardSummary({
                         >
                           {hasLimit ? (
                             <>
-                              {currency} {val.toFixed(0)} /{' '}
-                              {status.limit.toFixed(0)}
+                              {currency}{' '}
+                              {val.toLocaleString('en-US', {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              })}{' '}
+                              /{' '}
+                              {status.limit.toLocaleString('en-US', {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              })}
                             </>
                           ) : (
                             <>
-                              {currency} {val.toFixed(2)}
+                              {currency}{' '}
+                              {val.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}
                             </>
                           )}
                         </span>
@@ -356,7 +384,13 @@ export default function DashboardSummary({
                       {hasLimit && status.status === 'exceeded' && (
                         <p className="text-xs text-error mt-0.5">
                           {t('categoryLimits.exceeded', {
-                            amount: (val - status.limit).toFixed(0),
+                            amount: (val - status.limit).toLocaleString(
+                              'en-US',
+                              {
+                                minimumFractionDigits: 0,
+                                maximumFractionDigits: 0,
+                              }
+                            ),
                           })}
                         </p>
                       )}
@@ -404,7 +438,11 @@ export default function DashboardSummary({
                           val >= 0 ? 'text-success' : 'text-error'
                         )}
                       >
-                        {currency} {val.toFixed(2)}
+                        {currency}{' '}
+                        {val.toLocaleString('en-US', {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </div>
                     </div>
                   );
