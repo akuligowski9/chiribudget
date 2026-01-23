@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
+import { useMounted } from '@/hooks/useMounted';
 import { CURRENCIES } from '@/lib/categories';
 import { cn } from '@/lib/utils';
 
@@ -63,6 +64,7 @@ export default function DashboardPage() {
   const t = useTranslations();
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
+  const mounted = useMounted();
   const [rangePreset, setRangePreset] = useState('month');
   const [customStart, setCustomStart] = useState('');
   const [customEnd, setCustomEnd] = useState('');
@@ -80,7 +82,7 @@ export default function DashboardPage() {
   };
 
   // Show skeleton while auth is loading (but not in demo mode)
-  if (loading && !isDemoMode) {
+  if (!mounted || (loading && !isDemoMode)) {
     return (
       <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
         <div className="flex items-center gap-3 mb-5">
