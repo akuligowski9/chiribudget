@@ -1,5 +1,6 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Home, LogOut, Sparkles, User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -11,9 +12,15 @@ export default function Header() {
   const t = useTranslations();
   const { user, household, signOut } = useAuth();
   const { isDemoMode, exitDemo } = useDemo();
+  const [mounted, setMounted] = useState(false);
+
+  // Wait for client-side hydration to avoid mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Don't render header if not logged in and not in demo mode
-  if (!user && !isDemoMode) return null;
+  if (!mounted || (!user && !isDemoMode)) return null;
 
   return (
     <Card accent className="p-4">
