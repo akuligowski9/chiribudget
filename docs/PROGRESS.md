@@ -4,6 +4,69 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-22 — Demo-Only Mode Fix: Eliminate Login Screen Flash
+
+### Summary
+
+Fixed the persistent issue where the demo-only deployment (`chiribudgetdemo.vercel.app`) showed a login screen flash before entering demo mode. The root cause was a race condition between React initialization and localStorage being set. The solution uses a pre-hydration inline script that sets localStorage BEFORE React loads, eliminating the race condition entirely.
+
+### Work Completed
+
+**CB-048: Separate Demo Mode Deployment (Done)**
+
+**Core Fix:**
+
+- Added inline `<script>` in `layout.js` `<head>` that sets `localStorage.setItem('chiribudget_demoMode', 'true')` before React hydration when `NEXT_PUBLIC_DEMO_ONLY=true`
+- Removed `window.location.reload()` calls from `enterDemo()` and `exitDemo()` in `useDemo.js` (no longer needed)
+- Removed auto-enter `useEffect` from `page.js` (localStorage is set before React runs)
+- Fixed Supabase client initialization to handle demo-only mode with dummy credentials
+
+**Hydration Mismatch Fixes:**
+
+- Created `useMounted()` hook to prevent SSR/client HTML mismatches when using localStorage
+- Fixed hydration errors in: `DemoModeBanner`, `Header`, `dashboard/page.js`, `SpendingCharts` (all 3 chart components)
+- All components that read `isDemoMode` now wait for client-side mount before rendering
+
+**CI/CD & Testing:**
+
+- Fixed backup workflow: replaced non-existent `guidelines` table with `household_members`
+- Added comprehensive E2E test suite (`demo-only-mode.spec.js`) with 6 passing tests:
+  - Login screen never appears on first visit
+  - localStorage set before React hydration
+  - Demo mode persists on reload
+  - Navigation works without login prompts
+  - Works in incognito/private browsing
+  - No full page reload triggered
+- Fixed lint errors (unused imports in `page.js`)
+- Updated `@swc/helpers` to resolve CI dependency conflict
+
+### Decisions Made
+
+- **Pre-hydration approach**: Inline script in `<head>` is the cleanest solution - no useEffect, no reload, no race condition
+- **useMounted pattern**: Standard React pattern for preventing hydration mismatches when using browser-only APIs
+- **Environment variable timing**: `NEXT_PUBLIC_DEMO_ONLY` must be set in Vercel before deployment for the inline script to work (build-time injection)
+
+### Known Issues
+
+- **Vercel deployment limit reached**: Hit the 100 deployments/day free tier limit during debugging. All fixes are committed and ready to deploy when the limit resets in ~6 hours.
+- **Manual deployment needed**: Once Vercel limit resets, the fix will auto-deploy successfully to both `chiribudget.vercel.app` and `chiribudgetdemo.vercel.app`
+
+### What Works Now (Local Testing)
+
+- ✅ Demo-only mode loads instantly with no login screen flash
+- ✅ No hydration errors
+- ✅ No chart dimension errors
+- ✅ All 6 E2E tests passing locally
+- ✅ Clean console with no warnings
+
+### What's Next
+
+- Wait for Vercel deployment limit to reset (~6 hours)
+- Verify production deployment at `chiribudgetdemo.vercel.app`
+- Continue with planned backlog items
+
+---
+
 ## 2026-01-22 — Number Formatting on Dashboard
 
 ### Summary
