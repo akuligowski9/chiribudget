@@ -17,6 +17,7 @@ import {
   Bar,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { useMounted } from '@/hooks/useMounted';
 
 // Earth tone colors that match the app theme
 const EXPENSE_COLORS = [
@@ -36,6 +37,7 @@ const INCOME_COLORS = [
 ];
 
 export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
+  const mounted = useMounted();
   const data = useMemo(() => {
     return Object.entries(expenseByCat)
       .filter(([_, value]) => value > 0)
@@ -43,7 +45,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
       .sort((a, b) => b.value - a.value);
   }, [expenseByCat]);
 
-  if (data.length === 0) {
+  if (!mounted || data.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -129,6 +131,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
 }
 
 export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
+  const mounted = useMounted();
   const data = useMemo(() => {
     // Group transactions by date
     const byDate = {};
@@ -183,7 +186,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
     return weeks;
   }, [data]);
 
-  if (rows.length === 0) {
+  if (!mounted || rows.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -256,12 +259,26 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
 }
 
 export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
+  const mounted = useMounted();
   const data = [
     { name: 'Income', value: totalIncome, fill: '#5a9e6f' },
     { name: 'Expenses', value: totalExpenses, fill: '#d15b4e' },
   ];
 
   const net = totalIncome - totalExpenses;
+
+  if (!mounted) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Income vs Expenses</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[120px]" />
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>
