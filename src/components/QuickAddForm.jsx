@@ -127,13 +127,13 @@ export default function QuickAddForm({ onSuccess }) {
 
   // Set default payer when options are loaded
   useEffect(() => {
-    if (payerOptions.length > 0 && !payer) {
-      // Default to logged-in user's display name, fall back to first option
-      const userDisplayName = profile?.display_name;
-      const defaultPayer =
-        userDisplayName && payerOptions.includes(userDisplayName)
-          ? userDisplayName
-          : payerOptions[0];
+    // Only set default when we have both profile and payerOptions
+    if (payerOptions.length > 0 && profile?.display_name && !payer) {
+      // Default to logged-in user's display name
+      const userDisplayName = profile.display_name;
+      const defaultPayer = payerOptions.includes(userDisplayName)
+        ? userDisplayName
+        : payerOptions[0];
       setPayer(defaultPayer);
     }
   }, [payerOptions, payer, profile?.display_name]);
