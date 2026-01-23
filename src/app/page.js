@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Header from '@/components/Header';
 import HouseholdSetup from '@/components/HouseholdSetup';
 import LoginScreen from '@/components/LoginScreen';
@@ -12,7 +12,7 @@ import { useDemo } from '@/hooks/useDemo';
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const { isDemoMode, enterDemo } = useDemo();
+  const { isDemoMode } = useDemo();
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Check if this is a demo-only deployment
