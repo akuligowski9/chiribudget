@@ -4,6 +4,8 @@ import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { getDemoMode } from '@/lib/auth';
 import { FX_USD_TO_PEN } from '@/lib/categories';
 import { getDemoCategoryLimits } from '@/lib/demoStore';
+import { isEmailAllowed, REDIRECT_URL } from '@/lib/emailAllowlist';
+import { isDemoSite } from '@/lib/siteConfig';
 import { supabase } from '@/lib/supabaseClient';
 
 const AuthContext = createContext(null);
@@ -105,8 +107,20 @@ export function AuthProvider({ children }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
       const newUser = session?.user ?? null;
+
+      // Demo site email allowlist check
+      if (newUser && isDemoSite()) {
+        const userEmail = newUser.email;
+        if (!isEmailAllowed(userEmail)) {
+          // Sign out and redirect non-allowlisted user to portfolio
+          await supabase.auth.signOut();
+          window.location.href = REDIRECT_URL;
+          return;
+        }
+      }
+
       setUser(newUser);
 
       if (!newUser) {
@@ -153,9 +167,43 @@ export function AuthProvider({ children }) {
       ? [...members, 'Together']
       : members;
 
-  async function sendMagicLink(email) {
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    return { error };
+  /**
+   * Get the OAuth redirect URL based on current origin
+   * Redirects to home page - client-side Supabase handles code exchange
+   */
+  function getRedirectUrl() {
+    if (typeof window === 'undefined') return undefined;
+    return window.location.origin;
+  }
+
+  /**
+   * Sign in with Google OAuth
+   */
+  async function signInWithGoogle() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: getRedirectUrl(),
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+    return { data, error };
+  }
+
+  /**
+   * Sign in with GitHub OAuth
+   */
+  async function signInWithGitHub() {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'github',
+      options: {
+        redirectTo: getRedirectUrl(),
+      },
+    });
+    return { data, error };
   }
 
   function refreshProfile() {
@@ -235,7 +283,8 @@ export function AuthProvider({ children }) {
     categoryLimits,
     loading,
     signOut,
-    sendMagicLink,
+    signInWithGoogle,
+    signInWithGitHub,
     refreshProfile,
     refreshConversionRate,
     refreshCategoryLimits,
