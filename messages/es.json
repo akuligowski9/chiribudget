@@ -291,7 +291,9 @@
     "zeroAmount": "Monto cero",
     "noFileSelected": "Por favor selecciona un archivo",
     "processingFailed": "Error al procesar estado de cuenta",
-    "history": "Historial"
+    "history": "Historial",
+    "showAll": "Mostrar Todo",
+    "showPending": "Solo Pendientes"
   },
   "discussion": {
     "title": "Discusión Mensual",

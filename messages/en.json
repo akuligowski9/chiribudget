@@ -291,7 +291,9 @@
     "zeroAmount": "Zero amount",
     "noFileSelected": "Please select a file",
     "processingFailed": "Failed to process statement",
-    "history": "History"
+    "history": "History",
+    "showAll": "Show All",
+    "showPending": "Pending Only"
   },
   "discussion": {
     "title": "Monthly Discussion",

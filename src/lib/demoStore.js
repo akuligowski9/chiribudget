@@ -1,8 +1,50 @@
 import { USD_THRESHOLD, FX_USD_TO_PEN } from './categories';
 import demoTxnsJson from '../../demo/transactions.json';
 
+// Get today's date in YYYY-MM-DD format
+function getTodayDate() {
+  return new Date().toISOString().split('T')[0];
+}
+
+// Sample transactions for "today" so demo users see activity immediately
+function getTodayTransactions() {
+  const today = getTodayDate();
+  return [
+    {
+      id: 'demo_today_1',
+      txn_date: today,
+      currency: 'USD',
+      description: 'Morning coffee - Starbucks',
+      amount: -6.75,
+      category: 'Food',
+      payer: 'Partner 1',
+      is_flagged: false,
+    },
+    {
+      id: 'demo_today_2',
+      txn_date: today,
+      currency: 'USD',
+      description: "Grocery run - Trader Joe's",
+      amount: -47.82,
+      category: 'Food',
+      payer: 'Together',
+      is_flagged: false,
+    },
+    {
+      id: 'demo_today_3',
+      txn_date: today,
+      currency: 'USD',
+      description: 'Gas station fill-up',
+      amount: -52.3,
+      category: 'Transportation',
+      payer: 'Partner 2',
+      is_flagged: false,
+    },
+  ];
+}
+
 // In-memory store for demo mode
-let demoTransactions = [...demoTxnsJson];
+let demoTransactions = [...getTodayTransactions(), ...demoTxnsJson];
 let demoThresholds = {
   usdThreshold: USD_THRESHOLD,
   fxRate: FX_USD_TO_PEN,
@@ -165,7 +207,7 @@ export function reflagDemoTransactions({ usdThreshold, fxRate }) {
 
 // Reset demo store to initial state (useful for testing)
 export function resetDemoStore() {
-  demoTransactions = [...demoTxnsJson];
+  demoTransactions = [...getTodayTransactions(), ...demoTxnsJson];
   demoThresholds = {
     usdThreshold: USD_THRESHOLD,
     fxRate: FX_USD_TO_PEN,
