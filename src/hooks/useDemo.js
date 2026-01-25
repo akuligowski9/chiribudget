@@ -29,6 +29,8 @@ export function useDemo() {
 
   const enterDemo = useCallback(() => {
     setDemoMode(true);
+    // Reload to apply demo mode across the app
+    window.location.reload();
   }, [setDemoMode]);
 
   const exitDemo = useCallback(() => {
