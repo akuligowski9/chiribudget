@@ -29,12 +29,16 @@ export function useDemo() {
 
   const enterDemo = useCallback(() => {
     setDemoMode(true);
+    // Set English as default language for demo mode
+    localStorage.setItem('chiribudget_language', 'en');
     // Reload to apply demo mode across the app
     window.location.reload();
   }, [setDemoMode]);
 
   const exitDemo = useCallback(() => {
     setDemoMode(false);
+    // Reload to exit demo mode and show login screen
+    window.location.reload();
   }, [setDemoMode]);
 
   return {

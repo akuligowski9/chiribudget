@@ -52,17 +52,6 @@ export default function RootLayout({ children }) {
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-title" content="ChiriBudget" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (${JSON.stringify(process.env.NEXT_PUBLIC_DEMO_ONLY === 'true')}) {
-                try {
-                  localStorage.setItem('chiribudget_demoMode', 'true');
-                } catch (e) {}
-              }
-            `,
-          }}
-        />
       </head>
       <body>
         <ServiceWorkerRegistration />
