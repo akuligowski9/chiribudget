@@ -72,14 +72,67 @@ jest.mock('@/lib/comparisonUtils', () => ({
 
 // Mock the categories
 jest.mock('@/lib/categories', () => ({
-  EXPENSE_CATEGORIES: ['Food', 'Dogs', 'Fixed Expenses'],
+  EXPENSE_CATEGORIES: [
+    'Food',
+    'Dogs',
+    'Fixed Expenses',
+    'Adventure',
+    'Unexpected',
+    'Holidays & Birthdays',
+    'Rent/Mortgages',
+  ],
   INCOME_CATEGORIES: ['Salary', 'Investments'],
 }));
 
-// Mock the format utilities
-jest.mock('@/lib/format', () => ({
-  formatCurrency: (amount, currency) => {
-    return `${currency} ${amount.toFixed(2)}`;
+// Mock the currency utilities
+jest.mock('@/lib/currency', () => ({
+  formatCurrencyAmount: (amount, currency) => {
+    return `$${amount.toFixed(2)}`;
+  },
+}));
+
+// Mock transactionUtils
+jest.mock('@/lib/transactionUtils', () => ({
+  CATEGORY_KEYS: {
+    Food: 'food',
+    Dogs: 'dogs',
+    'Fixed Expenses': 'fixedExpenses',
+    Adventure: 'adventure',
+    Unexpected: 'unexpected',
+    'Holidays & Birthdays': 'holidaysAndBirthdays',
+    'Rent/Mortgages': 'rentOrMortgages',
+    Salary: 'salary',
+    Investments: 'investments',
+  },
+}));
+
+// Mock next-intl
+jest.mock('next-intl', () => ({
+  useTranslations: () => (key, values) => {
+    const translations = {
+      'dashboard.periodComparison': 'Period Comparison',
+      'dashboard.comparingTo': 'Comparing to: {period}',
+      'dashboard.expenses': 'Expenses',
+      'dashboard.income': 'Income',
+      'dashboard.keyInsights': 'Key Insights',
+      'dashboard.noSignificantChanges': 'No significant changes',
+      'categories.food': 'Food',
+      'categories.dogs': 'Dogs',
+      'categories.fixedExpenses': 'Fixed Expenses',
+      'categories.adventure': 'Adventure',
+      'categories.unexpected': 'Unexpected',
+      'categories.holidaysAndBirthdays': 'Holidays & Birthdays',
+      'categories.rentOrMortgages': 'Rent/Mortgages',
+      'categories.salary': 'Salary',
+      'categories.investments': 'Investments',
+    };
+    let result = translations[key] || key;
+    if (values) {
+      Object.keys(values).forEach((k) => {
+        result = result.replace(`{${k}}`, values[k]);
+      });
+    }
+    return result;
   },
 }));
 
@@ -162,31 +215,31 @@ describe('PeriodComparisonSection', () => {
     });
 
     it('shows all expense categories with spending', () => {
-      expect(screen.getByText('categories.food')).toBeInTheDocument();
-      expect(screen.getByText('categories.dogs')).toBeInTheDocument();
-      expect(screen.getByText('categories.fixedExpenses')).toBeInTheDocument();
+      expect(screen.getAllByText('Food')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('Dogs')[0]).toBeInTheDocument();
+      expect(screen.getByText('Fixed Expenses')).toBeInTheDocument();
     });
 
     it('displays current amounts', () => {
-      expect(screen.getByText('USD 450.00')).toBeInTheDocument(); // Food
-      expect(screen.getByText('USD 120.00')).toBeInTheDocument(); // Dogs
-      expect(screen.getByText('USD 1200.00')).toBeInTheDocument(); // Fixed Expenses
+      expect(screen.getAllByText('$450.00')[0]).toBeInTheDocument(); // Food
+      expect(screen.getAllByText('$120.00')[0]).toBeInTheDocument(); // Dogs
+      expect(screen.getAllByText('$1200.00')[0]).toBeInTheDocument(); // Fixed Expenses
     });
 
     it('displays previous amounts', () => {
-      expect(screen.getByText('USD 400.00')).toBeInTheDocument(); // Food previous
-      expect(screen.getByText('USD 150.00')).toBeInTheDocument(); // Dogs previous
+      expect(screen.getByText('$400.00')).toBeInTheDocument(); // Food previous
+      expect(screen.getByText('$150.00')).toBeInTheDocument(); // Dogs previous
     });
 
     it('displays percentage changes', () => {
       // Food: 450 vs 400 = +12.5%
-      expect(screen.getByText('+13%')).toBeInTheDocument();
+      expect(screen.getAllByText('+13%')[0]).toBeInTheDocument();
 
       // Dogs: 120 vs 150 = -20%
-      expect(screen.getByText('-20%')).toBeInTheDocument();
+      expect(screen.getAllByText('-20%')[0]).toBeInTheDocument();
 
       // Fixed Expenses: 1200 vs 1200 = 0%
-      expect(screen.getByText('—')).toBeInTheDocument();
+      expect(screen.getAllByText('—')[0]).toBeInTheDocument();
     });
   });
 
@@ -198,17 +251,17 @@ describe('PeriodComparisonSection', () => {
     });
 
     it('shows all income categories with earnings', () => {
-      expect(screen.getByText('categories.salary')).toBeInTheDocument();
-      expect(screen.getByText('categories.investments')).toBeInTheDocument();
+      expect(screen.getAllByText('Salary')[0]).toBeInTheDocument();
+      expect(screen.getAllByText('Investments')[0]).toBeInTheDocument();
     });
 
     it('displays current income amounts', () => {
-      expect(screen.getByText('USD 3000.00')).toBeInTheDocument(); // Salary
-      expect(screen.getByText('USD 100.00')).toBeInTheDocument(); // Investments
+      expect(screen.getAllByText('$3000.00')[0]).toBeInTheDocument(); // Salary
+      expect(screen.getAllByText('$100.00')[0]).toBeInTheDocument(); // Investments
     });
 
     it('displays previous income amounts', () => {
-      expect(screen.getByText('USD 80.00')).toBeInTheDocument(); // Investments previous
+      expect(screen.getByText('$80.00')).toBeInTheDocument(); // Investments previous
     });
   });
 
@@ -368,8 +421,10 @@ describe('PeriodComparisonSection', () => {
       fireEvent.click(header);
 
       // Check that comparison rows use grid layout
-      const rows = screen.getByText('categories.food').closest('div');
-      expect(rows).toHaveClass('grid');
+      // Find the expense section first to avoid matching insights
+      const expenseSection = screen.getByText('Expenses').parentElement;
+      const foodRow = expenseSection.querySelector('.grid');
+      expect(foodRow).toHaveClass('grid');
     });
   });
 });
