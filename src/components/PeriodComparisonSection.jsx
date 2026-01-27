@@ -185,7 +185,7 @@ function ComparisonRow({
   previous,
   metrics,
   currency,
-  type: _type,
+  type,
 }) {
   const { percentChange, trend, isNew } = metrics;
 
