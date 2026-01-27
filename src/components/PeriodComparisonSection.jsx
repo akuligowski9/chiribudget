@@ -9,7 +9,7 @@ import {
   calculateCategoryComparison,
   generateInsights,
 } from '@/lib/comparisonUtils';
-import { formatCurrencyAmountAmount } from '@/lib/currency';
+import { formatCurrencyAmount } from '@/lib/currency';
 
 /**
  * Collapsible comparison section showing full period-over-period analysis
