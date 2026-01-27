@@ -441,6 +441,80 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 - Limits stored per-household in budget_config, not per-user
 - Flag mode gives flexibility for different spending philosophies
 
+### 5.8 Period-over-Period Comparison
+
+**Purpose**: Show spending trends by comparing current period to equivalent previous period
+
+**Components**:
+
+- `CategoryComparisonBadge`: Inline percentage badge next to each category
+- `PeriodComparisonSection`: Collapsible table with full comparison details
+- Automatic previous period calculation based on date range preset
+
+**Comparison Logic**:
+
+Date range mappings for each preset:
+
+- **Day**: Previous day (current - 1 day)
+- **Week**: Previous week (current - 7 days)
+- **Month**: Previous month (handles month-end edge cases)
+- **Quarter**: Previous quarter (current - 3 months)
+- **Year**: Previous year (same dates, previous year)
+- **Custom**: Shift backward by range duration
+
+**Badge Display Rules**:
+
+- Only shows if change ≥ 5% (configurable threshold)
+- Shows "NEW" for categories that didn't exist in previous period
+- Type-aware coloring:
+  - Expenses: Green for decrease (good), Amber/Red for increase (bad)
+  - Income: Green for increase (good), Amber/Red for decrease (bad)
+- Arrow icons indicate direction (↑/↓)
+
+**Comparison Section**:
+
+- Collapsed by default, expandable via chevron button
+- Shows "Comparing to: [previous period dates]" label
+- Full table with columns: Category | Current | Previous | Change %
+- "Key Insights" section highlights top 5 significant changes
+- Shows "No significant changes" if all changes < 10% threshold
+
+**Edge Cases**:
+
+- First month of usage: No badges, comparison section shows "Not enough data"
+- Month-end dates (Jan 31 → Feb): Uses date-fns endOfMonth for correct last day
+- Leap year (Feb 29): Handles correctly using date-fns date arithmetic
+- Previous period has zero spending: Shows "NEW" badge, no percentage
+- Both periods have zero: No badge displayed (not significant)
+- Custom ranges crossing year boundaries: Shifts by exact duration in days
+
+**Decisions**:
+
+- Progressive disclosure: Inline badges for quick scanning, collapsible section for details
+- date-fns library: Robust date handling for month boundaries and leap years
+- 5% badge threshold, 10% insight threshold: Balance between signal and noise
+- Server-wins for date calculation: Calculate previous period dates in dashboard/page.js
+- Works in demo mode: Uses getDemoTransactions with previous month calculation
+- Applies currency conversion to both periods before comparison
+
+**Data Flow**:
+
+```
+dashboard/page.js
+  └─▶ getPreviousPeriodRange(preset, startDate, endDate)
+       └─▶ { previousStartDate, previousEndDate }
+
+DashboardSummary.jsx
+  ├─▶ Fetch previous period transactions (Supabase or demo)
+  ├─▶ Convert to display currency
+  ├─▶ calculateCategoryComparison(current, previous)
+  │     └─▶ { category: { current, previous, delta, percentChange, trend, isNew } }
+  ├─▶ CategoryComparisonBadge (inline next to amounts)
+  └─▶ PeriodComparisonSection (collapsible below charts)
+        └─▶ generateInsights(comparisonData, type, threshold)
+              └─▶ [{ category, change, type, percentChange }]
+```
+
 ---
 
 ## 6. API Design

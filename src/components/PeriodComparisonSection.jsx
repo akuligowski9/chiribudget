@@ -9,7 +9,7 @@ import {
   calculateCategoryComparison,
   generateInsights,
 } from '@/lib/comparisonUtils';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrencyAmountAmount } from '@/lib/currency';
 
 /**
  * Collapsible comparison section showing full period-over-period analysis
@@ -218,12 +218,12 @@ function ComparisonRow({
 
       {/* Current amount */}
       <span className="text-slate font-medium text-right min-w-[70px]">
-        {formatCurrency(current, currency)}
+        {formatCurrencyAmount(current, currency)}
       </span>
 
       {/* Previous amount */}
       <span className="text-warm-gray/70 text-right min-w-[70px]">
-        {formatCurrency(previous, currency)}
+        {formatCurrencyAmount(previous, currency)}
       </span>
 
       {/* Percent change */}

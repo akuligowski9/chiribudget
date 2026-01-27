@@ -3,14 +3,17 @@
  */
 
 import {
+  differenceInDays,
+  endOfMonth,
+  format,
+  isSameDay,
+  lastDayOfMonth,
+  min,
+  parseISO,
   subDays,
   subMonths,
   subQuarters,
   subYears,
-  differenceInDays,
-  format,
-  lastDayOfMonth,
-  min,
 } from 'date-fns';
 
 /**
@@ -32,8 +35,8 @@ export function getPreviousPeriodRange(
 ) {
   if (!startDate || !endDate) return null;
 
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+  const start = parseISO(startDate);
+  const end = parseISO(endDate);
 
   let previousStart, previousEnd;
 
@@ -54,15 +57,20 @@ export function getPreviousPeriodRange(
       // Previous month (handles month-end edge cases)
       previousStart = subMonths(start, 1);
       previousEnd = subMonths(end, 1);
-      // Handle month-end edge cases (e.g., Jan 31 → Feb 28)
-      const lastDayOfPrevMonth = lastDayOfMonth(previousStart);
-      previousEnd = min([previousEnd, lastDayOfPrevMonth]);
+      // If original end was last day of month, ensure previous end is too
+      if (isSameDay(end, endOfMonth(end))) {
+        previousEnd = endOfMonth(previousEnd);
+      }
       break;
 
     case 'quarter':
       // Previous quarter (3 months back)
       previousStart = subQuarters(start, 1);
       previousEnd = subQuarters(end, 1);
+      // If original end was last day of month, ensure previous end is too
+      if (isSameDay(end, endOfMonth(end))) {
+        previousEnd = endOfMonth(previousEnd);
+      }
       break;
 
     case 'year':
@@ -237,8 +245,8 @@ export function generateInsights(
 export function formatPreviousPeriodLabel(previousStartDate, previousEndDate) {
   if (!previousStartDate || !previousEndDate) return '';
 
-  const start = new Date(previousStartDate);
-  const end = new Date(previousEndDate);
+  const start = parseISO(previousStartDate);
+  const end = parseISO(previousEndDate);
 
   // If same day, show single date
   if (previousStartDate === previousEndDate) {

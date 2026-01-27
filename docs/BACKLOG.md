@@ -263,22 +263,45 @@ This feature would allow users to define a transaction template with recurrence 
 
 Show spending trends compared to previous months to help identify patterns and inform budget discussions. Users currently see only the current month's totals. Without historical context, it's hard to know if spending is trending up, down, or stable. Questions like "are we spending more on food lately?" require manual comparison.
 
-This feature would add trend indicators to the dashboard. For each category, show the percentage change from last month - "You spent 20% more on Food this month" or "Entertainment down 15% from last month." Could be a new dashboard section, a toggle on existing charts, or inline badges. Helps couples have data-driven budget conversations.
+Implementation adds period-over-period comparison to the dashboard with inline badges next to each category showing percentage change (e.g., "↑12%" or "↓8%"). A collapsible "Period Comparison" section below charts provides detailed comparison table with current vs previous amounts and key insights. Works for all date range presets (day, week, month, quarter, year, custom).
+
+**Key Features:**
+
+- Inline badges with type-aware coloring (expenses: ↓=green, ↑=amber/red; income: ↑=green, ↓=amber/red)
+- Collapsible comparison section with full table and insights
+- Automatic previous period calculation for all presets
+- "NEW" badge for categories that didn't exist in previous period
+- Handles edge cases (first month, month boundaries, leap years)
+- Comprehensive test coverage (56 tests)
 
 #### Acceptance Criteria
 
-- [ ] Dashboard shows comparison to previous month for each category
-- [ ] Percentage change displayed (increase/decrease)
-- [ ] Visual indicator for significant changes
+- [x] Dashboard shows comparison to previous period for each category
+- [x] Percentage change displayed (increase/decrease)
+- [x] Visual indicator for significant changes (badges with arrows)
+- [x] Works for all date range presets (day, week, month, quarter, year, custom)
+- [x] Handles edge cases (no previous data, new categories, month boundaries)
+- [x] Mobile responsive
+- [x] Translations in English and Spanish
+- [x] Unit tests for all utility functions
+- [x] Component tests for badge and comparison section
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Low
 - **Type:** Feature
 - **Version:** v2
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** #3
+- **Completed:** 2026-01-27
+
+**Implementation Details:**
+
+- New files: `comparisonUtils.js`, `CategoryComparisonBadge.jsx`, `PeriodComparisonSection.jsx`
+- Modified: `dashboard/page.js`, `DashboardSummary.jsx`, translation files
+- Dependencies: Added `date-fns` for robust date calculations
+- Tests: 56 passing tests (38 utility tests, 18 component tests)
 
 ---
 

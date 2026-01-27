@@ -61,12 +61,13 @@ Home is for action and context:
 
 ### Dashboard (Reflection + Discussion)
 
-Dashboard is for reviewing what’s in the database:
+Dashboard is for reviewing what's in the database:
 
 - Month selector + currency toggle
 - Totals by category + saved/lost per payer
+- Period-over-period comparison (percentage changes vs previous period)
 - Flagged transactions list (add explanations later)
-- Discussion notes: “What we agreed / next month focus”
+- Discussion notes: "What we agreed / next month focus"
 - Mark month **Discussed** (blocked if flagged explanations are unresolved)
 
 ---

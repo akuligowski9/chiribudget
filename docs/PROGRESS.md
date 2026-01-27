@@ -4,6 +4,102 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-27 — Month-over-Month Comparison (CB-037)
+
+### Summary
+
+Implemented period-over-period spending comparison feature allowing users to see percentage changes for each category compared to the previous equivalent period. Displays inline badges next to categories and provides a collapsible comparison section with detailed table and key insights.
+
+### Work Completed
+
+**CB-037: Month-over-Month Comparison (Done)**
+
+**Core Implementation:**
+
+- Created `comparisonUtils.js` with 6 utility functions:
+  - `getPreviousPeriodRange()` — Calculates previous period dates for all presets (day/week/month/quarter/year/custom)
+  - `calculateCategoryDelta()` — Computes delta, percent change, and trend for a category
+  - `calculateCategoryComparison()` — Compares all categories from both periods
+  - `isSignificantChange()` — Determines if change warrants display (default >5%)
+  - `generateInsights()` — Creates human-readable insights sorted by impact
+  - `formatPreviousPeriodLabel()` — Formats date range labels for display
+- Created `CategoryComparisonBadge.jsx` — Inline percentage badge with type-aware coloring:
+  - Expenses: Green for decrease (good), Amber/Red for increase (bad)
+  - Income: Green for increase (good), Amber/Red for decrease (bad)
+  - Shows "NEW" badge for categories that didn't exist in previous period
+  - Only renders for changes >5% (configurable threshold)
+- Created `PeriodComparisonSection.jsx` — Collapsible comparison table:
+  - Full category-by-category comparison with current/previous/delta columns
+  - "Key Insights" section highlighting top 5 changes
+  - Expandable/collapsible with accessible ARIA attributes
+  - Mobile-responsive grid layout
+- Modified `dashboard/page.js` to calculate previous period dates using `useMemo`
+- Modified `DashboardSummary.jsx` to:
+  - Fetch previous period data (both demo mode and production)
+  - Calculate comparison metrics for all categories
+  - Display badges next to income and expense categories
+  - Show collapsible comparison section after charts
+- Added translations for all comparison UI strings (English and Spanish)
+
+**Testing:**
+
+- Created `comparisonUtils.test.js` — 38 tests covering all utility functions
+  - Date calculations for all presets including edge cases (month boundaries, leap years)
+  - Delta calculations with new categories, zero values, decimal handling
+  - Insight generation and sorting
+- Created `CategoryComparisonBadge.test.js` — 18 tests for badge component
+  - Rendering logic, percentage display, custom thresholds
+  - Icon presence, edge cases with small/large amounts
+- Created `PeriodComparisonSection.test.js` — Component integration tests
+- All 56 tests passing (38 + 18 from utilities and badge component)
+
+**Dependencies:**
+
+- Installed `date-fns` library for robust date calculations
+
+### Decisions Made
+
+- **Progressive disclosure UI**: Inline badges for at-a-glance trends + collapsible detail section for power users
+- **Type-aware coloring**: Different color meanings for expenses vs income (decrease=good for expenses, increase=good for income)
+- **5% significance threshold**: Only show badges for changes >5% to avoid noise
+- **date-fns for date math**: Handles month-end edge cases (Jan 31 → Feb 28) and leap years correctly
+- **Server-side previous period calculation**: Client-side useMemo in dashboard/page.js keeps logic centralized
+- **Demo mode support**: Works with both demo data and production database
+
+### Edge Cases Handled
+
+- **Month-end dates**: Jan 31 → Feb correctly handled using `endOfMonth()` from date-fns
+- **Leap years**: Feb 29 calculations use proper date arithmetic
+- **First month of usage**: No badges shown, comparison section shows "Not enough data"
+- **New categories**: Display "NEW" badge instead of percentage
+- **Zero spending in both periods**: No badge displayed (not significant)
+- **Custom date ranges**: Calculate duration and shift backward by same period
+
+### Files Created
+
+- `src/lib/comparisonUtils.js` — Core comparison utilities (268 lines)
+- `src/components/CategoryComparisonBadge.jsx` — Inline percentage badge (92 lines)
+- `src/components/PeriodComparisonSection.jsx` — Collapsible comparison table (202 lines)
+- `src/lib/__tests__/comparisonUtils.test.js` — Utility function tests (448 lines, 38 tests)
+- `src/components/__tests__/CategoryComparisonBadge.test.js` — Badge component tests (264 lines, 18 tests)
+- `src/components/__tests__/PeriodComparisonSection.test.js` — Comparison section tests (373 lines)
+
+### Files Modified
+
+- `src/app/dashboard/page.js` — Added previous period calculation
+- `src/components/DashboardSummary.jsx` — Integrated comparison badges and section
+- `messages/en.json` — Added English translations for comparison UI
+- `messages/es.json` — Added Spanish translations for comparison UI
+- `package.json` — Added date-fns dependency
+- `docs/BACKLOG.md` — Marked CB-037 as Done
+
+### What's Next
+
+- Continue with other backlog priorities
+- Consider adding comparison export feature (CSV with both periods)
+
+---
+
 ## 2026-01-26 — Production Database Setup & Review Page Improvements
 
 ### Summary
