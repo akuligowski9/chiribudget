@@ -413,5 +413,325 @@
     "category": "Fixed Expenses",
     "payer": "Partner 2",
     "is_flagged": false
+  },
+  {
+    "id": "dec1",
+    "txn_date": "2025-12-01",
+    "currency": "USD",
+    "description": "December rent",
+    "amount": -2200.0,
+    "category": "Rent/Mortgages",
+    "payer": "Together",
+    "is_flagged": true
+  },
+  {
+    "id": "dec2",
+    "txn_date": "2025-12-02",
+    "currency": "USD",
+    "description": "Trader Joe's groceries",
+    "amount": -78.45,
+    "category": "Food",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec3",
+    "txn_date": "2025-12-03",
+    "currency": "USD",
+    "description": "Paycheck - Partner 1",
+    "amount": 4250.0,
+    "category": "Salary",
+    "payer": "Partner 1",
+    "is_flagged": true
+  },
+  {
+    "id": "dec4",
+    "txn_date": "2025-12-04",
+    "currency": "USD",
+    "description": "Internet bill",
+    "amount": -79.99,
+    "category": "Fixed Expenses",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec5",
+    "txn_date": "2025-12-05",
+    "currency": "USD",
+    "description": "Whole Foods",
+    "amount": -95.22,
+    "category": "Food",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "dec6",
+    "txn_date": "2025-12-06",
+    "currency": "USD",
+    "description": "Gas station",
+    "amount": -48.0,
+    "category": "Fixed Expenses",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec7",
+    "txn_date": "2025-12-07",
+    "currency": "USD",
+    "description": "Chewy - dog supplies",
+    "amount": -142.5,
+    "category": "Dogs",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "dec8",
+    "txn_date": "2025-12-08",
+    "currency": "USD",
+    "description": "Paycheck - Partner 2",
+    "amount": 3800.0,
+    "category": "Salary",
+    "payer": "Partner 2",
+    "is_flagged": true
+  },
+  {
+    "id": "dec9",
+    "txn_date": "2025-12-09",
+    "currency": "USD",
+    "description": "Netflix + Spotify",
+    "amount": -28.98,
+    "category": "Fixed Expenses",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec10",
+    "txn_date": "2025-12-10",
+    "currency": "USD",
+    "description": "Costco shopping",
+    "amount": -187.33,
+    "category": "Food",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec11",
+    "txn_date": "2025-12-11",
+    "currency": "USD",
+    "description": "Car insurance",
+    "amount": -142.0,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec12",
+    "txn_date": "2025-12-12",
+    "currency": "USD",
+    "description": "Vet visit - Luna",
+    "amount": -220.0,
+    "category": "Dogs",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "dec13",
+    "txn_date": "2025-12-13",
+    "currency": "USD",
+    "description": "Target household",
+    "amount": -62.45,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec14",
+    "txn_date": "2025-12-14",
+    "currency": "USD",
+    "description": "Phone bills",
+    "amount": -95.0,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec15",
+    "txn_date": "2025-12-15",
+    "currency": "USD",
+    "description": "Gym membership",
+    "amount": -49.99,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec16",
+    "txn_date": "2025-12-16",
+    "currency": "USD",
+    "description": "Dividend - VTSAX",
+    "amount": 95.5,
+    "category": "Investments",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec17",
+    "txn_date": "2025-12-17",
+    "currency": "USD",
+    "description": "Safeway groceries",
+    "amount": -72.18,
+    "category": "Food",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec18",
+    "txn_date": "2025-12-18",
+    "currency": "USD",
+    "description": "Christmas shopping - Amazon",
+    "amount": -245.0,
+    "category": "Holidays & Birthdays",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec19",
+    "txn_date": "2025-12-19",
+    "currency": "USD",
+    "description": "Christmas decorations",
+    "amount": -89.5,
+    "category": "Holidays & Birthdays",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec20",
+    "txn_date": "2025-12-20",
+    "currency": "USD",
+    "description": "Weekend ski trip",
+    "amount": -385.0,
+    "category": "Adventure",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "dec21",
+    "txn_date": "2025-12-21",
+    "currency": "USD",
+    "description": "Starbucks coffee",
+    "amount": -6.5,
+    "category": "Food",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "dec22",
+    "txn_date": "2025-12-22",
+    "currency": "USD",
+    "description": "Restaurant dinner",
+    "amount": -92.0,
+    "category": "Food",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "decp1",
+    "txn_date": "2025-12-02",
+    "currency": "PEN",
+    "description": "Plaza Vea - compras",
+    "amount": -198.5,
+    "category": "Food",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "decp2",
+    "txn_date": "2025-12-03",
+    "currency": "PEN",
+    "description": "Alquiler Lima",
+    "amount": -2800.0,
+    "category": "Rent/Mortgages",
+    "payer": "Together",
+    "is_flagged": true
+  },
+  {
+    "id": "decp3",
+    "txn_date": "2025-12-05",
+    "currency": "PEN",
+    "description": "Veterinario - chequeo",
+    "amount": -285.0,
+    "category": "Dogs",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "decp4",
+    "txn_date": "2025-12-07",
+    "currency": "PEN",
+    "description": "Luz y agua",
+    "amount": -395.0,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "decp5",
+    "txn_date": "2025-12-10",
+    "currency": "PEN",
+    "description": "Wong supermercado",
+    "amount": -268.4,
+    "category": "Food",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "decp6",
+    "txn_date": "2025-12-12",
+    "currency": "PEN",
+    "description": "Gasolina",
+    "amount": -175.0,
+    "category": "Fixed Expenses",
+    "payer": "Partner 1",
+    "is_flagged": false
+  },
+  {
+    "id": "decp7",
+    "txn_date": "2025-12-14",
+    "currency": "PEN",
+    "description": "Internet y cable",
+    "amount": -159.0,
+    "category": "Fixed Expenses",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "decp8",
+    "txn_date": "2025-12-16",
+    "currency": "PEN",
+    "description": "Cena familiar",
+    "amount": -245.0,
+    "category": "Food",
+    "payer": "Together",
+    "is_flagged": false
+  },
+  {
+    "id": "decp9",
+    "txn_date": "2025-12-18",
+    "currency": "PEN",
+    "description": "Regalos Navidad",
+    "amount": -420.0,
+    "category": "Holidays & Birthdays",
+    "payer": "Partner 2",
+    "is_flagged": false
+  },
+  {
+    "id": "decp10",
+    "txn_date": "2025-12-20",
+    "currency": "PEN",
+    "description": "Viaje Cusco",
+    "amount": -1250.0,
+    "category": "Adventure",
+    "payer": "Together",
+    "is_flagged": true
   }
 ]
