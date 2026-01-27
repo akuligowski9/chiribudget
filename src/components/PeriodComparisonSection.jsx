@@ -10,6 +10,7 @@ import {
   generateInsights,
 } from '@/lib/comparisonUtils';
 import { formatCurrencyAmount } from '@/lib/currency';
+import { CATEGORY_KEYS } from '@/lib/transactionUtils';
 
 /**
  * Collapsible comparison section showing full period-over-period analysis
@@ -84,7 +85,7 @@ export default function PeriodComparisonSection({
                 return (
                   <ComparisonRow
                     key={category}
-                    category={t(`categories.${category}`)}
+                    category={t(`categories.${CATEGORY_KEYS[category]}`)}
                     current={current}
                     previous={previous}
                     metrics={metrics}
@@ -114,7 +115,7 @@ export default function PeriodComparisonSection({
                 return (
                   <ComparisonRow
                     key={category}
-                    category={t(`categories.${category}`)}
+                    category={t(`categories.${CATEGORY_KEYS[category]}`)}
                     current={current}
                     previous={previous}
                     metrics={metrics}
