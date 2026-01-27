@@ -22,12 +22,16 @@ export default function ImportOptionsForm({
   defaultPayer,
   onDefaultPayerChange,
   payerOptions,
+  hideYear = false,
 }) {
   const t = useTranslations();
 
+  // PNC dates include the year, so hide the year selector
+  const showYear = !hideYear && bank !== 'pnc';
+
   return (
     <>
-      <div className="grid grid-cols-2 gap-3">
+      <div className={showYear ? 'grid grid-cols-2 gap-3' : ''}>
         {/* Bank */}
         <div className="space-y-1">
           <label className="text-xs font-medium text-warm-gray">
@@ -47,24 +51,26 @@ export default function ImportOptionsForm({
           </Select>
         </div>
 
-        {/* Year */}
-        <div className="space-y-1">
-          <label className="text-xs font-medium text-warm-gray">
-            {t('unsorted.year')}
-          </label>
-          <Select value={year} onValueChange={onYearChange}>
-            <SelectTrigger>
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {YEARS.map((y) => (
-                <SelectItem key={y} value={y.toString()}>
-                  {y}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Year - hidden for banks where dates include the year */}
+        {showYear && (
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-warm-gray">
+              {t('unsorted.year')}
+            </label>
+            <Select value={year} onValueChange={onYearChange}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {YEARS.map((y) => (
+                  <SelectItem key={y} value={y.toString()}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
       </div>
 
       {/* Default payer */}

@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { AlertCircle, Loader2, Upload, X } from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AlertCircle, Check, Copy, Loader2, Upload, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Papa from 'papaparse';
 import ImportFileDropzone from '@/components/ImportFileDropzone';
@@ -15,9 +15,13 @@ import {
   BANK_MAPPINGS,
   BANKS,
   CURRENT_YEAR,
+  detectPncFormat,
   generateFingerprint,
   parseAmount,
   parseDate,
+  parsePncCheckingAmount,
+  parsePncCreditAmount,
+  shouldSkipPncCreditTransaction,
 } from '@/lib/csvParserUtils';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
@@ -45,7 +49,198 @@ export default function ImportUpload({ onClose, onSuccess }) {
 
   const [processing, setProcessing] = useState(false);
   const [error, setError] = useState(null);
-  const [importResults, setImportResults] = useState(null);
+  const [importResults, _setImportResults] = useState(null);
+
+  // Early validation state
+  const [detectedPncFormat, setDetectedPncFormat] = useState(null); // 'credit' | 'checking'
+  const [formatError, setFormatError] = useState(null);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState(null);
+  // { total, newCount, dbDuplicates, fileDuplicates, parsedTransactions }
+
+  // Analyze file for duplicates and validate format
+  const analyzeFile = useCallback(
+    async (csvData, headers) => {
+      if (!csvData || csvData.length === 0) return;
+
+      setAnalyzing(true);
+      setFormatError(null);
+      setDetectedPncFormat(null);
+      setAnalysisResult(null);
+
+      try {
+        // Get mapping - auto-detect for PNC
+        let mapping = BANK_MAPPINGS[bank];
+        if (mapping?.isPnc) {
+          const pncResult = detectPncFormat(headers);
+          if (pncResult.error) {
+            setFormatError(pncResult.error);
+            setAnalyzing(false);
+            return;
+          }
+          mapping = pncResult.mapping;
+          setDetectedPncFormat(pncResult.format);
+        }
+
+        // Parse all transactions
+        const transactions = [];
+        const fingerprintSet = new Set();
+        let fileDuplicates = 0;
+
+        for (const row of csvData) {
+          const dateKey = Object.keys(row).find(
+            (k) => k.toLowerCase() === mapping.dateCol.toLowerCase()
+          );
+          const descKey = Object.keys(row).find(
+            (k) => k.toLowerCase() === mapping.descriptionCol.toLowerCase()
+          );
+
+          let amount = 0;
+          let currency = mapping.currency;
+
+          if (mapping.isPncCredit) {
+            const amountKey = Object.keys(row).find(
+              (k) => k.toLowerCase() === mapping.amountCol.toLowerCase()
+            );
+            amount = parsePncCreditAmount(row[amountKey]);
+          } else if (mapping.isPncChecking) {
+            const amountKey = Object.keys(row).find(
+              (k) => k.toLowerCase() === mapping.amountCol.toLowerCase()
+            );
+            amount = parsePncCheckingAmount(row[amountKey]);
+          } else if (bank === 'interbank') {
+            const penKey = Object.keys(row).find((k) => k.trim() === 'S/');
+            const usdKey = Object.keys(row).find((k) => k.trim() === 'US$');
+            const penAmount = parseAmount(row[penKey]);
+            const usdAmount = parseAmount(row[usdKey]);
+            if (usdAmount !== 0) {
+              amount = -Math.abs(usdAmount);
+              currency = 'USD';
+            } else if (penAmount !== 0) {
+              amount = -Math.abs(penAmount);
+              currency = 'PEN';
+            }
+          } else {
+            const amountKey = Object.keys(row).find(
+              (k) => k.toLowerCase() === mapping.amountCol.toLowerCase()
+            );
+            amount = parseAmount(row[amountKey]);
+          }
+
+          const dateStr = row[dateKey];
+          const description = row[descKey]?.trim() || '';
+
+          // Skip PNC credit card payments
+          if (
+            mapping.isPncCredit &&
+            shouldSkipPncCreditTransaction(description)
+          ) {
+            continue;
+          }
+
+          // Skip unparseable rows
+          if (!dateStr || amount === 0) continue;
+
+          const txnDate = parseDate(dateStr, mapping.dateFormat, year);
+          if (!txnDate) continue;
+
+          const fingerprint = generateFingerprint(
+            profile?.household_id,
+            currency,
+            txnDate,
+            amount,
+            description
+          );
+
+          // Check for duplicates within the file
+          if (fingerprintSet.has(fingerprint)) {
+            fileDuplicates++;
+            continue;
+          }
+          fingerprintSet.add(fingerprint);
+
+          transactions.push({
+            household_id: profile?.household_id,
+            txn_date: txnDate,
+            currency,
+            description,
+            amount,
+            category: 'Unexpected',
+            payer: defaultPayer,
+            is_flagged: false,
+            source: 'import',
+            fingerprint,
+            created_by: profile?.user_id,
+          });
+        }
+
+        // Check for duplicates in database (skip in demo mode)
+        let dbDuplicates = 0;
+        let newTransactions = transactions;
+
+        if (!isDemoMode && transactions.length > 0 && profile?.household_id) {
+          const fingerprints = transactions.map((t) => t.fingerprint);
+
+          // Query in batches of 100 to avoid URL length limits
+          const existingFingerprints = new Set();
+          for (let i = 0; i < fingerprints.length; i += 100) {
+            const batch = fingerprints.slice(i, i + 100);
+            const { data } = await supabase
+              .from('transactions')
+              .select('fingerprint')
+              .eq('household_id', profile.household_id)
+              .in('fingerprint', batch);
+
+            if (data) {
+              data.forEach((row) => existingFingerprints.add(row.fingerprint));
+            }
+          }
+
+          // Filter out existing transactions
+          newTransactions = transactions.filter(
+            (t) => !existingFingerprints.has(t.fingerprint)
+          );
+          dbDuplicates = transactions.length - newTransactions.length;
+        }
+
+        setAnalysisResult({
+          total: transactions.length + fileDuplicates,
+          newCount: newTransactions.length,
+          dbDuplicates,
+          fileDuplicates,
+          parsedTransactions: newTransactions,
+        });
+      } catch (err) {
+        setFormatError(err.message);
+      } finally {
+        setAnalyzing(false);
+      }
+    },
+    [
+      bank,
+      year,
+      profile?.household_id,
+      profile?.user_id,
+      defaultPayer,
+      isDemoMode,
+    ]
+  );
+
+  // Re-analyze when bank, year, or payer changes
+  useEffect(() => {
+    if (previewData?.rows && previewData.headers) {
+      // Re-parse the full file when settings change
+      if (file) {
+        Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: (results) => {
+            analyzeFile(results.data, results.meta.fields);
+          },
+        });
+      }
+    }
+  }, [bank, year, defaultPayer, analyzeFile, file, previewData]);
 
   // Handle file selection
   function handleFileChange(e) {
@@ -66,8 +261,11 @@ export default function ImportUpload({ onClose, onSuccess }) {
 
     setFile(selectedFile);
     setError(null);
+    setFormatError(null);
+    setDetectedPncFormat(null);
+    setAnalysisResult(null);
 
-    // Parse CSV for preview
+    // Parse CSV for preview and analysis
     Papa.parse(selectedFile, {
       header: true,
       skipEmptyLines: true,
@@ -77,6 +275,8 @@ export default function ImportUpload({ onClose, onSuccess }) {
           rows: results.data.slice(0, 5),
           totalRows: results.data.length,
         });
+        // Trigger analysis
+        analyzeFile(results.data, results.meta.fields);
       },
       error: (err) => {
         setError(err.message);
@@ -89,6 +289,20 @@ export default function ImportUpload({ onClose, onSuccess }) {
     e.preventDefault();
     if (!file) {
       setError(t('unsorted.noFileSelected'));
+      return;
+    }
+
+    // Check for format errors
+    if (formatError) {
+      setError(formatError);
+      return;
+    }
+
+    // Check if we have transactions to import
+    if (!analysisResult?.parsedTransactions?.length) {
+      setError(
+        t('unsorted.noTransactionsFound') || 'No new transactions to import'
+      );
       return;
     }
 
@@ -108,118 +322,17 @@ export default function ImportUpload({ onClose, onSuccess }) {
         return;
       }
 
-      // Parse the full CSV
-      const parseResult = await new Promise((resolve, reject) => {
-        Papa.parse(file, {
-          header: true,
-          skipEmptyLines: true,
-          complete: resolve,
-          error: reject,
-        });
-      });
-
-      const mapping = BANK_MAPPINGS[bank];
-      const transactions = [];
-      const unparseable = [];
-
-      for (let rowIndex = 0; rowIndex < parseResult.data.length; rowIndex++) {
-        const row = parseResult.data[rowIndex];
-
-        // Try to find date column (case-insensitive)
-        const dateKey = Object.keys(row).find(
-          (k) => k.toLowerCase() === mapping.dateCol.toLowerCase()
-        );
-        const descKey = Object.keys(row).find(
-          (k) => k.toLowerCase() === mapping.descriptionCol.toLowerCase()
-        );
-
-        // Try to find amount - handle bank-specific columns
-        let amount = 0;
-        let currency = mapping.currency;
-
-        if (bank === 'pnc') {
-          const withdrawalKey = Object.keys(row).find((k) =>
-            k.toLowerCase().includes('withdrawal')
-          );
-          const depositKey = Object.keys(row).find((k) =>
-            k.toLowerCase().includes('deposit')
-          );
-          const withdrawal = parseAmount(row[withdrawalKey]);
-          const deposit = parseAmount(row[depositKey]);
-          amount = deposit > 0 ? deposit : -Math.abs(withdrawal);
-        } else if (bank === 'interbank') {
-          // Interbank has separate S/ and US$ columns
-          const penKey = Object.keys(row).find((k) => k.trim() === 'S/');
-          const usdKey = Object.keys(row).find((k) => k.trim() === 'US$');
-          const penAmount = parseAmount(row[penKey]);
-          const usdAmount = parseAmount(row[usdKey]);
-
-          if (usdAmount !== 0) {
-            amount = -Math.abs(usdAmount); // Credit card charges are negative
-            currency = 'USD';
-          } else if (penAmount !== 0) {
-            amount = -Math.abs(penAmount); // Credit card charges are negative
-            currency = 'PEN';
-          }
-        } else {
-          const amountKey = Object.keys(row).find(
-            (k) => k.toLowerCase() === mapping.amountCol.toLowerCase()
-          );
-          amount = parseAmount(row[amountKey]);
-        }
-
-        const dateStr = row[dateKey];
-        const description = row[descKey]?.trim() || '';
-
-        // Track unparseable rows
-        if (!dateStr || amount === 0) {
-          const hasContent = Object.values(row).some(
-            (v) => v && v.toString().trim()
-          );
-          if (hasContent) {
-            unparseable.push({
-              rowNumber: rowIndex + 2,
-              reason: !dateStr ? 'missing_date' : 'zero_amount',
-              rawData: Object.values(row).slice(0, 4).join(' | '),
-            });
-          }
-          continue;
-        }
-
-        const txnDate = parseDate(dateStr, mapping.dateFormat, year);
-
-        transactions.push({
-          household_id: profile?.household_id,
-          txn_date: txnDate,
-          currency,
-          description,
-          amount,
-          category: 'Unexpected',
-          payer: defaultPayer,
-          is_flagged: false,
-          source: 'import',
-          status: 'pending',
-          fingerprint: generateFingerprint(
-            profile?.household_id,
-            currency,
-            txnDate,
-            amount,
-            description
-          ),
-        });
-      }
-
-      if (transactions.length === 0 && unparseable.length === 0) {
-        throw new Error(
-          t('unsorted.noTransactionsFound') || 'No transactions found in CSV'
-        );
-      }
+      const transactions = analysisResult.parsedTransactions;
 
       // Compute date range from transactions
       const dates = transactions.map((tx) => tx.txn_date).sort();
       const dateRangeStart = dates[0];
       const dateRangeEnd = dates[dates.length - 1];
       const month = dateRangeStart?.slice(0, 7) || `${year}-01`;
+
+      // Get currency from first transaction or mapping
+      const currency =
+        transactions[0]?.currency || BANK_MAPPINGS[bank]?.currency || 'USD';
 
       // Create display name
       const bankLabel = BANKS.find((b) => b.value === bank)?.label || bank;
@@ -232,7 +345,7 @@ export default function ImportUpload({ onClose, onSuccess }) {
         .from('import_batches')
         .insert({
           household_id: profile?.household_id,
-          currency: mapping.currency,
+          currency,
           month,
           source_bank: bank,
           default_payer: defaultPayer,
@@ -240,7 +353,6 @@ export default function ImportUpload({ onClose, onSuccess }) {
           date_range_start: dateRangeStart,
           date_range_end: dateRangeEnd,
           display_name: displayName,
-          raw_payload: parseResult.data,
           status: 'staged',
           created_by: profile?.user_id,
         })
@@ -253,57 +365,55 @@ export default function ImportUpload({ onClose, onSuccess }) {
 
       const batchId = batchData.id;
 
-      // Insert transactions with batch ID (skip duplicates)
+      // Add batch ID to all transactions
+      const transactionsWithBatch = transactions.map((tx) => ({
+        ...tx,
+        import_batch_id: batchId,
+      }));
+
+      // Batch insert transactions (much faster than one-by-one)
+      // Insert in chunks of 100 to avoid payload size limits
       let insertedCount = 0;
-      let skippedCount = 0;
+      let errorCount = 0;
 
-      for (const tx of transactions) {
-        const { error: txError } = await supabase
+      for (let i = 0; i < transactionsWithBatch.length; i += 100) {
+        const batch = transactionsWithBatch.slice(i, i + 100);
+        const { data, error: insertError } = await supabase
           .from('transactions')
-          .insert({ ...tx, import_batch_id: batchId });
+          .insert(batch)
+          .select('id');
 
-        if (txError) {
-          if (txError.code === '23505') {
-            skippedCount++;
-          } else {
-            // eslint-disable-next-line no-console
-            console.error('Transaction insert error:', txError);
+        if (insertError) {
+          // If batch insert fails, try one-by-one for this batch
+          // (handles case where some duplicates slipped through)
+          for (const tx of batch) {
+            const { error: singleError } = await supabase
+              .from('transactions')
+              .insert(tx);
+            if (!singleError) {
+              insertedCount++;
+            }
           }
         } else {
-          insertedCount++;
+          insertedCount += data?.length || batch.length;
         }
       }
 
       // Show results
-      const results = {
-        inserted: insertedCount,
-        duplicates: skippedCount,
-        unparseable,
-      };
+      const skippedInAnalysis =
+        analysisResult.dbDuplicates + analysisResult.fileDuplicates;
 
-      if (unparseable.length > 0) {
-        setImportResults(results);
-        setToast({
-          id: toastId(),
-          type: 'warning',
-          title: t('unsorted.importPartial') || 'Import partially complete',
-          message:
-            t('unsorted.someRowsSkipped', { count: unparseable.length }) ||
-            `${unparseable.length} rows couldn't be parsed`,
-        });
-      } else {
-        setToast({
-          id: toastId(),
-          type: 'success',
-          title: t('unsorted.importSuccess'),
-          message:
-            t('unsorted.transactionsImported', { count: insertedCount }) +
-            (skippedCount > 0
-              ? ` (${t('import.duplicatesSkipped', { count: skippedCount })})`
-              : ''),
-        });
-        onSuccess?.();
-      }
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('unsorted.importSuccess'),
+        message:
+          t('unsorted.transactionsImported', { count: insertedCount }) +
+          (skippedInAnalysis > 0
+            ? ` (${skippedInAnalysis} duplicates skipped)`
+            : ''),
+      });
+      onSuccess?.();
     } catch (e) {
       setError(e.message);
       setToast({
@@ -344,16 +454,86 @@ export default function ImportUpload({ onClose, onSuccess }) {
 
           {/* Preview - only show before import */}
           {previewData && previewData.rows.length > 0 && !importResults && (
-            <div className="bg-white/50 rounded-lg p-3 text-xs overflow-x-auto">
-              <p className="text-warm-gray mb-2 font-medium">
-                {t('import.preview')}:
-              </p>
-              <div className="space-y-1">
-                {previewData.rows.slice(0, 3).map((row, i) => (
-                  <div key={i} className="text-charcoal truncate">
-                    {Object.values(row).slice(0, 4).join(' | ')}
+            <div className="bg-white/50 rounded-lg p-3 text-xs overflow-x-auto space-y-3">
+              <div>
+                <p className="text-warm-gray mb-2 font-medium">
+                  {t('import.preview')}:
+                </p>
+                <div className="space-y-1">
+                  {previewData.rows.slice(0, 3).map((row, i) => (
+                    <div key={i} className="text-charcoal truncate">
+                      {Object.values(row).slice(0, 4).join(' | ')}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Analysis results */}
+              <div className="border-t border-white/60 pt-3 space-y-1.5">
+                {/* PNC format detection */}
+                {bank === 'pnc' && detectedPncFormat && (
+                  <div className="flex items-center gap-1.5 text-success">
+                    <Check className="w-3.5 h-3.5" />
+                    <span>
+                      Detected:{' '}
+                      {detectedPncFormat === 'credit'
+                        ? 'Credit Card'
+                        : 'Checking'}
+                    </span>
                   </div>
-                ))}
+                )}
+
+                {/* Analyzing spinner */}
+                {analyzing && (
+                  <div className="flex items-center gap-1.5 text-warm-gray">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Analyzing for duplicates...</span>
+                  </div>
+                )}
+
+                {/* Analysis complete */}
+                {analysisResult && !analyzing && (
+                  <>
+                    <div className="flex items-center gap-1.5 text-charcoal">
+                      <span className="font-medium">
+                        {analysisResult.newCount} new transactions
+                      </span>
+                      {analysisResult.newCount === 0 && (
+                        <span className="text-warm-gray">
+                          (nothing to import)
+                        </span>
+                      )}
+                    </div>
+
+                    {analysisResult.dbDuplicates > 0 && (
+                      <div className="flex items-center gap-1.5 text-amber-600">
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>
+                          {analysisResult.dbDuplicates} already imported (will
+                          skip)
+                        </span>
+                      </div>
+                    )}
+
+                    {analysisResult.fileDuplicates > 0 && (
+                      <div className="flex items-center gap-1.5 text-amber-600">
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>
+                          {analysisResult.fileDuplicates} duplicates in file
+                          (will skip)
+                        </span>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Format error */}
+                {formatError && (
+                  <div className="flex items-start gap-1.5 text-error">
+                    <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                    <span>{formatError}</span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -405,7 +585,13 @@ export default function ImportUpload({ onClose, onSuccess }) {
                 <Button
                   type="submit"
                   className="flex-1"
-                  disabled={processing || !file}
+                  disabled={
+                    processing ||
+                    !file ||
+                    analyzing ||
+                    !!formatError ||
+                    (analysisResult && analysisResult.newCount === 0)
+                  }
                 >
                   {processing ? (
                     <>

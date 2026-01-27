@@ -4,6 +4,67 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-01-26 — Production Database Setup & Review Page Improvements
+
+### Summary
+
+Set up separate production Supabase database to isolate real data from development. Improved UnsortedTransactions (Review page) with collapsible batches, three-state filtering, and editable sorted transactions. Created fresh database setup script.
+
+### Work Completed
+
+**Production Database Setup**
+
+- Created new Supabase project `chiribudget-prod` for production use
+- Original `chiribudget` project now used only for local development
+- Created `supabase/setup_fresh_db.sql` — complete schema setup script for fresh databases
+- Configured OAuth providers (Google + GitHub) in production Supabase
+- Updated Vercel environment variables for production deployment
+- Fixed circular dependency issue in schema (profiles must be created before household_members)
+
+**Environment Architecture:**
+
+| Environment | URL                          | Supabase Project         | Purpose             |
+| ----------- | ---------------------------- | ------------------------ | ------------------- |
+| Production  | `chiribudget.vercel.app`     | `chiribudget-prod`       | Real user data      |
+| Demo        | `chiribudgetdemo.vercel.app` | None (in-memory)         | Portfolio showcase  |
+| Local Dev   | `localhost:3000`             | `chiribudget` (original) | Development/testing |
+
+**UnsortedTransactions.jsx Improvements**
+
+- Added collapsible batch sections with chevron toggle
+- Replaced binary "Show All / Pending Only" toggle with three-state filter: All / Sorted / Unsorted
+- Made sorted transactions editable (removed disabled state from dropdowns)
+- Changed sorted transaction styling from opacity-60/disabled to green tint background
+
+**Duplicate Detection Debugging**
+
+- Added console.log statements in ImportFilePanel.jsx to trace fingerprint generation
+- Helps diagnose issue where recurring transactions on different dates may be incorrectly marked as duplicates
+
+### Decisions Made
+
+- **Separate databases for prod vs dev**: Prevents test data from polluting production, allows safe experimentation
+- **Demo uses no database**: In-memory demoStore, completely isolated
+- **Three-state filter UX**: "All / Sorted / Unsorted" clearer than binary toggle
+- **Editable sorted transactions**: Users can fix AI categorization errors on sorted items without unsorted them first
+
+### Files Created
+
+- `supabase/setup_fresh_db.sql` — Complete schema for fresh Supabase projects (~560 lines)
+
+### Files Modified
+
+- `src/components/UnsortedTransactions.jsx` — Collapse feature, three-state filter, editable sorted
+- `src/components/ImportFilePanel.jsx` — Debug logging for duplicate detection
+
+### What's Next
+
+- Test OAuth login on production site (https://chiribudget.vercel.app)
+- Debug duplicate detection issue with real PNC file
+- Commit and push changes
+
+---
+
 ## 2026-01-22 — Demo-Only Mode Fix: Eliminate Login Screen Flash
 
 ### Summary

@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { FileSpreadsheet, FileJson } from 'lucide-react';
+import ImportFilePanel from '@/components/ImportFilePanel';
 import ImportJsonInput from '@/components/ImportJsonInput';
 import ImportPreview from '@/components/ImportPreview';
 import Toast from '@/components/Toast';
@@ -12,8 +14,15 @@ import {
   normalizeImported,
 } from '@/lib/importUtils';
 import { supabase } from '@/lib/supabaseClient';
+import { cn } from '@/lib/utils';
+
+const IMPORT_TABS = [
+  { id: 'file', label: 'From File', icon: FileSpreadsheet },
+  { id: 'json', label: 'From JSON', icon: FileJson },
+];
 
 export default function ImportPanel() {
+  const [importTab, setImportTab] = useState('file');
   const [demoMode, setDemoMode] = useState(false);
   const [toast, setToast] = useState(null);
 
@@ -203,21 +212,51 @@ export default function ImportPanel() {
   }
 
   return (
-    <div>
-      <ImportJsonInput
-        currency={currency}
-        onCurrencyChange={setCurrency}
-        jsonText={jsonText}
-        onJsonTextChange={setJsonText}
-        onParse={parse}
-      />
+    <div className="space-y-4">
+      {/* Import method tabs */}
+      <div className="flex gap-2">
+        {IMPORT_TABS.map((tab) => {
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setImportTab(tab.id)}
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-all',
+                importTab === tab.id
+                  ? 'bg-slate/10 text-slate border border-slate/30'
+                  : 'text-warm-gray hover:bg-white/50 border border-transparent'
+              )}
+            >
+              <Icon className="w-4 h-4" />
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
 
-      <ImportPreview
-        preview={preview}
-        currency={currency}
-        demoMode={demoMode}
-        onConfirm={confirm}
-      />
+      {/* File import (CSV with bank selection) */}
+      {importTab === 'file' && <ImportFilePanel />}
+
+      {/* JSON import */}
+      {importTab === 'json' && (
+        <>
+          <ImportJsonInput
+            currency={currency}
+            onCurrencyChange={setCurrency}
+            jsonText={jsonText}
+            onJsonTextChange={setJsonText}
+            onParse={parse}
+          />
+
+          <ImportPreview
+            preview={preview}
+            currency={currency}
+            demoMode={demoMode}
+            onConfirm={confirm}
+          />
+        </>
+      )}
 
       <Toast toast={toast} onClose={() => setToast(null)} />
     </div>

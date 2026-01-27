@@ -153,7 +153,15 @@
     "net": "Net",
     "incomeByCategory": "Income by Category",
     "expensesByCategory": "Expenses by Category",
-    "netByPayer": "Net by Payer"
+    "netByPayer": "Net by Payer",
+    "periodComparison": "Period Comparison",
+    "comparingTo": "Comparing to: {period}",
+    "noComparisonData": "Not enough data for comparison",
+    "keyInsights": "Key Insights",
+    "noSignificantChanges": "No significant changes",
+    "categoryIncreased": "{category} spending increased by {percent}",
+    "categoryDecreased": "{category} spending decreased by {percent}",
+    "newCategory": "NEW"
   },
   "flags": {
     "flagged": "Flagged",

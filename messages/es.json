@@ -153,7 +153,15 @@
     "net": "Neto",
     "incomeByCategory": "Ingresos por Categoría",
     "expensesByCategory": "Gastos por Categoría",
-    "netByPayer": "Neto por Pagador"
+    "netByPayer": "Neto por Pagador",
+    "periodComparison": "Comparación de Período",
+    "comparingTo": "Comparando con: {period}",
+    "noComparisonData": "No hay datos suficientes para comparar",
+    "keyInsights": "Perspectivas Clave",
+    "noSignificantChanges": "Sin cambios significativos",
+    "categoryIncreased": "Gasto en {category} aumentó {percent}",
+    "categoryDecreased": "Gasto en {category} disminuyó {percent}",
+    "newCategory": "NUEVO"
   },
   "flags": {
     "flagged": "Marcado",

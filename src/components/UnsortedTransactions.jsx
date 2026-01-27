@@ -4,8 +4,8 @@ import { useEffect, useMemo, useState } from 'react';
 import {
   Check,
   CheckSquare,
-  Eye,
-  EyeOff,
+  ChevronDown,
+  ChevronRight,
   FileUp,
   Filter,
   History,
@@ -88,7 +88,8 @@ export default function UnsortedTransactions() {
   const [payerFilter, setPayerFilter] = useState('all');
   const [showUpload, setShowUpload] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
-  const [expandedBatches, setExpandedBatches] = useState(new Set()); // Track which batches show all txns
+  const [batchFilters, setBatchFilters] = useState({}); // Track filter per batch: 'all' | 'reviewed' | 'needs-review'
+  const [collapsedBatches, setCollapsedBatches] = useState(new Set()); // Track which batches are collapsed
   const [allBatchTransactions, setAllBatchTransactions] = useState({}); // Cache of all txns per batch
 
   // Load transactions grouped by import batch
@@ -118,13 +119,13 @@ export default function UnsortedTransactions() {
         .order('created_at', { ascending: false });
 
       if (!showHistory) {
-        batchQuery = batchQuery.in('status', ['staged', 'processing']);
+        batchQuery = batchQuery.eq('status', 'staged');
       }
 
       const { data: batchData, error: batchErr } = await batchQuery;
       if (batchErr) throw batchErr;
 
-      // Get transactions - filter by status unless showing history
+      // Get transactions - filter by category unless showing history
       let txQuery = supabase
         .from('transactions')
         .select('*')
@@ -133,7 +134,8 @@ export default function UnsortedTransactions() {
         .order('txn_date', { ascending: false });
 
       if (!showHistory) {
-        txQuery = txQuery.eq('status', 'pending');
+        // Show only uncategorized transactions (category = 'Unexpected')
+        txQuery = txQuery.eq('category', 'Unexpected');
       }
 
       const { data: txData, error: txErr } = await txQuery;
@@ -337,13 +339,8 @@ export default function UnsortedTransactions() {
     }
 
     try {
-      const { error } = await supabase
-        .from('transactions')
-        .update({ status: 'confirmed' })
-        .in('id', Array.from(selectedIds));
-
-      if (error) throw error;
-
+      // Transactions are "confirmed" when they have a category set (not 'Unexpected')
+      // No database update needed - just clear selection and refresh
       const count = selectedIds.size;
       setSelectedIds(new Set());
       await loadBatches();
@@ -364,46 +361,64 @@ export default function UnsortedTransactions() {
     }
   }
 
-  // Toggle showing all transactions for a batch
-  async function toggleBatchExpanded(batchId) {
-    const newExpanded = new Set(expandedBatches);
+  // Set filter for a batch: 'all' | 'reviewed' | 'needs-review'
+  async function setBatchFilter(batchId, filter) {
+    // Fetch all transactions if switching away from needs-review and not cached
+    if (
+      filter !== 'needs-review' &&
+      !allBatchTransactions[batchId] &&
+      !isDemoMode
+    ) {
+      try {
+        const { data, error } = await supabase
+          .from('transactions')
+          .select('*')
+          .eq('import_batch_id', batchId)
+          .is('deleted_at', null)
+          .order('txn_date', { ascending: false });
 
-    if (newExpanded.has(batchId)) {
-      // Collapse - remove from expanded
-      newExpanded.delete(batchId);
-    } else {
-      // Expand - fetch all transactions for this batch if not cached
-      if (!allBatchTransactions[batchId] && !isDemoMode) {
-        try {
-          const { data, error } = await supabase
-            .from('transactions')
-            .select('*')
-            .eq('import_batch_id', batchId)
-            .is('deleted_at', null)
-            .order('txn_date', { ascending: false });
-
-          if (!error && data) {
-            setAllBatchTransactions((prev) => ({
-              ...prev,
-              [batchId]: data,
-            }));
-          }
-        } catch (e) {
-          console.error('Error loading batch transactions:', e);
+        if (!error && data) {
+          setAllBatchTransactions((prev) => ({
+            ...prev,
+            [batchId]: data,
+          }));
         }
+      } catch (_e) {
+        // Error loading batch transactions - silently fail
       }
-      newExpanded.add(batchId);
     }
 
-    setExpandedBatches(newExpanded);
+    setBatchFilters((prev) => ({
+      ...prev,
+      [batchId]: filter,
+    }));
   }
 
-  // Get transactions to display for a batch (pending only or all)
-  function getBatchDisplayTransactions(batch) {
-    if (expandedBatches.has(batch.id) && allBatchTransactions[batch.id]) {
-      return allBatchTransactions[batch.id];
+  // Toggle collapsing the entire batch section
+  function toggleBatchCollapsed(batchId) {
+    const newCollapsed = new Set(collapsedBatches);
+    if (newCollapsed.has(batchId)) {
+      newCollapsed.delete(batchId);
+    } else {
+      newCollapsed.add(batchId);
     }
-    return batch.transactions;
+    setCollapsedBatches(newCollapsed);
+  }
+
+  // Get transactions to display for a batch based on filter
+  function getBatchDisplayTransactions(batch) {
+    const filter = batchFilters[batch.id] || 'needs-review';
+    const allTxns = allBatchTransactions[batch.id] || batch.transactions;
+
+    switch (filter) {
+      case 'all':
+        return allTxns;
+      case 'reviewed':
+        return allTxns.filter((tx) => tx.category !== 'Unexpected');
+      case 'needs-review':
+      default:
+        return batch.transactions; // Already filtered to Unexpected in query
+    }
   }
 
   // Total pending count
@@ -541,15 +556,31 @@ export default function UnsortedTransactions() {
           return null;
 
         const displayTransactions = getBatchDisplayTransactions(batch);
-        const isExpanded = expandedBatches.has(batch.id);
+        const currentFilter = batchFilters[batch.id] || 'needs-review';
+        const isCollapsed = collapsedBatches.has(batch.id);
         const pendingCount = batch.transactions.length;
-        const totalCount =
-          allBatchTransactions[batch.id]?.length || pendingCount;
+        const allTxns = allBatchTransactions[batch.id];
+        const totalCount = allTxns?.length || pendingCount;
+        const _reviewedCount = allTxns
+          ? allTxns.filter((tx) => tx.category !== 'Unexpected').length
+          : totalCount - pendingCount;
 
         return (
           <Card key={batch.id}>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
+                {/* Collapse/Expand toggle */}
+                <button
+                  onClick={() => toggleBatchCollapsed(batch.id)}
+                  className="p-1 hover:bg-slate/10 rounded"
+                  title={isCollapsed ? 'Expand section' : 'Collapse section'}
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className="w-4 h-4 text-warm-gray" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-warm-gray" />
+                  )}
+                </button>
                 <button
                   onClick={selectAll}
                   className="p-1 hover:bg-slate/10 rounded"
@@ -566,8 +597,7 @@ export default function UnsortedTransactions() {
                     `${batch.source_bank || 'Import'} - ${batch.month || ''}`}
                 </CardTitle>
                 <span className="text-sm text-warm-gray">
-                  ({isExpanded ? `${pendingCount}/${totalCount}` : pendingCount}
-                  )
+                  ({displayTransactions.length})
                 </span>
                 {batch.date_range_start && batch.date_range_end && (
                   <span className="text-xs text-warm-gray">
@@ -575,129 +605,147 @@ export default function UnsortedTransactions() {
                   </span>
                 )}
                 <div className="flex-1" />
-                {/* Show All toggle */}
-                {batch.id !== 'manual' && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs"
-                    onClick={() => toggleBatchExpanded(batch.id)}
-                  >
-                    {isExpanded ? (
-                      <>
-                        <EyeOff className="w-3 h-3 mr-1" />
-                        {t('unsorted.showPending')}
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="w-3 h-3 mr-1" />
-                        {t('unsorted.showAll')}
-                      </>
-                    )}
-                  </Button>
+                {/* Filter buttons: All / Reviewed / Needs Review */}
+                {batch.id !== 'manual' && !isCollapsed && (
+                  <div className="flex rounded-lg border border-slate/20 overflow-hidden">
+                    <button
+                      onClick={() => setBatchFilter(batch.id, 'all')}
+                      className={cn(
+                        'px-3 py-1 text-xs font-medium transition-colors',
+                        currentFilter === 'all'
+                          ? 'bg-slate text-white'
+                          : 'bg-white/50 text-warm-gray hover:bg-white/80'
+                      )}
+                    >
+                      All
+                    </button>
+                    <button
+                      onClick={() => setBatchFilter(batch.id, 'reviewed')}
+                      className={cn(
+                        'px-3 py-1 text-xs font-medium transition-colors border-x border-slate/20',
+                        currentFilter === 'reviewed'
+                          ? 'bg-slate text-white'
+                          : 'bg-white/50 text-warm-gray hover:bg-white/80'
+                      )}
+                    >
+                      Sorted
+                    </button>
+                    <button
+                      onClick={() => setBatchFilter(batch.id, 'needs-review')}
+                      className={cn(
+                        'px-3 py-1 text-xs font-medium transition-colors',
+                        currentFilter === 'needs-review'
+                          ? 'bg-slate text-white'
+                          : 'bg-white/50 text-warm-gray hover:bg-white/80'
+                      )}
+                    >
+                      Unsorted
+                    </button>
+                  </div>
                 )}
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-1">
-                {displayTransactions.map((tx) => {
-                  const isConfirmed = tx.status === 'confirmed';
-                  return (
-                    <div
-                      key={tx.id}
-                      className={cn(
-                        'flex items-center gap-2 p-3 rounded-xl border transition-colors',
-                        isConfirmed
-                          ? 'bg-success/5 border-success/20 opacity-60'
-                          : selectedIds.has(tx.id)
-                            ? 'bg-accent/10 border-accent/30'
-                            : 'bg-white/40 border-white/60 hover:bg-white/60'
-                      )}
-                    >
-                      {/* Checkbox - disabled for confirmed */}
-                      <button
-                        onClick={() => !isConfirmed && toggleSelect(tx.id)}
-                        className={cn(
-                          'p-1 rounded',
-                          isConfirmed ? 'cursor-default' : 'hover:bg-slate/10'
-                        )}
-                        disabled={isConfirmed}
-                      >
-                        {isConfirmed ? (
-                          <Check className="w-4 h-4 text-success" />
-                        ) : selectedIds.has(tx.id) ? (
-                          <CheckSquare className="w-4 h-4 text-accent" />
-                        ) : (
-                          <Square className="w-4 h-4 text-warm-gray" />
-                        )}
-                      </button>
-
-                      {/* Date */}
-                      <div className="w-20 text-xs text-warm-gray">
-                        {tx.txn_date}
-                      </div>
-
-                      {/* Description */}
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-charcoal text-sm truncate">
-                          {tx.description || t('transaction.noDescription')}
-                        </div>
-                      </div>
-
-                      {/* Amount */}
+            {!isCollapsed && (
+              <CardContent>
+                <div className="space-y-1">
+                  {displayTransactions.map((tx) => {
+                    // Transaction is "sorted" if it's been categorized (not 'Unexpected')
+                    const isSorted = tx.category !== 'Unexpected';
+                    return (
                       <div
+                        key={tx.id}
                         className={cn(
-                          'font-bold text-sm whitespace-nowrap',
-                          tx.amount < 0 ? 'text-error' : 'text-success'
+                          'flex items-center gap-2 p-3 rounded-xl border transition-colors',
+                          isSorted
+                            ? 'bg-success/10 border-success/30 hover:bg-success/15'
+                            : selectedIds.has(tx.id)
+                              ? 'bg-accent/10 border-accent/30'
+                              : 'bg-white/40 border-white/60 hover:bg-white/60'
                         )}
                       >
-                        {tx.currency} {Math.abs(tx.amount).toFixed(2)}
+                        {/* Checkbox */}
+                        <button
+                          onClick={() => toggleSelect(tx.id)}
+                          className="p-1 rounded hover:bg-slate/10"
+                        >
+                          {isSorted ? (
+                            selectedIds.has(tx.id) ? (
+                              <CheckSquare className="w-4 h-4 text-success" />
+                            ) : (
+                              <Check className="w-4 h-4 text-success" />
+                            )
+                          ) : selectedIds.has(tx.id) ? (
+                            <CheckSquare className="w-4 h-4 text-accent" />
+                          ) : (
+                            <Square className="w-4 h-4 text-warm-gray" />
+                          )}
+                        </button>
+
+                        {/* Date */}
+                        <div className="w-20 text-xs text-warm-gray">
+                          {tx.txn_date}
+                        </div>
+
+                        {/* Description */}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-charcoal text-sm truncate">
+                            {tx.description || t('transaction.noDescription')}
+                          </div>
+                        </div>
+
+                        {/* Amount */}
+                        <div
+                          className={cn(
+                            'font-bold text-sm whitespace-nowrap',
+                            tx.amount < 0 ? 'text-error' : 'text-success'
+                          )}
+                        >
+                          {tx.currency} {Math.abs(tx.amount).toFixed(2)}
+                        </div>
+
+                        {/* Category dropdown */}
+                        <Select
+                          value={tx.category}
+                          onValueChange={(v) =>
+                            updateTransaction(tx.id, 'category', v)
+                          }
+                        >
+                          <SelectTrigger className="w-32 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {ALL_CATEGORIES.map((c) => (
+                              <SelectItem key={c} value={c}>
+                                {c}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+
+                        {/* Payer dropdown */}
+                        <Select
+                          value={tx.payer}
+                          onValueChange={(v) =>
+                            updateTransaction(tx.id, 'payer', v)
+                          }
+                        >
+                          <SelectTrigger className="w-28 h-8 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {payerOptions.map((p) => (
+                              <SelectItem key={p} value={p}>
+                                {p === 'Together' ? t('payers.together') : p}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-
-                      {/* Category dropdown */}
-                      <Select
-                        value={tx.category}
-                        onValueChange={(v) =>
-                          updateTransaction(tx.id, 'category', v)
-                        }
-                        disabled={isConfirmed}
-                      >
-                        <SelectTrigger className="w-32 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {ALL_CATEGORIES.map((c) => (
-                            <SelectItem key={c} value={c}>
-                              {c}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      {/* Payer dropdown */}
-                      <Select
-                        value={tx.payer}
-                        onValueChange={(v) =>
-                          updateTransaction(tx.id, 'payer', v)
-                        }
-                        disabled={isConfirmed}
-                      >
-                        <SelectTrigger className="w-28 h-8 text-xs">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {payerOptions.map((p) => (
-                            <SelectItem key={p} value={p}>
-                              {p === 'Together' ? t('payers.together') : p}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  );
-                })}
-              </div>
-            </CardContent>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            )}
           </Card>
         );
       })}

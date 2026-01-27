@@ -13,6 +13,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { useMounted } from '@/hooks/useMounted';
 import { CURRENCIES } from '@/lib/categories';
+import { getPreviousPeriodRange } from '@/lib/comparisonUtils';
 import { cn } from '@/lib/utils';
 
 const RANGE_PRESETS = ['day', 'week', 'month', 'quarter', 'year', 'custom'];
@@ -75,6 +76,20 @@ export default function DashboardPage() {
     () => getDateRange(rangePreset, customStart, customEnd),
     [rangePreset, customStart, customEnd]
   );
+
+  // Calculate previous period dates for comparison
+  const previousPeriod = useMemo(() => {
+    return getPreviousPeriodRange(
+      rangePreset,
+      startDate,
+      endDate,
+      customStart,
+      customEnd
+    );
+  }, [rangePreset, startDate, endDate, customStart, customEnd]);
+
+  const previousStartDate = previousPeriod?.previousStartDate || null;
+  const previousEndDate = previousPeriod?.previousEndDate || null;
 
   // Trigger refresh when transactions are updated
   const handleTransactionUpdate = () => {
@@ -198,6 +213,8 @@ export default function DashboardPage() {
         <DashboardSummary
           startDate={startDate}
           endDate={endDate}
+          previousStartDate={previousStartDate}
+          previousEndDate={previousEndDate}
           currency={currency}
           refreshKey={refreshKey}
         />

@@ -178,16 +178,19 @@ This ensures:
 
 ### Authentication
 
-**Magic Link (OTP) Flow:**
+**OAuth Flow (Google + GitHub):**
 
-1. User enters email
-2. Supabase sends magic link
-3. User clicks link → session created
-4. Session stored in browser
+1. User clicks "Sign in with Google" or "Sign in with GitHub"
+2. Redirected to provider's OAuth consent screen
+3. Provider redirects back to `/auth/callback` with authorization code
+4. Supabase exchanges code for session (PKCE flow)
+5. Session stored in browser
 
-**Why magic link:** No passwords to leak, email verification built-in, simpler attack surface.
+**Why OAuth:** No passwords to leak, leverages trusted identity providers, familiar UX.
 
 **Sessions:** Expire after 1 week, refresh tokens allow seamless re-auth.
+
+**Demo Site Allowlist:** When OAuth is used on demo site (`chiribudgetdemo.vercel.app`), only allowlisted emails can access real data. Non-allowlisted users are redirected to the portfolio site.
 
 ### Household Isolation
 
@@ -217,31 +220,76 @@ If service role key is compromised: See OPS_PRIVATE.md for rotation procedure.
 
 ---
 
-## 5. Deployment Checklist
+## 5. Environment Architecture
 
-### Before Deploying to Vercel
+ChiriBudget uses three separate environments:
 
-- [ ] Fresh Supabase project (not reused)
-- [ ] `schema.sql` run to set up RLS
-- [ ] `.env.local` is in `.gitignore`
-- [ ] Secrets never committed to git
-- [ ] Environment variables set in Vercel
+| Environment    | URL                          | Supabase Project         | Purpose             |
+| -------------- | ---------------------------- | ------------------------ | ------------------- |
+| **Production** | `chiribudget.vercel.app`     | `chiribudget-prod`       | Real user data      |
+| **Demo**       | `chiribudgetdemo.vercel.app` | None (in-memory)         | Portfolio showcase  |
+| **Local Dev**  | `localhost:3000`             | `chiribudget` (original) | Development/testing |
 
-### Supabase Auth URLs
+### Key Differences
 
-**Development:**
+- **Production**: Fresh database, OAuth enabled, real household data
+- **Demo**: No database connection, uses in-memory demoStore, anyone can try it
+- **Local Dev**: Uses original Supabase project with test data, for development
 
-- Site URL: `http://localhost:3000`
-- Redirect URLs: `http://localhost:3000/**`
+### Hostname Detection
 
-**Production:**
+The app detects which environment it's running in via `src/lib/siteConfig.js`:
 
-- Site URL: `https://<your-app>.vercel.app`
-- Redirect URLs: `https://<your-app>.vercel.app/**`
+- `chiribudget.vercel.app` → production
+- `chiribudgetdemo.vercel.app` → demo
+- `localhost` → local
+
+This determines which OAuth buttons and navigation options appear on the login screen.
 
 ---
 
-## 6. Threat Model
+## 6. Deployment Checklist
+
+### Before Deploying to Vercel
+
+- [ ] Fresh Supabase project for production (separate from dev)
+- [ ] `supabase/setup_fresh_db.sql` run in SQL Editor
+- [ ] `.env.local` is in `.gitignore`
+- [ ] Secrets never committed to git
+- [ ] Environment variables set in Vercel (per environment)
+
+### Supabase Auth URLs (Production Database)
+
+Configure in Supabase Dashboard → Authentication → URL Configuration:
+
+**Site URL:**
+
+- `https://chiribudget.vercel.app`
+
+**Redirect URLs:**
+
+- `https://chiribudget.vercel.app/auth/callback`
+
+### Supabase Auth URLs (Local Dev Database)
+
+**Site URL:**
+
+- `http://localhost:3000`
+
+**Redirect URLs:**
+
+- `http://localhost:3000/auth/callback`
+
+### OAuth Provider Setup
+
+Both Google and GitHub OAuth must be configured in Supabase Dashboard → Authentication → Providers:
+
+1. **Google OAuth**: Create credentials in Google Cloud Console, add Client ID and Secret
+2. **GitHub OAuth**: Create OAuth App in GitHub Developer Settings, add Client ID and Secret
+
+---
+
+## 7. Threat Model
 
 ### Protected Against
 
@@ -267,7 +315,7 @@ If service role key is compromised: See OPS_PRIVATE.md for rotation procedure.
 
 ---
 
-## 7. Incident Response
+## 8. Incident Response
 
 ### If Keys are Leaked
 
@@ -288,7 +336,7 @@ General process:
 
 ---
 
-## 8. Data Privacy
+## 9. Data Privacy
 
 ### What We Store
 
@@ -306,7 +354,7 @@ General process:
 
 ---
 
-## 9. Resource Limits (Supabase Free Tier)
+## 10. Resource Limits (Supabase Free Tier)
 
 | Resource     | Limit      |
 | ------------ | ---------- |
@@ -319,7 +367,7 @@ Sufficient for two-person household budget app.
 
 ---
 
-## 10. Emergency Contacts
+## 11. Emergency Contacts
 
 - **Supabase Support:** Dashboard > Help > Contact Support
 - **Supabase Status:** [status.supabase.com](https://status.supabase.com)

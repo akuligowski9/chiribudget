@@ -4,11 +4,17 @@ import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { TrendingUp, TrendingDown, Wallet, PieChart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import CategoryComparisonBadge from '@/components/CategoryComparisonBadge';
+import PeriodComparisonSection from '@/components/PeriodComparisonSection';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
 import { calculateCategoryStatus } from '@/lib/categoryLimits';
+import {
+  calculateCategoryComparison,
+  formatPreviousPeriodLabel,
+} from '@/lib/comparisonUtils';
 import { convertAmount } from '@/lib/currency';
 import { getDemoCategoryLimits, getDemoTransactions } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
@@ -57,6 +63,8 @@ function sum(list) {
 export default function DashboardSummary({
   startDate,
   endDate,
+  previousStartDate,
+  previousEndDate,
   currency, // Display currency (for conversion)
   refreshKey,
 }) {
@@ -69,6 +77,7 @@ export default function DashboardSummary({
   const [demoMode, setDemoMode] = useState(false);
   const [householdId, setHouseholdId] = useState(null);
   const [rawRows, setRawRows] = useState([]);
+  const [previousRawRows, setPreviousRawRows] = useState([]);
 
   useEffect(() => {
     setDemoMode(getDemoMode());
@@ -110,6 +119,43 @@ export default function DashboardSummary({
       if (!error) setRawRows(tx || []);
     })();
   }, [startDate, endDate, refreshKey]);
+
+  // Fetch previous period data for comparison
+  useEffect(() => {
+    if (!previousStartDate || !previousEndDate) {
+      setPreviousRawRows([]);
+      return;
+    }
+
+    (async () => {
+      if (getDemoMode()) {
+        // Get ALL demo transactions (both currencies) for previous date range
+        const month = previousStartDate.slice(0, 7);
+        const usdTx = getDemoTransactions({ month, currency: 'USD' });
+        const penTx = getDemoTransactions({ month, currency: 'PEN' });
+        const allTx = [...usdTx, ...penTx];
+        const filtered = allTx.filter(
+          (t) =>
+            t.txn_date >= previousStartDate && t.txn_date <= previousEndDate
+        );
+        setPreviousRawRows(filtered);
+        return;
+      }
+
+      if (!householdId) return;
+
+      // Fetch ALL transactions (both currencies) for previous date range
+      const { data: tx, error } = await supabase
+        .from('transactions')
+        .select('txn_date,amount,category,payer,currency,is_flagged')
+        .eq('household_id', householdId)
+        .gte('txn_date', previousStartDate)
+        .lte('txn_date', previousEndDate)
+        .is('deleted_at', null);
+
+      if (!error) setPreviousRawRows(tx || []);
+    })();
+  }, [previousStartDate, previousEndDate, householdId, refreshKey]);
 
   // Convert all amounts to display currency
   const rows = useMemo(() => {
@@ -169,6 +215,44 @@ export default function DashboardSummary({
       conversionRate
     );
   }, [rows, categoryLimits, currency, conversionRate]);
+
+  // Process previous period data for comparison
+  const previousRows = useMemo(() => {
+    return previousRawRows.map((r) => ({
+      ...r,
+      displayAmount: convertAmount(
+        Number(r.amount),
+        r.currency,
+        currency,
+        conversionRate
+      ),
+    }));
+  }, [previousRawRows, currency, conversionRate]);
+
+  const previousIncomeByCat = useMemo(() => {
+    const m = Object.fromEntries(INCOME_CATEGORIES.map((c) => [c, 0]));
+    for (const r of previousRows.filter((r) => r.displayAmount > 0))
+      m[r.category] = (m[r.category] || 0) + r.displayAmount;
+    return m;
+  }, [previousRows]);
+
+  const previousExpenseByCat = useMemo(() => {
+    const m = Object.fromEntries(EXPENSE_CATEGORIES.map((c) => [c, 0]));
+    for (const r of previousRows.filter((r) => r.displayAmount < 0))
+      m[r.category] = (m[r.category] || 0) + Math.abs(r.displayAmount);
+    return m;
+  }, [previousRows]);
+
+  // Calculate comparison data (used by CategoryComparisonBadge components)
+  const _expenseComparison = useMemo(
+    () => calculateCategoryComparison(expenseByCat, previousExpenseByCat),
+    [expenseByCat, previousExpenseByCat]
+  );
+
+  const _incomeComparison = useMemo(
+    () => calculateCategoryComparison(incomeByCat, previousIncomeByCat),
+    [incomeByCat, previousIncomeByCat]
+  );
 
   return (
     <>
@@ -267,17 +351,27 @@ export default function DashboardSummary({
                   const pct = totalIncome > 0 ? (val / totalIncome) * 100 : 0;
                   return (
                     <div key={c}>
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-stone">
                           {t(`categories.${CATEGORY_KEYS[c]}`)}
                         </span>
-                        <span className="font-semibold text-success">
-                          {currency}{' '}
-                          {val.toLocaleString('en-US', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-success">
+                            {currency}{' '}
+                            {val.toLocaleString('en-US', {
+                              minimumFractionDigits: 2,
+                              maximumFractionDigits: 2,
+                            })}
+                          </span>
+                          {previousRawRows.length > 0 && (
+                            <CategoryComparisonBadge
+                              current={val}
+                              previous={previousIncomeByCat[c] || 0}
+                              type="income"
+                              currency={currency}
+                            />
+                          )}
+                        </div>
                       </div>
                       <div className="h-1.5 bg-success/10 rounded-full overflow-hidden">
                         <div
@@ -327,45 +421,55 @@ export default function DashboardSummary({
 
                   return (
                     <div key={c}>
-                      <div className="flex justify-between text-sm mb-1">
+                      <div className="flex justify-between items-center text-sm mb-1">
                         <span className="text-stone">
                           {t(`categories.${CATEGORY_KEYS[c]}`)}
                         </span>
-                        <span
-                          className={cn(
-                            'font-semibold',
-                            hasLimit && status.status === 'exceeded'
-                              ? 'text-error'
-                              : hasLimit && status.status === 'approaching'
-                                ? 'text-warning'
-                                : hasLimit
-                                  ? 'text-success'
-                                  : 'text-error'
+                        <div className="flex items-center gap-2">
+                          <span
+                            className={cn(
+                              'font-semibold',
+                              hasLimit && status.status === 'exceeded'
+                                ? 'text-error'
+                                : hasLimit && status.status === 'approaching'
+                                  ? 'text-warning'
+                                  : hasLimit
+                                    ? 'text-success'
+                                    : 'text-error'
+                            )}
+                          >
+                            {hasLimit ? (
+                              <>
+                                {currency}{' '}
+                                {val.toLocaleString('en-US', {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                })}{' '}
+                                /{' '}
+                                {status.limit.toLocaleString('en-US', {
+                                  minimumFractionDigits: 0,
+                                  maximumFractionDigits: 0,
+                                })}
+                              </>
+                            ) : (
+                              <>
+                                {currency}{' '}
+                                {val.toLocaleString('en-US', {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </>
+                            )}
+                          </span>
+                          {previousRawRows.length > 0 && (
+                            <CategoryComparisonBadge
+                              current={val}
+                              previous={previousExpenseByCat[c] || 0}
+                              type="expense"
+                              currency={currency}
+                            />
                           )}
-                        >
-                          {hasLimit ? (
-                            <>
-                              {currency}{' '}
-                              {val.toLocaleString('en-US', {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              })}{' '}
-                              /{' '}
-                              {status.limit.toLocaleString('en-US', {
-                                minimumFractionDigits: 0,
-                                maximumFractionDigits: 0,
-                              })}
-                            </>
-                          ) : (
-                            <>
-                              {currency}{' '}
-                              {val.toLocaleString('en-US', {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </>
-                          )}
-                        </span>
+                        </div>
                       </div>
                       <div
                         className={cn(
@@ -467,6 +571,37 @@ export default function DashboardSummary({
           endDate={endDate}
         />
       </div>
+
+      {/* Period Comparison Section */}
+      {previousRawRows.length > 0 && previousStartDate && previousEndDate && (
+        <div className="mt-4">
+          <PeriodComparisonSection
+            currentData={{
+              incomeByCat,
+              expenseByCat,
+              totalIncome,
+              totalExpenses,
+              net,
+            }}
+            previousData={{
+              incomeByCat: previousIncomeByCat,
+              expenseByCat: previousExpenseByCat,
+              totalIncome: previousRows
+                .filter((r) => r.displayAmount > 0)
+                .reduce((sum, r) => sum + r.displayAmount, 0),
+              totalExpenses: previousRows
+                .filter((r) => r.displayAmount < 0)
+                .reduce((sum, r) => sum + Math.abs(r.displayAmount), 0),
+              net: previousRows.reduce((sum, r) => sum + r.displayAmount, 0),
+            }}
+            previousPeriodLabel={formatPreviousPeriodLabel(
+              previousStartDate,
+              previousEndDate
+            )}
+            currency={currency}
+          />
+        </div>
+      )}
     </>
   );
 }
