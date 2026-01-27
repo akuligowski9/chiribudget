@@ -4,17 +4,13 @@ import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { TrendingUp, TrendingDown, Wallet, PieChart } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import CategoryComparisonBadge from '@/components/CategoryComparisonBadge';
 import PeriodComparisonSection from '@/components/PeriodComparisonSection';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { getDemoMode } from '@/lib/auth';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
 import { calculateCategoryStatus } from '@/lib/categoryLimits';
-import {
-  calculateCategoryComparison,
-  formatPreviousPeriodLabel,
-} from '@/lib/comparisonUtils';
+import { formatPreviousPeriodLabel } from '@/lib/comparisonUtils';
 import { convertAmount } from '@/lib/currency';
 import { getDemoCategoryLimits, getDemoTransactions } from '@/lib/demoStore';
 import { supabase } from '@/lib/supabaseClient';
@@ -258,17 +254,6 @@ export default function DashboardSummary({
     return m;
   }, [previousRows]);
 
-  // Calculate comparison data (used by CategoryComparisonBadge components)
-  const _expenseComparison = useMemo(
-    () => calculateCategoryComparison(expenseByCat, previousExpenseByCat),
-    [expenseByCat, previousExpenseByCat]
-  );
-
-  const _incomeComparison = useMemo(
-    () => calculateCategoryComparison(incomeByCat, previousIncomeByCat),
-    [incomeByCat, previousIncomeByCat]
-  );
-
   return (
     <>
       <Card>
@@ -370,23 +355,13 @@ export default function DashboardSummary({
                         <span className="text-stone">
                           {t(`categories.${CATEGORY_KEYS[c]}`)}
                         </span>
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-success">
-                            {currency}{' '}
-                            {val.toLocaleString('en-US', {
-                              minimumFractionDigits: 2,
-                              maximumFractionDigits: 2,
-                            })}
-                          </span>
-                          {previousRawRows.length > 0 && (
-                            <CategoryComparisonBadge
-                              current={val}
-                              previous={previousIncomeByCat[c] || 0}
-                              type="income"
-                              currency={currency}
-                            />
-                          )}
-                        </div>
+                        <span className="font-semibold text-success">
+                          {currency}{' '}
+                          {val.toLocaleString('en-US', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })}
+                        </span>
                       </div>
                       <div className="h-1.5 bg-success/10 rounded-full overflow-hidden">
                         <div
@@ -476,14 +451,6 @@ export default function DashboardSummary({
                               </>
                             )}
                           </span>
-                          {previousRawRows.length > 0 && (
-                            <CategoryComparisonBadge
-                              current={val}
-                              previous={previousExpenseByCat[c] || 0}
-                              type="expense"
-                              currency={currency}
-                            />
-                          )}
                         </div>
                       </div>
                       <div
