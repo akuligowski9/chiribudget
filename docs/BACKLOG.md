@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** January 22, 2026
+**Last Updated:** January 27, 2026
 
 ---
 
@@ -204,7 +204,98 @@ Next.js App Router has built-in support for generating sitemap.xml and robots.tx
 
 ---
 
+### CB-053: Database Migration Cleanup & Documentation
+
+#### Description
+
+The current database migration setup is confusing and unreliable. Multiple issues exist:
+
+1. **Duplicate version numbers**: Files `001_add_audit_columns.sql`, `001_add_indexes.sql`, and `001_unsorted_transactions.sql` all share version prefix `001`. Similarly for `002_*` and `004_*` files. Supabase's migration tracker uses version as primary key, causing "duplicate key" errors.
+
+2. **Scattered base schema**: The complete schema exists in `setup_fresh_db.sql`, but incremental migrations add columns/indexes that are already in that file. Recently `000_base_schema.sql` was created as a copy, adding more confusion.
+
+3. **Mixed versioning schemes**: Some migrations use simple numbers (`001_`, `002_`), others use timestamps (`20260118_`, `20260119_`).
+
+4. **No clear setup process**: It's unclear whether to run `setup_fresh_db.sql` or the migrations folder for a fresh database. The migrations assume tables already exist but the base schema file isn't in migrations.
+
+**Proposed solution:**
+
+- Consolidate all schema into a single numbered migration: `001_base_schema.sql`
+- Renumber all incremental migrations with unique sequential versions (002, 003, 004, etc.) in chronological order
+- Remove duplicate/redundant migrations that add things already in base schema
+- Add a `README.md` in the migrations folder documenting the setup process
+- Make all migrations idempotent (use `IF NOT EXISTS`, `IF EXISTS`, etc.)
+
+#### Acceptance Criteria
+
+- [ ] Single `001_base_schema.sql` contains full initial schema
+- [ ] All migrations have unique sequential version numbers
+- [ ] No duplicate definitions between base schema and incremental migrations
+- [ ] All migrations are idempotent (safe to re-run)
+- [ ] `supabase/migrations/README.md` documents setup process for local and production
+- [ ] `supabase start` works cleanly on fresh checkout
+- [ ] `supabase db push` works for production
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Medium
+- **Type:** Tech Debt
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+
+---
+
 ## Low
+
+### CB-054: Fix Recharts ResponsiveContainer Warnings
+
+#### Description
+
+During development, recharts' ResponsiveContainer component logs console warnings about receiving -1 width/height dimensions: "The width(-1) and height(-1) of chart should be greater than 0". These warnings appear when ResponsiveContainer tries to measure its parent container before the browser has finished layout calculations.
+
+The warnings are harmless - charts render correctly and the warnings only appear in development mode, not production builds. However, they clutter the console during development and could mask other important warnings. This is a known limitation of the recharts library that many developers encounter.
+
+**Potential Solutions:**
+
+1. Switch to a different charting library (Chart.js, Victory, Recharts alternatives)
+2. Implement a more robust delay mechanism before rendering charts
+3. Use fixed dimensions instead of ResponsiveContainer (loses responsiveness)
+4. Suppress the specific warnings in development
+
+**Current Workarounds Attempted:**
+
+- Added `min-h-[250px]` and `min-h-[120px]` to chart containers
+- Tried `requestAnimationFrame()` delay - didn't work
+- Tried 50ms `setTimeout()` delay - didn't work
+- Added `layoutReady` state with useMounted hook - still seeing warnings
+
+The issue manifests in:
+
+- SpendingCharts.jsx:76 (ExpenseDonutChart PieChart)
+- SpendingCharts.jsx:87 (ExpenseDonutChart second instance)
+- SpendingCharts.jsx:217 (SpendingTrendChart BarChart)
+- SpendingCharts.jsx:238 (SpendingTrendChart second instance)
+
+#### Acceptance Criteria
+
+- [ ] Console warnings eliminated in development mode
+- [ ] Charts still render correctly and responsively
+- [ ] Solution doesn't significantly delay chart rendering
+- [ ] No regressions in chart functionality
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Low
+- **Type:** Tech Debt
+- **Version:** v2
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+- **Notes:** Non-blocking issue - charts work correctly, warnings are development-only
+
+---
 
 ### CB-013: Error Monitoring (Sentry)
 

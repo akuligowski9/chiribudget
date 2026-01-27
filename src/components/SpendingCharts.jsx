@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { PieChart as PieIcon, TrendingUp } from 'lucide-react';
 import {
   PieChart,
@@ -38,6 +38,18 @@ const INCOME_COLORS = [
 
 export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
   const mounted = useMounted();
+  const [layoutReady, setLayoutReady] = useState(false);
+
+  useEffect(() => {
+    if (mounted) {
+      // Use setTimeout to ensure layout is complete
+      const timer = setTimeout(() => {
+        setLayoutReady(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted]);
+
   const data = useMemo(() => {
     return Object.entries(expenseByCat)
       .filter(([_, value]) => value > 0)
@@ -45,7 +57,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
       .sort((a, b) => b.value - a.value);
   }, [expenseByCat]);
 
-  if (!mounted || data.length === 0) {
+  if (!layoutReady || data.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -56,7 +68,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-warm-gray text-center py-8">
-            No expenses in this period
+            {!layoutReady ? 'Loading...' : 'No expenses in this period'}
           </p>
         </CardContent>
       </Card>
@@ -72,7 +84,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
+        <div className="h-[250px] min-h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -132,6 +144,17 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
 
 export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
   const mounted = useMounted();
+  const [layoutReady, setLayoutReady] = useState(false);
+
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => {
+        setLayoutReady(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted]);
+
   const data = useMemo(() => {
     // Group transactions by date
     const byDate = {};
@@ -186,7 +209,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
     return weeks;
   }, [data]);
 
-  if (!mounted || rows.length === 0) {
+  if (!layoutReady || rows.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -197,7 +220,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-warm-gray text-center py-8">
-            No transactions in this period
+            {!layoutReady ? 'Loading...' : 'No transactions in this period'}
           </p>
         </CardContent>
       </Card>
@@ -213,7 +236,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
+        <div className="h-[250px] min-h-[250px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData} barGap={0} barCategoryGap="20%">
               <XAxis
@@ -260,6 +283,17 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
 
 export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
   const mounted = useMounted();
+  const [layoutReady, setLayoutReady] = useState(false);
+
+  useEffect(() => {
+    if (mounted) {
+      const timer = setTimeout(() => {
+        setLayoutReady(true);
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [mounted]);
+
   const data = [
     { name: 'Income', value: totalIncome, fill: '#5a9e6f' },
     { name: 'Expenses', value: totalExpenses, fill: '#d15b4e' },
@@ -267,14 +301,16 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
 
   const net = totalIncome - totalExpenses;
 
-  if (!mounted) {
+  if (!layoutReady) {
     return (
       <Card>
         <CardHeader>
           <CardTitle>Income vs Expenses</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[120px]" />
+          <div className="h-[120px] flex items-center justify-center">
+            <p className="text-sm text-warm-gray">Loading...</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -286,7 +322,7 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
         <CardTitle>Income vs Expenses</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[120px]">
+        <div className="h-[120px] min-h-[120px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" barSize={28}>
               <XAxis type="number" hide />
