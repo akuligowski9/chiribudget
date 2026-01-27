@@ -228,22 +228,24 @@ The current database migration setup is confusing and unreliable. Multiple issue
 
 #### Acceptance Criteria
 
-- [ ] Single `001_base_schema.sql` contains full initial schema
-- [ ] All migrations have unique sequential version numbers
-- [ ] No duplicate definitions between base schema and incremental migrations
-- [ ] All migrations are idempotent (safe to re-run)
-- [ ] `supabase/migrations/README.md` documents setup process for local and production
-- [ ] `supabase start` works cleanly on fresh checkout
-- [ ] `supabase db push` works for production
+- [x] Single `001_base_schema.sql` contains full initial schema
+- [x] All migrations have unique sequential version numbers
+- [x] No duplicate definitions between base schema and incremental migrations
+- [x] All migrations are idempotent (safe to re-run)
+- [x] `supabase/migrations/README.md` documents setup process for local and production
+- [x] `supabase start` works cleanly on fresh checkout
+- [ ] `supabase db push` works for production (untested - requires production access)
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Tech Debt
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
+- **Completed:** 2026-01-27
+- **Notes:** Reduced from 13 migration files to 3. Deleted 10 redundant migrations.
 
 ---
 
@@ -354,28 +356,29 @@ This feature would allow users to define a transaction template with recurrence 
 
 Show spending trends compared to previous months to help identify patterns and inform budget discussions. Users currently see only the current month's totals. Without historical context, it's hard to know if spending is trending up, down, or stable. Questions like "are we spending more on food lately?" require manual comparison.
 
-Implementation adds period-over-period comparison to the dashboard with inline badges next to each category showing percentage change (e.g., "↑12%" or "↓8%"). A collapsible "Period Comparison" section below charts provides detailed comparison table with current vs previous amounts and key insights. Works for all date range presets (day, week, month, quarter, year, custom).
+Implementation adds a collapsible "Period Comparison" section below the dashboard charts. This section provides a detailed comparison table showing current vs previous amounts, percentage changes, and key insights. Works for all date range presets (day, week, month, quarter, year, custom).
 
 **Key Features:**
 
-- Inline badges with type-aware coloring (expenses: ↓=green, ↑=amber/red; income: ↑=green, ↓=amber/red)
 - Collapsible comparison section with full table and insights
+- Type-aware coloring (expenses: ↓=green, ↑=amber/red; income: ↑=green, ↓=amber/red)
 - Automatic previous period calculation for all presets
-- "NEW" badge for categories that didn't exist in previous period
+- "NEW" indicator for categories that didn't exist in previous period
 - Handles edge cases (first month, month boundaries, leap years)
-- Comprehensive test coverage (56 tests)
+- Comprehensive test coverage (69 tests)
 
 #### Acceptance Criteria
 
-- [x] Dashboard shows comparison to previous period for each category
+- [x] Dashboard shows collapsible comparison section for previous period
 - [x] Percentage change displayed (increase/decrease)
-- [x] Visual indicator for significant changes (badges with arrows)
+- [x] Visual indicators for trends (type-aware coloring)
 - [x] Works for all date range presets (day, week, month, quarter, year, custom)
 - [x] Handles edge cases (no previous data, new categories, month boundaries)
 - [x] Mobile responsive
 - [x] Translations in English and Spanish
 - [x] Unit tests for all utility functions
-- [x] Component tests for badge and comparison section
+- [x] Component tests for comparison section
+- [x] Integration tests for period calculations
 
 #### Metadata
 
@@ -389,10 +392,11 @@ Implementation adds period-over-period comparison to the dashboard with inline b
 
 **Implementation Details:**
 
-- New files: `comparisonUtils.js`, `CategoryComparisonBadge.jsx`, `PeriodComparisonSection.jsx`
+- New files: `comparisonUtils.js`, `PeriodComparisonSection.jsx`
 - Modified: `dashboard/page.js`, `DashboardSummary.jsx`, translation files
 - Dependencies: Added `date-fns` for robust date calculations
-- Tests: 56 passing tests (38 utility tests, 18 component tests)
+- Tests: 69 passing tests (38 utility tests, 18 component tests, 13 integration tests)
+- Note: Initial implementation included inline CategoryComparisonBadge components, but these were removed based on user feedback (too noisy). The collapsible PeriodComparisonSection provides the same data in a cleaner format.
 
 ---
 
