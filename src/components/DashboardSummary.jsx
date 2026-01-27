@@ -138,6 +138,21 @@ export default function DashboardSummary({
           (t) =>
             t.txn_date >= previousStartDate && t.txn_date <= previousEndDate
         );
+        console.log(
+          '[COMPARISON DEBUG] Previous period:',
+          previousStartDate,
+          'to',
+          previousEndDate
+        );
+        console.log('[COMPARISON DEBUG] All demo transactions:', allTx.length);
+        console.log(
+          '[COMPARISON DEBUG] Filtered transactions:',
+          filtered.length
+        );
+        console.log(
+          '[COMPARISON DEBUG] Sample dates:',
+          filtered.slice(0, 3).map((t) => t.txn_date)
+        );
         setPreviousRawRows(filtered);
         return;
       }
