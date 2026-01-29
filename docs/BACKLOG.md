@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** January 27, 2026
+**Last Updated:** January 29, 2026
 
 ---
 
@@ -26,7 +26,7 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Jan 27, 2026** — Completed CB-053 (migration cleanup) and CB-035 (recurring transactions). Build passes. Ready for manual testing. Next: verify OAuth in all environments, then test recurring transactions end-to-end.
+**Session: Jan 29, 2026** — Added testing infrastructure: integration tests with local Supabase (40 tests), unit tests for recurringUtils (53 tests). Fixed DashboardSummary test isolation. Closed GitHub issues #1, #2, #3. Removed CB-027 (TypeScript migration) from backlog. Next: manual testing of recurring transactions and OAuth.
 
 ---
 
