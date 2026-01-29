@@ -7,6 +7,7 @@ import { useTranslations } from 'next-intl';
 import PeriodComparisonSection from '@/components/PeriodComparisonSection';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
+import { useRecurringTransactions } from '@/hooks/useRecurringTransactions';
 import { getDemoMode } from '@/lib/auth';
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/lib/categories';
 import { calculateCategoryStatus } from '@/lib/categoryLimits';
@@ -74,10 +75,14 @@ export default function DashboardSummary({
   const [householdId, setHouseholdId] = useState(null);
   const [rawRows, setRawRows] = useState([]);
   const [previousRawRows, setPreviousRawRows] = useState([]);
+  const { generateForDateRange } = useRecurringTransactions();
 
   useEffect(() => {
     setDemoMode(getDemoMode());
     (async () => {
+      // Generate recurring transactions for this date range first
+      await generateForDateRange(startDate, endDate);
+
       if (getDemoMode()) {
         // Get ALL demo transactions (both currencies) for date range
         const month = startDate.slice(0, 7);
@@ -114,7 +119,7 @@ export default function DashboardSummary({
 
       if (!error) setRawRows(tx || []);
     })();
-  }, [startDate, endDate, refreshKey]);
+  }, [startDate, endDate, refreshKey, generateForDateRange]);
 
   // Fetch previous period data for comparison
   useEffect(() => {

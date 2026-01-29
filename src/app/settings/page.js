@@ -12,6 +12,7 @@ import HouseholdMembers from '@/components/HouseholdMembers';
 import LanguageSelector from '@/components/LanguageSelector';
 import LoginScreen from '@/components/LoginScreen';
 import ProfileSettings from '@/components/ProfileSettings';
+import RecurringTransactionsSettings from '@/components/RecurringTransactionsSettings';
 import TrashView from '@/components/TrashView';
 import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import { useAuth } from '@/contexts/AuthContext';
@@ -104,6 +105,7 @@ export default function SettingsPage() {
             <ConversionRateSettings />
             <BudgetSettings />
             <CategoryLimitsSettings />
+            <RecurringTransactionsSettings />
           </>
         )}
 

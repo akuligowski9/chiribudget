@@ -135,7 +135,7 @@ export default function TransactionList({
     let query = supabase
       .from('transactions')
       .select(
-        'id,txn_date,description,amount,currency,category,payer,is_flagged,created_by,updated_at,updated_by',
+        'id,txn_date,description,amount,currency,category,payer,is_flagged,created_by,updated_at,updated_by,source',
         { count: 'exact' }
       )
       .eq('household_id', p.household_id)

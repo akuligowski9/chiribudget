@@ -1,0 +1,139 @@
+{
+  "description": "Synthetic test data for integration tests",
+  "households": [
+    {
+      "id": "11111111-1111-1111-1111-111111111111",
+      "join_code": "TEST1234",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "profiles": [
+    {
+      "user_id": "22222222-2222-2222-2222-222222222222",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "display_name": "Test User",
+      "default_currency": "USD",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "user_id": "33333333-3333-3333-3333-333333333333",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "display_name": "Test Partner",
+      "default_currency": "USD",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "budget_config": [
+    {
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "usd_threshold": 500,
+      "fx_usd_to_pen": 3.25,
+      "category_limits": {},
+      "created_at": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "55555555-5555-5555-5555-555555555551",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "txn_date": "2026-01-15",
+      "currency": "USD",
+      "amount": -150.0,
+      "category": "Food",
+      "payer": "Test User",
+      "description": "Groceries",
+      "is_flagged": false,
+      "source": "manual",
+      "fingerprint": "test-txn-groceries-001",
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-15T12:00:00.000Z"
+    },
+    {
+      "id": "55555555-5555-5555-5555-555555555552",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "txn_date": "2026-01-01",
+      "currency": "USD",
+      "amount": -1200.0,
+      "category": "Fixed Expenses",
+      "payer": "Together",
+      "description": "Rent",
+      "is_flagged": false,
+      "source": "recurring",
+      "fingerprint": "recurring_66666666-6666-6666-6666-666666666661_2026-01-01",
+      "recurring_fingerprint": "recurring_66666666-6666-6666-6666-666666666661_2026-01-01",
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-01T12:00:00.000Z"
+    },
+    {
+      "id": "55555555-5555-5555-5555-555555555553",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "txn_date": "2026-01-10",
+      "currency": "USD",
+      "amount": 3000.0,
+      "category": "Salary",
+      "payer": "Test User",
+      "description": "Paycheck",
+      "is_flagged": false,
+      "source": "manual",
+      "fingerprint": "test-txn-salary-001",
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-10T12:00:00.000Z"
+    }
+  ],
+  "recurring_transactions": [
+    {
+      "id": "66666666-6666-6666-6666-666666666661",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "amount": -1200.0,
+      "currency": "USD",
+      "category": "Fixed Expenses",
+      "payer": "Together",
+      "description": "Monthly Rent",
+      "frequency": "monthly",
+      "start_date": "2026-01-01",
+      "end_date": null,
+      "day_of_month": 1,
+      "day_of_week": null,
+      "is_active": true,
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "66666666-6666-6666-6666-666666666662",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "amount": -15.99,
+      "currency": "USD",
+      "category": "Fixed Expenses",
+      "payer": "Test User",
+      "description": "Netflix",
+      "frequency": "monthly",
+      "start_date": "2026-01-15",
+      "end_date": null,
+      "day_of_month": 15,
+      "day_of_week": null,
+      "is_active": true,
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "66666666-6666-6666-6666-666666666663",
+      "household_id": "11111111-1111-1111-1111-111111111111",
+      "amount": 3000.0,
+      "currency": "USD",
+      "category": "Salary",
+      "payer": "Test User",
+      "description": "Paycheck",
+      "frequency": "biweekly",
+      "start_date": "2026-01-03",
+      "end_date": null,
+      "day_of_month": null,
+      "day_of_week": 5,
+      "is_active": true,
+      "created_by": "22222222-2222-2222-2222-222222222222",
+      "created_at": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "recurring_exceptions": [],
+  "month_status": [],
+  "import_batches": []
+}

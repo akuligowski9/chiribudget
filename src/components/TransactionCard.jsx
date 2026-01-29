@@ -1,6 +1,13 @@
 'use client';
 
-import { TrendingUp, TrendingDown, Flag, Trash2, CloudOff } from 'lucide-react';
+import {
+  TrendingUp,
+  TrendingDown,
+  Flag,
+  Trash2,
+  CloudOff,
+  Repeat,
+} from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Input } from '@/components/ui/input';
 import {
@@ -110,6 +117,12 @@ export default function TransactionCard({
                   <span className="ml-1.5 inline-flex items-center gap-1 text-warning">
                     <CloudOff className="w-3 h-3" aria-hidden="true" />
                     {t('common.pendingSync') || 'Pending sync'}
+                  </span>
+                )}
+                {r.source === 'recurring' && (
+                  <span className="ml-1.5 inline-flex items-center gap-1 text-slate">
+                    <Repeat className="w-3 h-3" aria-hidden="true" />
+                    {t('recurring.recurringSource')}
                   </span>
                 )}
                 {!isDemoMode && r.created_by && !r._syncStatus && (

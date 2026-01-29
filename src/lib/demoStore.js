@@ -6,6 +6,91 @@ function getTodayDate() {
   return new Date().toISOString().split('T')[0];
 }
 
+// Get first day of current month
+function getFirstOfMonth() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+}
+
+// Sample recurring transactions for demo
+function getInitialRecurring() {
+  const firstOfMonth = getFirstOfMonth();
+  return [
+    {
+      id: 'demo_recurring_1',
+      household_id: 'demo_household',
+      amount: -1500,
+      currency: 'USD',
+      category: 'Rent/Mortgages',
+      payer: 'Together',
+      description: 'Monthly Rent',
+      frequency: 'monthly',
+      start_date: '2025-01-01',
+      end_date: null,
+      day_of_month: 1,
+      day_of_week: null,
+      is_active: true,
+      created_by: 'demo_user',
+      created_at: '2025-01-01T00:00:00Z',
+      updated_at: '2025-01-01T00:00:00Z',
+    },
+    {
+      id: 'demo_recurring_2',
+      household_id: 'demo_household',
+      amount: -150,
+      currency: 'USD',
+      category: 'Fixed Expenses',
+      payer: 'Partner 1',
+      description: 'Gym Membership',
+      frequency: 'monthly',
+      start_date: '2025-01-15',
+      end_date: null,
+      day_of_month: 15,
+      day_of_week: null,
+      is_active: true,
+      created_by: 'demo_user',
+      created_at: '2025-01-15T00:00:00Z',
+      updated_at: '2025-01-15T00:00:00Z',
+    },
+    {
+      id: 'demo_recurring_3',
+      household_id: 'demo_household',
+      amount: -100,
+      currency: 'USD',
+      category: 'Food',
+      payer: 'Together',
+      description: 'Weekly Groceries',
+      frequency: 'weekly',
+      start_date: firstOfMonth,
+      end_date: null,
+      day_of_month: null,
+      day_of_week: 0, // Sunday
+      is_active: true,
+      created_by: 'demo_user',
+      created_at: firstOfMonth + 'T00:00:00Z',
+      updated_at: firstOfMonth + 'T00:00:00Z',
+    },
+    {
+      id: 'demo_recurring_4',
+      household_id: 'demo_household',
+      amount: 5000,
+      currency: 'USD',
+      category: 'Salary',
+      payer: 'Partner 1',
+      description: 'Paycheck',
+      frequency: 'biweekly',
+      start_date: '2025-01-10',
+      end_date: null,
+      day_of_month: null,
+      day_of_week: 5, // Friday
+      is_active: true,
+      created_by: 'demo_user',
+      created_at: '2025-01-10T00:00:00Z',
+      updated_at: '2025-01-10T00:00:00Z',
+    },
+  ];
+}
+
 // Sample transactions for "today" so demo users see activity immediately
 function getTodayTransactions() {
   const today = getTodayDate();
@@ -50,6 +135,148 @@ let demoThresholds = {
   fxRate: FX_USD_TO_PEN,
 };
 let demoCategoryLimits = {};
+let demoRecurring = [...getInitialRecurring()];
+let demoExceptions = [];
+
+// =====================
+// Recurring Transactions
+// =====================
+
+// Get active recurring transactions
+export function getDemoRecurring() {
+  return demoRecurring.filter((r) => r.is_active);
+}
+
+// Get all recurring transactions (including inactive)
+export function getAllDemoRecurring() {
+  return [...demoRecurring];
+}
+
+// Get a recurring transaction by ID
+export function getDemoRecurringById(id) {
+  return demoRecurring.find((r) => r.id === id) || null;
+}
+
+// Add a new recurring transaction
+export function addDemoRecurring(recurring) {
+  const id = `demo_recurring_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const now = new Date().toISOString();
+  const newRecurring = {
+    ...recurring,
+    id,
+    household_id: 'demo_household',
+    is_active: true,
+    created_by: 'demo_user',
+    created_at: now,
+    updated_at: now,
+  };
+  demoRecurring = [newRecurring, ...demoRecurring];
+  return id;
+}
+
+// Update a recurring transaction
+export function updateDemoRecurring(id, updates) {
+  demoRecurring = demoRecurring.map((r) =>
+    r.id === id ? { ...r, ...updates, updated_at: new Date().toISOString() } : r
+  );
+}
+
+// Soft delete (deactivate) a recurring transaction
+export function deleteDemoRecurring(id) {
+  demoRecurring = demoRecurring.map((r) =>
+    r.id === id
+      ? { ...r, is_active: false, updated_at: new Date().toISOString() }
+      : r
+  );
+}
+
+// Hard delete a recurring transaction
+export function hardDeleteDemoRecurring(id) {
+  demoRecurring = demoRecurring.filter((r) => r.id !== id);
+  // Also remove associated exceptions
+  demoExceptions = demoExceptions.filter((e) => e.recurring_id !== id);
+}
+
+// =====================
+// Recurring Exceptions
+// =====================
+
+// Get exceptions for a recurring transaction
+export function getDemoExceptions(recurringId) {
+  return demoExceptions.filter((e) => e.recurring_id === recurringId);
+}
+
+// Get all exceptions
+export function getAllDemoExceptions() {
+  return [...demoExceptions];
+}
+
+// Add a skip exception
+export function addDemoException(recurringId, occurrenceDate) {
+  // Check if exception already exists
+  const exists = demoExceptions.some(
+    (e) =>
+      e.recurring_id === recurringId && e.occurrence_date === occurrenceDate
+  );
+  if (exists) return null;
+
+  const id = `demo_exception_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  const newException = {
+    id,
+    recurring_id: recurringId,
+    occurrence_date: occurrenceDate,
+    exception_type: 'skip',
+    created_by: 'demo_user',
+    created_at: new Date().toISOString(),
+  };
+  demoExceptions = [...demoExceptions, newException];
+  return id;
+}
+
+// Remove an exception (undo skip)
+export function removeDemoException(recurringId, occurrenceDate) {
+  demoExceptions = demoExceptions.filter(
+    (e) =>
+      !(e.recurring_id === recurringId && e.occurrence_date === occurrenceDate)
+  );
+}
+
+// Remove exception by ID
+export function removeDemoExceptionById(id) {
+  demoExceptions = demoExceptions.filter((e) => e.id !== id);
+}
+
+// Check if an occurrence is skipped
+export function isDemoOccurrenceSkipped(recurringId, occurrenceDate) {
+  return demoExceptions.some(
+    (e) =>
+      e.recurring_id === recurringId &&
+      e.occurrence_date === occurrenceDate &&
+      e.exception_type === 'skip'
+  );
+}
+
+// =====================
+// Fingerprint Helpers
+// =====================
+
+// Get all recurring fingerprints from transactions
+export function getDemoRecurringFingerprints() {
+  return new Set(
+    demoTransactions
+      .filter((t) => t.recurring_fingerprint)
+      .map((t) => t.recurring_fingerprint)
+  );
+}
+
+// Check if a fingerprint already exists
+export function demoFingerprintExists(fingerprint) {
+  return demoTransactions.some((t) => t.recurring_fingerprint === fingerprint);
+}
+
+// =====================
+// Regular Transactions
+// =====================
 
 // Get demo transactions filtered by month and currency
 export function getDemoTransactions({ month, currency }) {
@@ -213,4 +440,6 @@ export function resetDemoStore() {
     fxRate: FX_USD_TO_PEN,
   };
   demoCategoryLimits = {};
+  demoRecurring = [...getInitialRecurring()];
+  demoExceptions = [];
 }
