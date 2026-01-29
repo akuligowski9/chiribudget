@@ -486,31 +486,6 @@ Implementation updates the useEffect in QuickAddForm to check `profile.display_n
 
 Ideas worth remembering but not yet committed to implementation.
 
-### CB-027: Migrate to TypeScript
-
-#### Description
-
-Convert codebase from JavaScript to TypeScript for improved type safety and IDE support. TypeScript catches type errors at compile time, provides better autocomplete in editors, and makes refactoring safer by surfacing breaking changes immediately. The current JavaScript codebase has 40+ files that would need conversion.
-
-Migration can be done incrementally by renaming files to `.tsx`/`.ts` and adding types progressively. Supabase provides tools to generate TypeScript types directly from the database schema, which would eliminate manual type definitions for database entities. This is a significant effort better suited to a dedicated refactoring phase rather than alongside feature work.
-
-#### Acceptance Criteria
-
-- [ ] All files converted to TypeScript
-- [ ] Supabase types generated from schema
-- [ ] No type errors in build
-
-#### Metadata
-
-- **Status:** Deferred
-- **Priority:** Low
-- **Type:** Maintenance
-- **Version:** v2
-- **Assignee:** Unassigned
-- **GitHub Issue:** No
-
----
-
 ### CB-028: Privacy-Respecting Analytics
 
 #### Description
