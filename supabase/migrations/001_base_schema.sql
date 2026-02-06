@@ -448,6 +448,10 @@ drop policy if exists households_read on households;
 create policy households_read on households
 for select using (is_household_member(id));
 
+drop policy if exists households_insert on households;
+create policy households_insert on households
+for insert with check (auth.uid() is not null);
+
 -- Household members
 drop policy if exists members_read on household_members;
 create policy members_read on household_members

@@ -383,10 +383,14 @@ alter table month_status enable row level security;
 alter table import_batches enable row level security;
 alter table errors enable row level security;
 
--- Households: read if member
+-- Households: read if member, insert if authenticated
 drop policy if exists households_read on households;
 create policy households_read on households
 for select using (is_household_member(id));
+
+drop policy if exists households_insert on households;
+create policy households_insert on households
+for insert with check (auth.uid() is not null);
 
 -- Household members: read if in same household; insert yourself via join flow controlled app-side
 drop policy if exists members_read on household_members;
