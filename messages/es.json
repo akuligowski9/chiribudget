@@ -195,6 +195,7 @@
     "languagePreference": "Preferencia de Idioma",
     "english": "Inglés",
     "spanish": "Español",
+    "appVersion": "v{version}",
     "budgetThresholds": "Umbrales de Presupuesto",
     "thresholdsDescription": "Las transacciones sobre el umbral se marcan automáticamente para revisión",
     "usdThreshold": "Umbral USD ($)",
@@ -235,7 +236,12 @@
     "trashDescription": "Las transacciones eliminadas se mantienen por 30 días antes de eliminarse permanentemente.",
     "noDeletedItems": "No hay transacciones eliminadas.",
     "restore": "Restaurar",
-    "daysUntilDelete": "{days} días hasta eliminación permanente"
+    "daysUntilDelete": "{days} días hasta eliminación permanente",
+    "deletePermanently": "Eliminar",
+    "confirmPermanentDelete": "¿Eliminar permanentemente?",
+    "permanentDeleteWarning": "Esta transacción será eliminada permanentemente y no se podrá recuperar.",
+    "permanentlyDeleted": "Eliminado permanentemente",
+    "deleteFailed": "Error al eliminar"
   },
   "import": {
     "title": "Importar Transacciones",

@@ -195,6 +195,7 @@
     "languagePreference": "Language Preference",
     "english": "English",
     "spanish": "Spanish",
+    "appVersion": "v{version}",
     "budgetThresholds": "Budget Thresholds",
     "thresholdsDescription": "Transactions over the threshold are automatically flagged for review",
     "usdThreshold": "USD Threshold ($)",
@@ -235,7 +236,12 @@
     "trashDescription": "Deleted transactions are kept for 30 days before permanent removal.",
     "noDeletedItems": "No deleted transactions.",
     "restore": "Restore",
-    "daysUntilDelete": "{days} days until permanent deletion"
+    "daysUntilDelete": "{days} days until permanent deletion",
+    "deletePermanently": "Delete",
+    "confirmPermanentDelete": "Delete Permanently?",
+    "permanentDeleteWarning": "This transaction will be permanently deleted and cannot be recovered.",
+    "permanentlyDeleted": "Permanently deleted",
+    "deleteFailed": "Delete failed"
   },
   "import": {
     "title": "Import Transactions",

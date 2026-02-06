@@ -161,6 +161,46 @@ Add the ability to permanently delete transactions. Currently, the app only supp
 
 ---
 
+### CB-060: Version Display & Release Process
+
+#### Description
+
+The app has no visible version indicator and no formal release process. The `package.json` version is `0.1.2`, but it's not displayed anywhere in the UI, there are no git tags, no GitHub releases, and no version auto-increment on deploy. This makes it difficult to know what's actually running in production, track what changed between deployments, or communicate progress over time.
+
+The full implementation covers four areas:
+
+1. **Version in Settings/footer** — Display the current version in the app UI (e.g., Settings page or footer) so users and developers can confirm what's deployed.
+2. **Git tags** — Tag releases (e.g., `v0.2.0`) for easy reference and rollback points in the git history.
+3. **GitHub releases** — Create formal releases with changelogs so changes are documented per version.
+4. **Auto-increment on deploy** — Automatically bump the version in `package.json` with each push/deploy to keep the version current without manual effort.
+
+**Current state:**
+
+- `package.json` version: `0.1.2`
+- Git tags: None
+- GitHub releases: Not set up
+- Version not visible in app UI
+
+#### Acceptance Criteria
+
+- [x] App version displayed in Settings page or footer (reads from `package.json`)
+- [x] Git tags created for releases (e.g., `v0.2.0`)
+- [x] GitHub releases created with changelog summaries
+- [x] Version auto-increments on deploy (GitHub Actions or similar)
+- [x] Version displayed in UI matches `package.json` version
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Medium
+- **Type:** Maintenance
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+- **Completed:** 2026-02-06
+
+---
+
 ### CB-047: Tabbed Settings Page
 
 #### Description
