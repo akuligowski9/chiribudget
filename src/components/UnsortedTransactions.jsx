@@ -433,19 +433,15 @@ export default function UnsortedTransactions() {
 
   return (
     <div className="space-y-4">
-      {/* Header with Upload button */}
+      {/* Main card with actions */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <FileUp className="w-5 h-5 text-slate" />
-              <CardTitle>{t('unsorted.title')}</CardTitle>
-              {totalPending > 0 && (
-                <span className="bg-warning text-white text-xs font-semibold px-2 py-0.5 rounded-full">
-                  {totalPending}
-                </span>
-              )}
-            </div>
+            {totalPending > 0 && (
+              <span className="bg-warning text-white text-xs font-semibold px-2.5 py-1 rounded-full">
+                {totalPending} to review
+              </span>
+            )}
             <div className="flex items-center gap-2">
               <Button
                 variant={showHistory ? 'default' : 'outline'}

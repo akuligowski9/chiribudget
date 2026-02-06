@@ -4,6 +4,87 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-06 — Production Readiness for January Budget Discussion
+
+### Summary
+
+Goal: Get production app working so Alex and wife can discuss January finances tonight. Multiple blockers discovered during initial investigation.
+
+### Critical Issues Discovered
+
+**1. OAuth Broken in Production**
+
+- Google OAuth: "Access blocked: redirect_uri_mismatch" (Error 400)
+- GitHub OAuth: "redirect_uri is not associated with this application"
+- Root cause: Redirect URIs not configured in Supabase Dashboard
+- Required URIs:
+  - `https://chiribudget.vercel.app` (production)
+  - `https://chiribudgetdemo.vercel.app` (demo)
+  - `http://localhost:3000` (local dev)
+
+**2. Login Screen Gets Stuck**
+
+- After OAuth fails, login shows "Redirecting to Google..." indefinitely
+- No timeout or error recovery implemented
+- Need to add error handling and timeout
+
+**3. Fingerprint Deduplication Bug (Possible Year Inference Issue)**
+
+- User reports: same income amount on different dates only appears once
+- Investigation found: fingerprint DOES include date (`txn_date` field)
+- Likely cause: Year inference for Interbank dates (DD-Mon format without year)
+- If year not set correctly, different months could hash to same fingerprint
+
+### Environment Architecture Clarified
+
+| Deployment | URL                          | Purpose                | Database                    |
+| ---------- | ---------------------------- | ---------------------- | --------------------------- |
+| Production | `chiribudget.vercel.app`     | Real use (Alex + wife) | Supabase (chiribudget-prod) |
+| Demo       | `chiribudgetdemo.vercel.app` | Portfolio showcase     | In-memory only              |
+| Local      | `localhost:3000`             | Development            | Supabase (original project) |
+
+### Banks Needed
+
+- **PNC (USA)**: Already has parser support (credit card + checking formats)
+- **Interbank (Peru)**: Already has parser support (dual-currency PEN/USD)
+
+### New Backlog Items Created
+
+- CB-055: Fix OAuth redirect URI configuration (Critical)
+- CB-056: Fix login stuck on "Redirecting..." (High)
+- CB-057: Hard delete transactions (Medium)
+- CB-058: Email notifications for deleted confirmed transactions (Low - deferred)
+
+### Decisions Made
+
+- Hard delete preferred over soft delete for now (simpler UX)
+- Email notifications deferred to backlog (nice-to-have, not tonight)
+- Focus on: OAuth fix → Test imports → Ship
+
+### Work Completed
+
+**CB-056: Fix Login Screen Stuck on "Redirecting..." (Done)**
+
+- Added 15-second timeout that detects failed OAuth redirects
+- Shows user-friendly error message when timeout triggers
+- Added "Try Again" button to reset state and allow retry
+- Modified `src/components/LoginScreen.jsx`
+
+**Bank Options Simplified**
+
+- Reduced bank dropdown from 6 options to just PNC Bank and Interbank
+- Modified `src/lib/csvParserUtils.js`
+
+### What's Next
+
+1. User configures OAuth redirect URIs in Supabase Dashboard (external action)
+2. Test PNC and Interbank imports with real January statements
+3. Debug fingerprint issue if it recurs during testing
+4. Add hard delete functionality
+5. Deploy and verify production works
+
+---
+
 ## 2026-01-29 — Testing Infrastructure & Cleanup
 
 ### Summary

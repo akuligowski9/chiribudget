@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** January 29, 2026
+**Last Updated:** February 6, 2026
 
 ---
 
@@ -26,31 +26,140 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Jan 29, 2026** — Added testing infrastructure: integration tests with local Supabase (40 tests), unit tests for recurringUtils (53 tests). Fixed DashboardSummary test isolation. Closed GitHub issues #1, #2, #3. Removed CB-027 (TypeScript migration) from backlog. Next: manual testing of recurring transactions and OAuth.
+**Session: Feb 6, 2026** — Production readiness push. Goal: Get app working for Alex + wife to discuss January finances. Discovered OAuth broken (redirect_uri_mismatch), login screen gets stuck on redirect, possible fingerprint deduplication bug with year inference. Created CB-055 through CB-058. Focus: Fix OAuth → Test imports → Ship.
 
 ---
 
 ## Reminders
 
+- [ ] **Configure OAuth redirect URIs in Supabase** — CRITICAL: Add production/demo/localhost URLs to Supabase Dashboard → Authentication → URL Configuration for both Google and GitHub providers. _(Added: Feb 6, 2026)_
+- [ ] **Test January imports with real statements** — Test PNC (credit card + checking) and Interbank CSV imports with actual January 2026 statements. Watch for fingerprint deduplication issues. _(Added: Feb 6, 2026)_
 - [ ] **Test restore backup feature** — Upload a backup JSON file via Settings > Data Backup > Restore Backup and verify data restores correctly. _(Added: Jan 22, 2026)_
-- [ ] **Test OAuth in all environments** — Verify OAuth authentication works correctly in local, demo, and production environments. _(Added: Jan 27, 2026)_
 - [ ] **Test CB-035 recurring transactions** — Manually test recurring transaction creation, generation, skip functionality, and recurring indicator display in both demo and local modes. _(Added: Jan 27, 2026)_
 
 ---
 
 ## Critical
 
-No critical items currently.
+### CB-055: Fix OAuth Redirect URI Configuration
+
+#### Description
+
+OAuth authentication was broken in production due to redirect URI mismatch. The production Vercel deployment uses `chiribudget-prod` Supabase project (`eqhybrdojisgdqtnixjs.supabase.co`), but Google Cloud Console only had the dev project's callback URL.
+
+**Root cause:** Production uses a different Supabase project than local development, and Google OAuth wasn't configured with the production callback URL.
+
+**Fix applied:**
+
+- Added `https://eqhybrdojisgdqtnixjs.supabase.co/auth/v1/callback` to Google Cloud Console → Credentials → OAuth 2.0 Client ID → Authorized redirect URIs
+- Added redirect URLs to Supabase Dashboard → Authentication → URL Configuration
+
+#### Acceptance Criteria
+
+- [x] Production URL added to Supabase Google OAuth redirect URIs
+- [x] Production URL added to Supabase GitHub OAuth redirect URIs
+- [x] Demo URL added to both providers
+- [x] Localhost URL added for local development
+- [x] OAuth login works on production site
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Critical
+- **Type:** Bug
+- **Version:** v1
+- **Assignee:** Alex
+- **GitHub Issue:** No
+- **Completed:** 2026-02-06
 
 ---
 
 ## High
 
-No high priority items currently.
+### CB-056: Fix Login Screen Stuck on "Redirecting..."
+
+#### Description
+
+After OAuth fails (e.g., due to redirect_uri_mismatch), the login screen gets stuck showing "Redirecting to Google..." or "Redirecting to GitHub..." indefinitely. There's no timeout or error recovery, leaving users stranded.
+
+The current flow:
+
+1. User clicks "Sign in with Google"
+2. `setStatus('Redirecting to Google...')` is called
+3. `signInWithOAuth()` starts but redirect fails
+4. Status never resets because no error is returned to the client
+
+**Fix implemented:**
+
+- Added 15-second timeout that resets status if redirect doesn't complete
+- Shows user-friendly error message with explanation
+- "Try Again" button allows retry without page refresh
+- Timeout cleared on successful redirect or explicit error
+
+**Files modified:**
+
+- `src/components/LoginScreen.jsx`
+
+#### Acceptance Criteria
+
+- [x] Status resets after timeout if OAuth redirect fails
+- [x] Error message displayed when OAuth fails
+- [x] User can retry login without refreshing page
+- [x] No stuck states possible
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** High
+- **Type:** Bug
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+- **Completed:** 2026-02-06
 
 ---
 
 ## Medium
+
+### CB-057: Hard Delete Transactions
+
+#### Description
+
+Add the ability to permanently delete transactions. Currently, the app only supports soft delete (transactions go to Trash with 30-day recovery). Users want the option to permanently remove transactions that aren't relevant (e.g., internal transfers, duplicates, test entries).
+
+**Use cases:**
+
+- Deleting imported transactions that shouldn't be in the budget
+- Removing test transactions during setup
+- Cleaning up duplicates that slipped through deduplication
+
+**Implementation:**
+
+- Add "Delete permanently" option in transaction actions
+- Confirmation dialog warning that this cannot be undone
+- For soft-deleted items in Trash: "Delete permanently" button
+- Database: Actually DELETE the row (not just set deleted_at)
+
+**Note:** Household notifications for deletions (CB-058) is a separate feature, deferred for now.
+
+#### Acceptance Criteria
+
+- [ ] "Delete permanently" action available on transactions
+- [ ] Confirmation dialog with clear warning
+- [ ] Transaction actually removed from database (not soft delete)
+- [ ] Works for both regular transactions and items in Trash
+- [ ] Demo mode support (remove from demoStore)
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
 
 ### CB-047: Tabbed Settings Page
 
@@ -258,6 +367,84 @@ The current database migration setup is confusing and unreliable. Multiple issue
 ---
 
 ## Low
+
+### CB-059: Demo Site Landing Page Redesign
+
+#### Description
+
+The demo site (`chiribudgetdemo.vercel.app`) currently shows the same login screen as production, which is confusing for portfolio visitors. The demo site should have a dedicated landing page that:
+
+1. **Does not attempt authentication** - No Google/GitHub OAuth buttons
+2. **Auto-enters demo mode** - Or provides a clear "Enter Demo" CTA
+3. **Links to portfolio** - Professional, warm language inviting collaboration:
+   - "Interested in working together? Visit my portfolio" → links to `https://akuligowski-portfolio.vercel.app/`
+4. **Clean, focused design** - No clutter, just demo entry and portfolio link
+
+**Current behavior:** Demo site shows login buttons, and if OAuth fails, users see error messages or get stuck.
+
+**Desired behavior:** Demo site immediately offers demo experience, with a subtle link to portfolio for anyone interested in collaboration.
+
+**Note:** This is separate from CB-048 (which handled the demo-only mode flag). This is about the actual UI/UX of the landing page.
+
+#### Acceptance Criteria
+
+- [ ] Demo site landing page has no OAuth buttons
+- [ ] Clear "Enter Demo" or auto-entry to demo mode
+- [ ] Link to portfolio with professional, warm copy
+- [ ] No authentication errors possible (nothing to fail)
+- [ ] Mobile-friendly layout
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Low
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+- **Notes:** Related to CB-048 but focuses on UI redesign, not the underlying demo-only flag
+
+---
+
+### CB-058: Email Notifications for Deleted Confirmed Transactions
+
+#### Description
+
+When a household member deletes a transaction that was already in the posted/confirmed budget, notify the other household member via email. This prevents one partner from silently removing transactions the other expected to see in their budget review.
+
+**Scope:**
+
+- Only for confirmed/posted transactions (not pending imports)
+- Only when the deleting user is not the only household member
+- Email should include: what was deleted, when, by whom, and the amount
+
+**Implementation considerations:**
+
+- Requires email sending capability (Supabase Edge Functions or external service)
+- Need to store notification preferences per user
+- Should be opt-out (enabled by default)
+
+**Deferred:** This is a nice-to-have feature. Focus for now is on core import/delete functionality.
+
+#### Acceptance Criteria
+
+- [ ] Email sent when confirmed transaction is deleted
+- [ ] Email includes transaction details (date, amount, description, who deleted)
+- [ ] Notification preference in Settings (on/off)
+- [ ] No email for pending/imported transactions
+- [ ] No email if user is only household member
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Low
+- **Type:** Feature
+- **Version:** v2
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+- **Notes:** Deferred from Feb 6 session - nice to have, not critical for initial use
+
+---
 
 ### CB-054: Fix Recharts ResponsiveContainer Warnings
 

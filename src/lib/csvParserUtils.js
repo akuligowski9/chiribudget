@@ -66,12 +66,8 @@ export const BANK_MAPPINGS = {
 };
 
 export const BANKS = [
-  { value: 'interbank', label: 'Interbank' },
-  { value: 'bcp', label: 'BCP' },
-  { value: 'bbva', label: 'BBVA' },
-  { value: 'scotiabank', label: 'Scotiabank' },
   { value: 'pnc', label: 'PNC Bank' },
-  { value: 'other', label: 'Other' },
+  { value: 'interbank', label: 'Interbank' },
 ];
 
 // PNC format sub-mappings (used internally after auto-detection)

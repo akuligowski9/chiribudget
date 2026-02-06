@@ -1,50 +1,53 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { ClipboardList } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import BottomNav from '@/components/BottomNav';
-import Header from '@/components/Header';
+import LoginScreen from '@/components/LoginScreen';
+import { Skeleton, SkeletonCard } from '@/components/ui/skeleton';
 import UnsortedTransactions from '@/components/UnsortedTransactions';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 
 export default function UnsortedPage() {
   const t = useTranslations();
-  const router = useRouter();
   const { user, loading } = useAuth();
   const { isDemoMode } = useDemo();
-  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (!loading && !user && !isDemoMode) {
-      router.push('/');
-    }
-  }, [user, loading, isDemoMode, router]);
-
-  if (!mounted || loading) {
+  // Show skeleton while auth is loading (but not in demo mode)
+  if (loading && !isDemoMode) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-cream to-cream-light flex items-center justify-center">
-        <div className="text-warm-gray">{t('common.loading')}</div>
-      </div>
+      <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
+        <div className="flex items-center gap-3 mb-5">
+          <div className="p-2 rounded-xl bg-gradient-to-br from-slate to-slate-light">
+            <ClipboardList className="w-5 h-5 text-white" />
+          </div>
+          <Skeleton className="h-8 w-32" />
+        </div>
+        <div className="space-y-4">
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      </main>
     );
   }
 
+  // Show login screen if not authenticated and not in demo mode
   if (!user && !isDemoMode) {
-    return null;
+    return <LoginScreen />;
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cream to-cream-light pb-20">
-      <Header />
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        <UnsortedTransactions />
-      </main>
-      <BottomNav />
-    </div>
+    <main className="max-w-2xl mx-auto px-4 pt-4 pb-8">
+      <div className="flex items-center gap-3 mb-5">
+        <div className="p-2 rounded-xl bg-gradient-to-br from-slate to-slate-light">
+          <ClipboardList className="w-5 h-5 text-white" />
+        </div>
+        <h1 className="text-2xl font-bold gradient-text m-0">
+          {t('unsorted.title')}
+        </h1>
+      </div>
+
+      <UnsortedTransactions />
+    </main>
   );
 }

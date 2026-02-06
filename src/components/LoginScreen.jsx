@@ -1,12 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Home, Sparkles, ExternalLink, Github } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Home, Sparkles, ExternalLink, Github, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { getSiteType, SITE_TYPE, getSiteUrl } from '@/lib/siteConfig';
+
+// Timeout for OAuth redirect (if we're still here after this, something went wrong)
+const OAUTH_TIMEOUT_MS = 15000;
 
 /**
  * Google icon SVG component
@@ -43,6 +46,8 @@ export default function LoginScreen() {
   const [signingIn, setSigningIn] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
   const [siteType, setSiteType] = useState(null);
+  const [showRetry, setShowRetry] = useState(false);
+  const timeoutRef = useRef(null);
 
   // Detect site type and returning user status on mount
   useEffect(() => {
@@ -54,23 +59,67 @@ export default function LoginScreen() {
     }
   }, []);
 
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  function resetSignInState() {
+    setSigningIn(false);
+    setStatus('');
+    setShowRetry(false);
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+  }
+
+  function startOAuthTimeout(provider) {
+    // If we're still on this page after timeout, the redirect failed
+    timeoutRef.current = setTimeout(() => {
+      setSigningIn(false);
+      setShowRetry(true);
+      setStatus(
+        `Sign in with ${provider} didn't complete. This usually means the app isn't configured correctly. Please try again or contact support.`
+      );
+    }, OAUTH_TIMEOUT_MS);
+  }
+
   async function handleGoogleSignIn() {
+    resetSignInState();
     setSigningIn(true);
     setStatus('Redirecting to Google...');
+    startOAuthTimeout('Google');
+
     const { error } = await signInWithGoogle();
     if (error) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       setSigningIn(false);
+      setShowRetry(true);
       setStatus(error.message);
     }
-    // On success, user is redirected to Google
+    // On success, user is redirected to Google (page unloads, timeout never fires)
   }
 
   async function handleGitHubSignIn() {
+    resetSignInState();
     setSigningIn(true);
     setStatus('Redirecting to GitHub...');
+    startOAuthTimeout('GitHub');
+
     const { error } = await signInWithGitHub();
     if (error) {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
       setSigningIn(false);
+      setShowRetry(true);
       setStatus(error.message);
     }
   }
@@ -141,13 +190,24 @@ export default function LoginScreen() {
           {status && (
             <div
               role={status.includes('Redirecting') ? 'status' : 'alert'}
-              className={`mt-4 p-3 rounded-lg text-sm text-center ${
+              className={`mt-4 p-3 rounded-lg text-sm ${
                 status.includes('Redirecting')
-                  ? 'bg-slate/10 text-slate'
+                  ? 'bg-slate/10 text-slate text-center'
                   : 'bg-error/10 text-error border border-error/20'
               }`}
             >
-              {status}
+              <p className={showRetry ? 'mb-3' : ''}>{status}</p>
+              {showRetry && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full border-error/30 text-error hover:bg-error/10"
+                  onClick={resetSignInState}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+              )}
             </div>
           )}
         </div>
