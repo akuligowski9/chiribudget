@@ -1,0 +1,23 @@
+name: Database Migrations
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'supabase/migrations/**'
+  workflow_dispatch:  # Allow manual trigger from GitHub Actions UI
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run migrations on production
+        run: |
+          supabase db push --db-url "${{ secrets.SUPABASE_DB_URL }}"
