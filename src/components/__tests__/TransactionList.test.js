@@ -49,6 +49,7 @@ jest.mock('@/lib/demoStore', () => ({
   }),
   updateDemoTransaction: jest.fn(),
   deleteDemoTransaction: jest.fn(),
+  softDeleteDemoTransaction: jest.fn(),
 }));
 
 describe('TransactionList', () => {

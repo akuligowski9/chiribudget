@@ -278,16 +278,24 @@ export function demoFingerprintExists(fingerprint) {
 // Regular Transactions
 // =====================
 
-// Get demo transactions filtered by month and currency
+// Get demo transactions filtered by month and currency (excludes soft-deleted)
 export function getDemoTransactions({ month, currency }) {
   return demoTransactions.filter(
-    (t) => (t.txn_date || '').startsWith(month) && t.currency === currency
+    (t) =>
+      !t.deleted_at &&
+      (t.txn_date || '').startsWith(month) &&
+      t.currency === currency
   );
 }
 
-// Get all demo transactions (unfiltered)
+// Get all demo transactions (excludes soft-deleted)
 export function getAllDemoTransactions() {
-  return demoTransactions;
+  return demoTransactions.filter((t) => !t.deleted_at);
+}
+
+// Get soft-deleted demo transactions (for trash view)
+export function getDeletedDemoTransactions() {
+  return demoTransactions.filter((t) => t.deleted_at);
 }
 
 // Update a demo transaction
@@ -297,7 +305,23 @@ export function updateDemoTransaction(id, updates) {
   );
 }
 
-// Delete a demo transaction
+// Soft-delete a demo transaction (move to trash)
+export function softDeleteDemoTransaction(id) {
+  demoTransactions = demoTransactions.map((t) =>
+    t.id === id
+      ? { ...t, deleted_at: new Date().toISOString(), deleted_by: 'demo_user' }
+      : t
+  );
+}
+
+// Restore a soft-deleted demo transaction
+export function restoreDemoTransaction(id) {
+  demoTransactions = demoTransactions.map((t) =>
+    t.id === id ? { ...t, deleted_at: null, deleted_by: null } : t
+  );
+}
+
+// Hard-delete a demo transaction (permanent removal)
 export function deleteDemoTransaction(id) {
   demoTransactions = demoTransactions.filter((t) => t.id !== id);
 }

@@ -61,6 +61,7 @@ jest.mock('@/lib/demoStore', () => ({
   }),
   updateDemoTransaction: jest.fn(),
   deleteDemoTransaction: jest.fn(),
+  softDeleteDemoTransaction: jest.fn(),
 }));
 
 // Mock Radix Select portal to render inline for testing

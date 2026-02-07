@@ -14,6 +14,7 @@ import {
   getDemoTransactions,
   updateDemoTransaction,
   deleteDemoTransaction,
+  softDeleteDemoTransaction,
 } from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
@@ -40,7 +41,7 @@ export default function TransactionList({
   const { conversionRate = 1, payerOptions = [] } = useAuth();
   const { getOfflineTxns, pendingCount } = useOffline();
   const [toast, setToast] = useState(null);
-  const [_householdId, setHouseholdId] = useState(null);
+  const [householdId, setHouseholdId] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -242,13 +243,14 @@ export default function TransactionList({
 
   async function deleteTransaction(id) {
     if (isDemoMode) {
-      // Delete from demoStore so other components see the change
-      deleteDemoTransaction(id);
+      // Soft-delete in demoStore so it appears in trash
+      softDeleteDemoTransaction(id);
       setRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),
         type: 'success',
-        title: t('transaction.deletedDemo'),
+        title: t('transaction.movedToTrash'),
+        message: t('transaction.canRestore30Days'),
       });
       onTransactionUpdate?.();
       return;
@@ -280,6 +282,43 @@ export default function TransactionList({
         type: 'success',
         title: t('transaction.movedToTrash'),
         message: t('transaction.canRestore30Days'),
+      });
+      onTransactionUpdate?.();
+    }
+  }
+
+  async function hardDeleteTransaction(id) {
+    if (isDemoMode) {
+      deleteDemoTransaction(id);
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('transaction.permanentlyDeleted'),
+      });
+      onTransactionUpdate?.();
+      return;
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+
+    if (error) {
+      setToast({
+        id: toastId(),
+        type: 'error',
+        title: t('transaction.deleteFailed'),
+        message: error.message,
+      });
+    } else {
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('transaction.permanentlyDeleted'),
       });
       onTransactionUpdate?.();
     }
@@ -400,9 +439,15 @@ export default function TransactionList({
               deleteTransaction(deleteTargetId);
             }
           }}
+          onSecondaryConfirm={() => {
+            if (deleteTargetId) {
+              hardDeleteTransaction(deleteTargetId);
+            }
+          }}
           title={t('transaction.deleteTransaction')}
           message={t('transaction.deleteConfirmMessage')}
           confirmText={t('transaction.moveToTrash')}
+          secondaryConfirmText={t('transaction.deletePermanently')}
           cancelText={t('common.cancel')}
           variant="danger"
         />

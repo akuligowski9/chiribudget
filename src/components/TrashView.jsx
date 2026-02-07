@@ -13,6 +13,11 @@ import {
 import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
+import {
+  getDeletedDemoTransactions,
+  restoreDemoTransaction,
+  deleteDemoTransaction,
+} from '@/lib/demoStore';
 import { toastId } from '@/lib/format';
 import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
@@ -31,7 +36,7 @@ export default function TrashView() {
 
   useEffect(() => {
     if (isDemoMode) {
-      setDeletedRows([]);
+      setDeletedRows(getDeletedDemoTransactions());
       setLoading(false);
       return;
     }
@@ -66,10 +71,13 @@ export default function TrashView() {
 
   async function restoreTransaction(id) {
     if (isDemoMode) {
+      restoreDemoTransaction(id);
+      setDeletedRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),
-        type: 'info',
-        title: t('settings.demoNoRestore'),
+        type: 'success',
+        title: t('settings.restored'),
+        message: t('settings.restoreSuccess'),
       });
       return;
     }
@@ -105,11 +113,14 @@ export default function TrashView() {
 
   async function hardDeleteTransaction(id) {
     if (isDemoMode) {
+      deleteDemoTransaction(id);
+      setDeletedRows((prev) => prev.filter((r) => r.id !== id));
       setToast({
         id: toastId(),
-        type: 'info',
-        title: 'Not available in demo mode',
+        type: 'success',
+        title: t('settings.permanentlyDeleted') || 'Permanently deleted',
       });
+      setConfirmHardDelete(null);
       return;
     }
 
@@ -151,25 +162,6 @@ export default function TrashView() {
     const now = new Date();
     const diff = Math.ceil((purgeDate - now) / (1000 * 60 * 60 * 24));
     return Math.max(0, diff);
-  }
-
-  if (isDemoMode) {
-    return (
-      <CollapsibleCard>
-        <CollapsibleCardHeader
-          icon={Trash2}
-          title={t('settings.trash')}
-          description={t('demo.trashNotAvailable')}
-          isOpen={isOpen}
-          onToggle={toggle}
-        />
-        <CollapsibleCardContent isOpen={isOpen}>
-          <p className="text-warm-gray text-sm">
-            {t('demo.trashNotAvailable')}
-          </p>
-        </CollapsibleCardContent>
-      </CollapsibleCard>
-    );
   }
 
   return (

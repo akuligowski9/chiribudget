@@ -1,17 +1,19 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
-import { AlertTriangle } from 'lucide-react';
 
 export function ConfirmDialog({
   open,
   onClose,
   onConfirm,
+  onSecondaryConfirm,
   title = 'Confirm',
   message = 'Are you sure?',
   confirmText = 'Confirm',
+  secondaryConfirmText,
   cancelText = 'Cancel',
   variant = 'danger',
 }) {
@@ -61,6 +63,11 @@ export function ConfirmDialog({
 
   function handleConfirm() {
     onConfirm();
+    onClose();
+  }
+
+  function handleSecondaryConfirm() {
+    onSecondaryConfirm?.();
     onClose();
   }
 
@@ -114,6 +121,15 @@ export function ConfirmDialog({
           <Button variant="outline" className="flex-1" onClick={onClose}>
             {cancelText}
           </Button>
+          {onSecondaryConfirm && secondaryConfirmText && (
+            <Button
+              variant="expense"
+              className="flex-1"
+              onClick={handleSecondaryConfirm}
+            >
+              {secondaryConfirmText}
+            </Button>
+          )}
           <Button
             ref={confirmButtonRef}
             variant={variant === 'danger' ? 'expense' : 'default'}

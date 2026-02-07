@@ -103,6 +103,9 @@
     "notFoundOrDeleted": "Transaction not found or already deleted",
     "movedToTrash": "Moved to trash",
     "canRestore30Days": "Transaction can be restored within 30 days",
+    "deletePermanently": "Delete Permanently",
+    "permanentDeleteConfirmMessage": "This will be permanently deleted and cannot be recovered.",
+    "permanentlyDeleted": "Permanently deleted",
     "pageOfTotal": "Page {current} of {total} ({count} total)"
   },
   "categories": {
