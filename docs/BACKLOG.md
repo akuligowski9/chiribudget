@@ -26,7 +26,7 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061) — in-file duplicates are now imported and flagged for review instead of silently dropped. Added hard delete option to transaction list and enabled trash in demo mode (CB-057). Documentation sync completed.
+**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061). Fixed workflow triggers to prevent redundant runs. Set up local Supabase CLI for development (CB-062). Investigating household data issue in production (CB-063). Added Sentry error monitoring (CB-013).
 
 ---
 
@@ -238,6 +238,113 @@ The fix imports both transactions and flags them as "possible duplicates" for hu
 - **GitHub Issue:** No
 - **Completed:** 2026-02-07
 - **Files:** 8 (1 new migration, 7 modified components/utils)
+
+---
+
+### CB-062: Local Development Environment with Supabase CLI
+
+#### Description
+
+Set up local Supabase environment for development and testing. This allows testing database features, migrations, and RLS policies locally before deploying to production, protecting production data integrity.
+
+**Setup completed:**
+
+- Installed Supabase CLI (v2.75.0) to `~/.local/bin/supabase`
+- `supabase start` runs local Postgres + Auth + APIs in Docker
+- Created `.env.local.example` with local connection strings
+- Migrations auto-apply from `supabase/migrations/`
+
+**Local URLs:**
+
+- Studio (Dashboard): http://127.0.0.1:54323
+- API URL: http://127.0.0.1:54321
+- Database: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+
+#### Acceptance Criteria
+
+- [x] Supabase CLI installed
+- [x] `supabase start` works
+- [x] Migrations apply automatically
+- [x] `.env.local.example` created with local config
+- [ ] Seed data for local testing (CB-064)
+- [ ] Document local dev workflow in README
+
+#### Metadata
+
+- **Status:** In Progress
+- **Priority:** High
+- **Type:** Infrastructure
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+
+---
+
+### CB-063: Investigate Production Household Data Issue
+
+#### Description
+
+After deploying migrations, user's household association appears broken. Login works, but shows "Set Up Your Household" screen instead of existing household. Need to investigate whether:
+
+1. Household data was deleted (unlikely - migrations only add tables/policies)
+2. Profile's `household_id` was set to null
+3. RLS policy change is preventing access
+4. Some other issue
+
+**Investigation steps:**
+
+- Query production database for households, profiles, household_members
+- Check if data exists but profile is disconnected
+- Review migration 004 (RLS fix) for potential issues
+- Restore from backup if data was lost
+
+#### Acceptance Criteria
+
+- [ ] Root cause identified
+- [ ] Data recovered or household re-created
+- [ ] Safeguards added to prevent recurrence
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** Critical
+- **Type:** Bug
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
+- **Notes:** Blocking production use until resolved
+
+---
+
+### CB-064: Comprehensive Seed Data for Local Development
+
+#### Description
+
+Create realistic seed data for local development and testing. Good seed data eliminates the need to test on production and covers all edge cases.
+
+**Seed data should include:**
+
+- Demo household with 2 members
+- Mix of transactions (income, expenses, flagged, deleted)
+- Recurring transactions
+- Budget configuration with category limits
+- Edge cases (duplicates, threshold amounts, month boundaries)
+
+#### Acceptance Criteria
+
+- [ ] Seed data covers all transaction types
+- [ ] Seed data includes recurring transactions
+- [ ] `supabase db reset` applies seed automatically
+- [ ] Document seed scenarios
+
+#### Metadata
+
+- **Status:** Planned
+- **Priority:** High
+- **Type:** Infrastructure
+- **Version:** v1
+- **Assignee:** Unassigned
+- **GitHub Issue:** No
 
 ---
 
@@ -579,22 +686,36 @@ The issue manifests in:
 
 Add Sentry for production error tracking to catch issues before users report them. Currently errors in production go unnoticed until a user complains, which may never happen for non-blocking issues. Silent failures can accumulate and degrade the experience over time.
 
-Sentry's free tier is sufficient for this app's scale. Integration requires installing `@sentry/nextjs`, configuring the DSN, and ensuring no PII (emails, transaction descriptions) is included in error reports. Source maps should be uploaded for readable stack traces.
+Sentry's free tier (5K errors/month) is sufficient for this app's scale. Integration uses `@sentry/nextjs` with Next.js App Router support — auto-captures unhandled errors, promise rejections, and React component errors. PII filtering strips emails, transaction descriptions, and request bodies before sending. Gracefully no-ops when DSN is not set.
+
+**Implementation:**
+
+- Three Sentry config files (client, server, edge) with identical PII filtering
+- `withSentryConfig` wrapper in `next.config.js` with source map upload support
+- Next.js instrumentation hook for server/edge runtime initialization
+- Root `global-error.jsx` error boundary for layout-level errors
+- Existing `ErrorBoundary.js` enhanced with `Sentry.captureException`
+- CSP updated to allow `*.sentry.io` and `*.ingest.sentry.io`
+- DSN set only for production (Vercel env var), not demo
 
 #### Acceptance Criteria
 
-- [ ] Sentry SDK installed and configured
-- [ ] Errors captured in production without PII
-- [ ] Source maps uploaded for readable stack traces
+- [x] Sentry SDK installed and configured
+- [x] Errors captured in production without PII
+- [x] Source maps upload configured (when `SENTRY_AUTH_TOKEN` is set)
+- [x] Graceful no-op when DSN not set (build and dev work without it)
+- [x] Verified end-to-end locally (test error appeared in Sentry dashboard)
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Low
 - **Type:** Feature
 - **Version:** v2
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
+- **Completed:** 2026-02-07
+- **Files:** 7 (4 new config/instrumentation files, 1 new error boundary, 2 modified)
 
 ---
 

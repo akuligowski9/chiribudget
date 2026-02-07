@@ -4,6 +4,140 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-07 (Evening) — Sentry Error Monitoring (CB-013)
+
+### Summary
+
+Added Sentry error monitoring for production error tracking. Errors are now captured automatically with PII filtering (no emails, transaction descriptions, or request bodies sent). Verified end-to-end locally — test error appeared in Sentry dashboard. Configured production Vercel env var for DSN.
+
+### Work Completed
+
+**CB-013: Error Monitoring — Sentry (Done)**
+
+**Step 1 — Install + config files:**
+
+- Installed `@sentry/nextjs` package
+- Created `sentry.client.config.js` — Browser Sentry init with PII filtering, graceful no-op without DSN
+- Created `sentry.server.config.js` — Node.js server init with same PII filtering
+- Created `sentry.edge.config.js` — Edge runtime init for auth callbacks
+- Modified `next.config.js` — Wrapped with `withSentryConfig`, added `*.sentry.io` to CSP `connect-src`, source map upload config
+
+**Step 2 — Error handling integration:**
+
+- Created `src/instrumentation.js` — Next.js instrumentation hook, imports server/edge configs per runtime
+- Created `src/app/global-error.jsx` — Root error boundary, captures to Sentry, renders user-friendly error UI
+- Modified `src/components/ErrorBoundary.js` — Added `Sentry.captureException` in `componentDidCatch` with component stack context
+- Modified `.env.local.example` — Added Sentry env var placeholders
+
+**Verification:**
+
+- Build passes (Sentry no-ops without DSN)
+- All 267 tests pass
+- Dev server starts cleanly with DSN set — no Sentry init errors
+- Triggered test error via temporary button — appeared in Sentry dashboard within seconds
+
+**Vercel Setup:**
+
+- Added `NEXT_PUBLIC_SENTRY_DSN` to Vercel production environment only
+- Demo site intentionally excluded (fake data, not worth tracking)
+
+### Files Modified
+
+| File                              | Action                    |
+| --------------------------------- | ------------------------- |
+| `sentry.client.config.js`         | Created                   |
+| `sentry.server.config.js`         | Created                   |
+| `sentry.edge.config.js`           | Created                   |
+| `next.config.js`                  | Modified                  |
+| `src/instrumentation.js`          | Created                   |
+| `src/app/global-error.jsx`        | Created                   |
+| `src/components/ErrorBoundary.js` | Modified                  |
+| `.env.local.example`              | Modified                  |
+| `package.json`                    | Modified (new dependency) |
+| `package-lock.json`               | Modified                  |
+
+### PII Filtering
+
+| Data                           | Action                    | Rationale                        |
+| ------------------------------ | ------------------------- | -------------------------------- |
+| User email                     | Stripped, UUID only       | Financial app — protect identity |
+| Transaction descriptions       | Stripped from breadcrumbs | Personal spending info           |
+| Request bodies                 | Stripped                  | May contain transaction data     |
+| Household ID                   | Allowed (UUID)            | Not PII, useful for grouping     |
+| Stack traces, browser/OS, URLs | Allowed                   | Core debugging value             |
+
+### Decisions Made
+
+- **Production only**: DSN set only for production Vercel env, not demo or preview
+- **No performance monitoring**: `tracesSampleRate: 0` — keep it simple, error tracking only
+- **No session replay**: Overkill for a 2-person app
+- **Sentry email alerts left on**: Default behavior notifies on first occurrence of each new error type
+- **Source map upload conditional**: Only when `SENTRY_AUTH_TOKEN` is set (Vercel builds)
+
+### What's Next
+
+1. Investigate household data issue (CB-063)
+2. Create seed data for local development (CB-064)
+3. (Optional) Add `SENTRY_AUTH_TOKEN` to Vercel for source map uploads
+
+---
+
+## 2026-02-07 (Afternoon) — Infrastructure & Local Dev Setup
+
+### Summary
+
+Set up local Supabase CLI for development, fixed GitHub workflow triggers, deployed to production. Discovered household data issue in production that needs investigation.
+
+### Work Completed
+
+**CB-062: Local Supabase CLI Setup (In Progress)**
+
+- Installed Supabase CLI v2.75.0 to `~/.local/bin/supabase`
+- `supabase start` running - provides local Postgres + Auth in Docker
+- Created `.env.local.example` with local connection strings
+- Local Studio available at http://127.0.0.1:54323
+
+**Workflow Fixes:**
+
+- Fixed CI workflow: removed redundant `push` trigger (only runs via deploy or PRs now)
+- Fixed Release workflow: changed to manual `workflow_dispatch` only (was auto-bumping on every push)
+- Fixed Deploy workflow: changed to manual `workflow_dispatch` only (preserves Vercel quota)
+- Fixed Backup workflow: added `recurring_transactions` and `recurring_exceptions` tables, fixed name
+- Integrated database migrations into deploy workflow (CI → Backup → Migrate → Deploy)
+
+**Test Fixes:**
+
+- Removed outdated QuickAddForm description validation tests (feature not implemented)
+- Removed outdated AuthContext sendMagicLink test (function replaced with OAuth)
+- All 267 tests now pass
+
+**Deploy:**
+
+- Successfully deployed to production via manual workflow trigger
+- Login works, recurring transactions visible
+
+### Issue Discovered
+
+**CB-063: Household Data Issue**
+
+- After deploy, user sees "Set Up Your Household" screen instead of existing household
+- Login works, but profile appears disconnected from household
+- Need to investigate via Supabase dashboard - data may still exist but be unlinked
+
+### Decisions Made
+
+- **Manual deploys only**: Preserves limited Vercel deployment quota
+- **Local Supabase for testing**: Test DB features locally before production
+- **No auto-release**: Version bumps are manual via workflow_dispatch
+
+### What's Next
+
+1. Investigate household data issue (CB-063) via Supabase SQL editor
+2. Create seed data for local development (CB-064)
+3. Test features locally before production
+
+---
+
 ## 2026-02-07 — Hard Delete Transactions (CB-057)
 
 ### Summary
