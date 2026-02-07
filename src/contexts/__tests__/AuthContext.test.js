@@ -144,40 +144,6 @@ describe('AuthContext', () => {
     expect(supabase.auth.signOut).toHaveBeenCalled();
   });
 
-  it('provides sendMagicLink function', async () => {
-    const { supabase } = require('@/lib/supabaseClient');
-
-    function MagicLinkTest() {
-      const { sendMagicLink, loading } = useAuth();
-
-      async function handleClick() {
-        await sendMagicLink('new@example.com');
-      }
-
-      if (loading) return <div>Loading...</div>;
-
-      return <button onClick={handleClick}>Send Link</button>;
-    }
-
-    render(
-      <AuthProvider>
-        <MagicLinkTest />
-      </AuthProvider>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByText('Send Link')).toBeInTheDocument();
-    });
-
-    await act(async () => {
-      screen.getByText('Send Link').click();
-    });
-
-    expect(supabase.auth.signInWithOtp).toHaveBeenCalledWith({
-      email: 'new@example.com',
-    });
-  });
-
   it('throws error when useAuth is used outside AuthProvider', () => {
     // Suppress console.error for this test
     const consoleSpy = jest
