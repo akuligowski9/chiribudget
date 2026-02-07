@@ -1,9 +1,7 @@
 name: Deploy to Vercel
 
 on:
-  push:
-    branches: [main, master]
-  workflow_dispatch:
+  workflow_dispatch:  # Manual trigger only - preserves Vercel deployment quota
 
 jobs:
   # First run CI checks
