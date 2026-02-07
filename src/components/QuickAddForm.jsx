@@ -28,7 +28,8 @@ import {
   getDemoCategoryLimits,
   getDemoThresholds,
 } from '@/lib/demoStore';
-import { normalizeDesc, toastId } from '@/lib/format';
+import { toastId } from '@/lib/format';
+import { computeFingerprint } from '@/lib/importUtils';
 import { supabase } from '@/lib/supabaseClient';
 import Toast from './Toast';
 
@@ -45,19 +46,6 @@ const CATEGORY_KEYS = {
   Investments: 'investments',
   Extra: 'extra',
 };
-
-function computeFingerprint({
-  household_id,
-  currency,
-  txn_date,
-  amount,
-  description,
-}) {
-  const base = `${household_id}|${currency}|${txn_date}|${Number(amount).toFixed(2)}|${normalizeDesc(description)}`;
-  let h = 0;
-  for (let i = 0; i < base.length; i++) h = (h * 31 + base.charCodeAt(i)) >>> 0;
-  return `fp_${h}`;
-}
 
 export default function QuickAddForm({ onSuccess }) {
   const t = useTranslations();
@@ -336,6 +324,19 @@ export default function QuickAddForm({ onSuccess }) {
       }
     }
 
+    // Determine flag_source based on what triggered the flag
+    let flagSource = null;
+    if (shouldFlag && flagReason) {
+      if (
+        flagReason === 'over_threshold_expense' ||
+        flagReason === 'over_threshold_income'
+      ) {
+        flagSource = 'threshold';
+      } else {
+        flagSource = 'category_limit';
+      }
+    }
+
     const row = {
       household_id: householdId,
       txn_date,
@@ -346,6 +347,7 @@ export default function QuickAddForm({ onSuccess }) {
       payer,
       is_flagged: shouldFlag,
       flag_reason: flagReason,
+      flag_source: flagSource,
       source: 'manual',
       fingerprint,
       created_by: user?.id || '00000000-0000-0000-0000-000000000000',

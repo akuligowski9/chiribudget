@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   FileUp,
+  Flag,
   Filter,
   History,
   ImageIcon,
@@ -687,6 +688,20 @@ export default function UnsortedTransactions() {
                           <div className="font-medium text-charcoal text-sm truncate">
                             {tx.description || t('transaction.noDescription')}
                           </div>
+                          {tx.is_flagged && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <Flag className="w-3 h-3 text-amber-500" />
+                              <span className="text-amber-600 text-[10px]">
+                                {tx.flag_source === 'import'
+                                  ? 'Possible duplicate'
+                                  : tx.flag_source === 'threshold'
+                                    ? 'Over threshold'
+                                    : tx.flag_source === 'category_limit'
+                                      ? 'Category limit'
+                                      : 'Flagged'}
+                              </span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Amount */}

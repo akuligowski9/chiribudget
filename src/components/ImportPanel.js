@@ -157,6 +157,7 @@ export default function ImportPanel() {
               ? 'over_threshold_expense'
               : 'over_threshold_income'
             : null,
+          flag_source: is_flagged ? 'threshold' : null,
           source: 'import',
           import_batch_id: batch.id,
           fingerprint,

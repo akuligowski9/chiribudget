@@ -13,8 +13,8 @@ import {
   BANK_MAPPINGS,
   BANKS,
   CURRENT_YEAR,
+  computeFingerprint,
   detectPncFormat,
-  generateFingerprint,
   parseAmount,
   parseDate,
   parsePncCheckingAmount,
@@ -22,6 +22,7 @@ import {
   shouldSkipPncCreditTransaction,
 } from '@/lib/csvParserUtils';
 import { toastId } from '@/lib/format';
+import { makeUniqueFingerprint } from '@/lib/importUtils';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function ImportFilePanel({ onSuccess }) {
@@ -81,7 +82,7 @@ export default function ImportFilePanel({ onSuccess }) {
 
         // Parse all rows and track skip reasons
         const allRows = [];
-        const fingerprintSet = new Set();
+        const fingerprintMap = new Map(); // fingerprint -> count
 
         for (let i = 0; i < csvData.length; i++) {
           const row = csvData[i];
@@ -111,10 +112,10 @@ export default function ImportFilePanel({ onSuccess }) {
             const penAmount = parseAmount(row[penKey]);
             const usdAmount = parseAmount(row[usdKey]);
             if (usdAmount !== 0) {
-              amount = -Math.abs(usdAmount);
+              amount = -usdAmount;
               currency = 'USD';
             } else if (penAmount !== 0) {
-              amount = -Math.abs(penAmount);
+              amount = -penAmount;
               currency = 'PEN';
             }
           } else {
@@ -147,17 +148,17 @@ export default function ImportFilePanel({ onSuccess }) {
             : parseDate(dateStr, mapping.dateFormat, year);
 
           if (!skipReason && !txnDate) {
-            skipReason = 'Pending transaction';
+            skipReason = 'Invalid or pending date';
           }
 
-          const fingerprint = txnDate
-            ? generateFingerprint(
-                profile?.household_id,
+          const baseFingerprint = txnDate
+            ? computeFingerprint({
+                household_id: profile?.household_id,
                 currency,
-                txnDate,
+                txn_date: txnDate,
                 amount,
-                description
-              )
+                description,
+              })
             : null;
 
           // Debug: log fingerprint details for unemployment transactions
@@ -167,22 +168,22 @@ export default function ImportFilePanel({ onSuccess }) {
               txnDate,
               amount,
               description: description?.slice(0, 40),
-              fingerprint,
+              fingerprint: baseFingerprint,
             });
           }
 
-          // Check for duplicates within file
-          if (!skipReason && fingerprint && fingerprintSet.has(fingerprint)) {
-            // eslint-disable-next-line no-console
-            console.log('Duplicate found in file:', {
-              txnDate,
-              amount,
-              description: description?.slice(0, 40),
-              fingerprint,
-            });
-            skipReason = 'Duplicate in file';
+          // Track in-file duplicates: flag instead of skip
+          let fingerprint = baseFingerprint;
+          let isDuplicate = false;
+          if (!skipReason && baseFingerprint) {
+            const count = fingerprintMap.get(baseFingerprint) || 0;
+            fingerprintMap.set(baseFingerprint, count + 1);
+            if (count > 0) {
+              // Suffix fingerprint to satisfy DB unique constraint
+              fingerprint = makeUniqueFingerprint(baseFingerprint, count + 1);
+              isDuplicate = true;
+            }
           }
-          if (fingerprint) fingerprintSet.add(fingerprint);
 
           allRows.push({
             id: i,
@@ -193,6 +194,8 @@ export default function ImportFilePanel({ onSuccess }) {
             currency,
             skipReason,
             fingerprint,
+            baseFingerprint,
+            isDuplicate,
             excluded: !!skipReason, // Auto-exclude if there's a skip reason
             transaction: skipReason
               ? null
@@ -204,12 +207,36 @@ export default function ImportFilePanel({ onSuccess }) {
                   amount,
                   category: 'Unexpected',
                   payer: defaultPayer,
-                  is_flagged: false,
+                  is_flagged: isDuplicate,
+                  flag_reason: isDuplicate ? 'possible_duplicate' : null,
+                  flag_source: isDuplicate ? 'import' : null,
                   source: 'import',
                   fingerprint,
                   created_by: profile?.user_id,
                 },
           });
+        }
+
+        // Retroactively flag the first occurrence of any duplicated fingerprint
+        const duplicatedFingerprints = new Set(
+          [...fingerprintMap.entries()]
+            .filter(([, count]) => count > 1)
+            .map(([fp]) => fp)
+        );
+
+        for (const row of allRows) {
+          if (
+            row.baseFingerprint &&
+            duplicatedFingerprints.has(row.baseFingerprint) &&
+            !row.isDuplicate &&
+            !row.skipReason &&
+            row.transaction
+          ) {
+            row.isDuplicate = true;
+            row.transaction.is_flagged = true;
+            row.transaction.flag_reason = 'possible_duplicate';
+            row.transaction.flag_source = 'import';
+          }
         }
 
         // Check for duplicates in database (skip in demo mode)
@@ -259,11 +286,15 @@ export default function ImportFilePanel({ onSuccess }) {
         // Calculate counts
         const includedRows = allRows.filter((r) => !r.excluded);
         const skippedRows = allRows.filter((r) => r.excluded);
+        const duplicateFlaggedCount = allRows.filter(
+          (r) => r.isDuplicate && !r.excluded
+        ).length;
 
         setAnalysisResult({
           allRows,
           newCount: includedRows.length,
           skippedCount: skippedRows.length,
+          duplicateFlaggedCount,
           parsedTransactions: includedRows
             .map((r) => r.transaction)
             .filter(Boolean),
@@ -616,6 +647,12 @@ export default function ImportFilePanel({ onSuccess }) {
                 <span className="text-charcoal font-medium">
                   {analysisResult.newCount} to import
                 </span>
+                {analysisResult.duplicateFlaggedCount > 0 && (
+                  <span className="text-amber-600">
+                    {analysisResult.duplicateFlaggedCount} duplicates flagged
+                    for review
+                  </span>
+                )}
                 {analysisResult.skippedCount > 0 && (
                   <span className="text-warm-gray">
                     {analysisResult.skippedCount} skipped
@@ -651,6 +688,11 @@ export default function ImportFilePanel({ onSuccess }) {
                       {row.skipReason && (
                         <div className="text-amber-600 text-[10px] mt-0.5">
                           {row.skipReason}
+                        </div>
+                      )}
+                      {!row.skipReason && row.isDuplicate && (
+                        <div className="text-amber-600 text-[10px] mt-0.5">
+                          Possible duplicate — flagged for review
                         </div>
                       )}
                     </div>

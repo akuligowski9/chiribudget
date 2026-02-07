@@ -14,11 +14,12 @@ A GitHub Actions workflow automatically backs up all data every 3 days to a priv
 
 **What's backed up:**
 
-- All transactions (including explanations and flag reasons)
+- All transactions (including explanations, flag reasons, flag sources)
 - Budget config and category limits
-- Household guidelines
+- Household members
 - Month status and discussion notes
 - User profiles
+- Recurring transactions and exceptions
 
 **Workflow:** `.github/workflows/backup.yml`
 
@@ -182,15 +183,16 @@ This ensures:
 
 1. User clicks "Sign in with Google" or "Sign in with GitHub"
 2. Redirected to provider's OAuth consent screen
-3. Provider redirects back to `/auth/callback` with authorization code
+3. Provider redirects back to Supabase callback URL with authorization code
 4. Supabase exchanges code for session (PKCE flow)
-5. Session stored in browser
+5. App's `/auth/callback` route completes the session exchange
+6. Session stored in browser
 
 **Why OAuth:** No passwords to leak, leverages trusted identity providers, familiar UX.
 
 **Sessions:** Expire after 1 week, refresh tokens allow seamless re-auth.
 
-**Demo Site Allowlist:** When OAuth is used on demo site (`chiribudgetdemo.vercel.app`), only allowlisted emails can access real data. Non-allowlisted users are redirected to the portfolio site.
+**Timeout handling:** If OAuth redirect doesn't complete within 15 seconds, the login screen shows an error with a "Try Again" button (CB-056).
 
 ### Household Isolation
 
@@ -253,10 +255,12 @@ This determines which OAuth buttons and navigation options appear on the login s
 ### Before Deploying to Vercel
 
 - [ ] Fresh Supabase project for production (separate from dev)
-- [ ] `supabase/setup_fresh_db.sql` run in SQL Editor
+- [ ] Database migrations run (`supabase db push` or run files in `supabase/migrations/` manually)
 - [ ] `.env.local` is in `.gitignore`
 - [ ] Secrets never committed to git
 - [ ] Environment variables set in Vercel (per environment)
+- [ ] `SUPABASE_ACCESS_TOKEN` secret added to GitHub (for automated migrations in deploy workflow)
+- [ ] OAuth providers configured in Supabase Dashboard (Google + GitHub)
 
 ### Supabase Auth URLs (Production Database)
 

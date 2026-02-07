@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** February 6, 2026
+**Last Updated:** February 7, 2026
 
 ---
 
@@ -26,14 +26,14 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Feb 6, 2026** — Production readiness push. Goal: Get app working for Alex + wife to discuss January finances. Discovered OAuth broken (redirect_uri_mismatch), login screen gets stuck on redirect, possible fingerprint deduplication bug with year inference. Created CB-055 through CB-058. Focus: Fix OAuth → Test imports → Ship.
+**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061) — in-file duplicates are now imported and flagged for review instead of silently dropped. Documentation sync completed.
 
 ---
 
 ## Reminders
 
-- [ ] **Configure OAuth redirect URIs in Supabase** — CRITICAL: Add production/demo/localhost URLs to Supabase Dashboard → Authentication → URL Configuration for both Google and GitHub providers. _(Added: Feb 6, 2026)_
-- [ ] **Test January imports with real statements** — Test PNC (credit card + checking) and Interbank CSV imports with actual January 2026 statements. Watch for fingerprint deduplication issues. _(Added: Feb 6, 2026)_
+- [x] ~~**Configure OAuth redirect URIs in Supabase**~~ — Done (CB-055). _(Feb 6, 2026)_
+- [ ] **Test January imports with real statements** — Test PNC (credit card + checking) and Interbank CSV imports with actual January 2026 statements. Duplicate detection now flags instead of skipping. _(Added: Feb 6, 2026)_
 - [ ] **Test restore backup feature** — Upload a backup JSON file via Settings > Data Backup > Restore Backup and verify data restores correctly. _(Added: Jan 22, 2026)_
 - [ ] **Test CB-035 recurring transactions** — Manually test recurring transaction creation, generation, skip functionality, and recurring indicator display in both demo and local modes. _(Added: Jan 27, 2026)_
 
@@ -165,38 +165,69 @@ Add the ability to permanently delete transactions. Currently, the app only supp
 
 #### Description
 
-The app has no visible version indicator and no formal release process. The `package.json` version is `0.1.2`, but it's not displayed anywhere in the UI, there are no git tags, no GitHub releases, and no version auto-increment on deploy. This makes it difficult to know what's actually running in production, track what changed between deployments, or communicate progress over time.
-
-The full implementation covers four areas:
-
-1. **Version in Settings/footer** — Display the current version in the app UI (e.g., Settings page or footer) so users and developers can confirm what's deployed.
-2. **Git tags** — Tag releases (e.g., `v0.2.0`) for easy reference and rollback points in the git history.
-3. **GitHub releases** — Create formal releases with changelogs so changes are documented per version.
-4. **Auto-increment on deploy** — Automatically bump the version in `package.json` with each push/deploy to keep the version current without manual effort.
-
-**Current state:**
-
-- `package.json` version: `0.1.2`
-- Git tags: None
-- GitHub releases: Not set up
-- Version not visible in app UI
+Display the current version in the app UI and auto-increment on deploy. Implemented via `NEXT_PUBLIC_APP_VERSION` env var (baked at build time from `package.json`), displayed in Settings > Account tab. Release workflow (`.github/workflows/release.yml`) auto-bumps patch version, creates git tags and GitHub releases after each deploy.
 
 #### Acceptance Criteria
 
-- [ ] App version displayed in Settings page or footer (reads from `package.json`)
-- [ ] Git tags created for releases (e.g., `v0.2.0`)
-- [ ] GitHub releases created with changelog summaries
-- [ ] Version auto-increments on deploy (GitHub Actions or similar)
-- [ ] Version displayed in UI matches `package.json` version
+- [x] App version displayed in Settings page (reads from `package.json`)
+- [x] Git tags created for releases
+- [x] GitHub releases created with auto-generated notes
+- [x] Version auto-increments on deploy (GitHub Actions release workflow)
+- [x] Version displayed in UI matches `package.json` version
 
 #### Metadata
 
-- **Status:** In Progress
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Maintenance
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
+- **Completed:** 2026-02-06
+
+---
+
+### CB-061: Import Duplicate Detection Flags
+
+#### Description
+
+When importing bank CSVs, identical transactions can legitimately appear (e.g., two $172.67 credit card payments on the same date). Previously, the import pipeline skipped in-file duplicates entirely (same fingerprint = skip), silently dropping real transactions.
+
+The fix imports both transactions and flags them as "possible duplicates" for human review. A new `flag_source` text column distinguishes system-generated flags (`'import'`, `'threshold'`, `'category_limit'`) from future user-set flags. Both copies of a duplicate are flagged (not just the second). Fingerprint suffixes (`_dup2`, `_dup3`) satisfy the DB unique constraint without schema changes.
+
+**Key design decisions:**
+
+- Flag both copies, not just the second (user needs to see both to decide which to keep)
+- Fingerprint suffix `_dup2` satisfies unique constraint without schema changes
+- Nullable text column (not enum) avoids migration for each new flag source
+- DB-level duplicates (already imported) are still skipped as before
+- Threshold trigger wins: if an import dupe also exceeds threshold, trigger overwrites `flag_source` to `'threshold'`
+
+#### Acceptance Criteria
+
+- [x] In-file duplicate transactions imported (not skipped)
+- [x] Both copies flagged with `flag_reason: 'possible_duplicate'` and `flag_source: 'import'`
+- [x] Fingerprint suffixed to satisfy DB unique constraint
+- [x] DB-level duplicates still skipped
+- [x] `flag_source` column added to transactions table (migration 005)
+- [x] `enforce_budget_rules()` trigger sets `flag_source = 'threshold'`
+- [x] Existing threshold-flagged rows backfilled with `flag_source = 'threshold'`
+- [x] QuickAddForm sets `flag_source` for threshold and category limit flags
+- [x] ImportPanel.js (JSON import) sets `flag_source` for threshold flags
+- [x] UnsortedTransactions shows flag indicator (amber Flag icon with label)
+- [x] FlaggedReview shows flag source context in detail line
+- [x] Build passes, tests pass (272/273, same pre-existing AuthContext failure)
+
+#### Metadata
+
+- **Status:** Done
+- **Priority:** Medium
+- **Type:** Feature
+- **Version:** v1
+- **Assignee:** Claude
+- **GitHub Issue:** No
+- **Completed:** 2026-02-07
+- **Files:** 8 (1 new migration, 7 modified components/utils)
 
 ---
 
@@ -232,27 +263,26 @@ The tabs will be: Account (Profile, Language), Household (Members, Guidelines), 
 
 #### Description
 
-Add CSV parsing support for PNC Bank export format. Currently the import feature only supports a generic CSV format, requiring manual reformatting of bank exports before import. PNC exports transactions in their own format with specific column names, date formats, and amount representations that differ from the app's expected format.
+Add CSV parsing support for PNC Bank export format. PNC exports transactions with specific column names, date formats, and amount representations that differ from the app's expected format. The parser auto-detects PNC format (credit card vs checking) based on header columns and maps fields appropriately.
 
-The parser should auto-detect PNC format based on header columns and map fields appropriately: date column to txn_date, description/memo to description, debit/credit columns to signed amount. This eliminates manual CSV manipulation and reduces friction for regular imports from PNC accounts.
+**Implementation:** Auto-detects two PNC formats — credit card (`Date,Description,Amount`) and checking (`Date,Description,Withdrawals,Deposits,Balance`). Both formats handled in `csvParserUtils.js` with dedicated amount parsers.
 
 #### Acceptance Criteria
 
-- [ ] Auto-detect PNC CSV format from headers
-- [ ] Map PNC columns to transaction fields
-- [ ] Handle PNC date format correctly
-- [ ] Handle debit/credit amount representation
-- [ ] Unit tests for PNC parser
+- [x] Auto-detect PNC CSV format from headers (credit vs checking)
+- [x] Map PNC columns to transaction fields
+- [x] Handle PNC date format correctly
+- [x] Handle debit/credit amount representation
+- [x] Unit tests for PNC parser
 
 #### Metadata
 
-- **Status:** Blocked
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Feature
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
-- **Blocked By:** Waiting for sample PNC CSV export
 
 ---
 

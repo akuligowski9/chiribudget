@@ -4,6 +4,85 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-07 — Import Duplicate Detection Flags (CB-061) & Documentation Sync
+
+### Summary
+
+Implemented import duplicate detection flags so in-file duplicates are imported and flagged for review instead of silently dropped. Added `flag_source` column to transactions table to distinguish flag origins. Comprehensive documentation sync across all docs (README, BACKLOG, PROGRESS, TECH_SPEC, OPS).
+
+### Work Completed
+
+**CB-061: Import Duplicate Detection Flags (Done)**
+
+**Migration (Step 1):**
+
+- Created `supabase/migrations/005_import_duplicate_flags.sql`
+- Added `flag_source text` column to transactions (nullable, no enum)
+- Updated `enforce_budget_rules()` trigger to set `flag_source = 'threshold'`
+- Backfilled existing threshold-flagged rows
+
+**Import Logic (Step 2):**
+
+- `src/lib/importUtils.js` — Added `makeUniqueFingerprint()` helper (appends `_dup2`, `_dup3`)
+- `src/components/ImportFilePanel.jsx` — Replaced `fingerprintSet` (Set) with `fingerprintMap` (Map), flags both copies of duplicates, retroactively flags first occurrence, shows "X duplicates flagged for review"
+- `src/components/ImportUpload.jsx` — Same pattern: flag instead of skip, updated summary and toast text
+
+**Other Flag Paths (Step 3):**
+
+- `src/components/QuickAddForm.jsx` — Sets `flag_source` to `'threshold'` or `'category_limit'`
+- `src/components/ImportPanel.js` — Sets `flag_source: 'threshold'` for JSON import
+
+**UI Indicators (Step 4):**
+
+- `src/components/UnsortedTransactions.jsx` — Amber Flag icon with label ("Possible duplicate" / "Over threshold" / "Category limit")
+- `src/components/FlaggedReview.jsx` — Added `flag_source` to select query, displays source context
+
+**Documentation Sync:**
+
+- `README.md` — Major rewrite for portfolio visitors: features section, OAuth auth, migrations setup, deploy pipeline, updated env vars, test counts
+- `docs/BACKLOG.md` — Added CB-061, fixed CB-044 (PNC parser → Done), fixed CB-060 (Version → Done), cleaned up stale reminders
+- `docs/PROGRESS.md` — This entry
+- `docs/TECH_SPEC.md` — Fixed auth, data model (payer text, flag_source, recurring tables), non-goals, test counts, infrastructure refs
+- `docs/OPS.md` — Fixed auth description, deploy checklist, backup table list
+
+### Files Modified (Feature)
+
+| File                                                 | Action   |
+| ---------------------------------------------------- | -------- |
+| `supabase/migrations/005_import_duplicate_flags.sql` | Created  |
+| `src/lib/importUtils.js`                             | Modified |
+| `src/components/ImportFilePanel.jsx`                 | Modified |
+| `src/components/ImportUpload.jsx`                    | Modified |
+| `src/components/QuickAddForm.jsx`                    | Modified |
+| `src/components/ImportPanel.js`                      | Modified |
+| `src/components/UnsortedTransactions.jsx`            | Modified |
+| `src/components/FlaggedReview.jsx`                   | Modified |
+
+### Files Modified (Documentation)
+
+- `README.md`, `docs/BACKLOG.md`, `docs/PROGRESS.md`, `docs/TECH_SPEC.md`, `docs/OPS.md`
+
+### Decisions Made
+
+- **Flag both copies**: User needs to see both to decide which to keep/delete
+- **Fingerprint suffix**: Simplest way to satisfy unique constraint without schema changes
+- **Nullable text, not enum**: Avoids migration for each new flag source
+- **Threshold trigger wins**: If import dupe also exceeds threshold, DB trigger overwrites to `'threshold'`
+- **DB-level dupes still skipped**: Only in-file duplicates get flagged
+
+### Test Results
+
+- Unit tests: 272/273 passing (1 pre-existing AuthContext failure)
+- Build: Passes
+
+### What's Next
+
+- Manual test with PNC checking CSV (the two $172.67 rows on 2026-01-20 should both import with amber flags)
+- Manual test with non-duplicate CSV (no flags set, normal behavior)
+- Verify threshold flags still work with `flag_source = 'threshold'`
+
+---
+
 ## 2026-02-06 (Evening) — CB-060: Version Display & Release Process
 
 ### Summary

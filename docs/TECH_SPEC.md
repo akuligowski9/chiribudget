@@ -1,7 +1,7 @@
 # ChiriBudget Technical Specification
 
-**Version:** 1.0
-**Last Updated:** January 2026
+**Version:** 1.1
+**Last Updated:** February 2026
 **Status:** Production
 
 ---
@@ -21,9 +21,8 @@ ChiriBudget is a shared household budgeting application designed for two-person 
 
 ### 1.3 Non-Goals
 
-- Complex multi-account banking integrations
+- Complex multi-account banking integrations (basic CSV import from PNC and Interbank supported)
 - Investment portfolio tracking
-- Bill reminders or recurring transaction automation
 - Offline-first architecture (basic offline support exists, but app is online-primary)
 
 ---
@@ -139,22 +138,27 @@ Central organizational unit. Each household has a unique join code for partner o
 
 All income and expenses.
 
-| Column       | Type          | Notes                        |
-| ------------ | ------------- | ---------------------------- |
-| id           | uuid          | Primary key                  |
-| household_id | uuid          | FK to households             |
-| txn_date     | date          | When it occurred             |
-| currency     | currency_t    | USD or PEN                   |
-| amount       | numeric(12,2) | Negative = expense           |
-| description  | text          | Optional                     |
-| category     | category_t    | Enum (10 values)             |
-| payer        | payer_t       | alex, adriana, together      |
-| is_flagged   | boolean       | Auto-set for over-threshold  |
-| flag_reason  | text          | Why it was flagged           |
-| explanation  | text          | User-provided justification  |
-| resolved_at  | timestamptz   | When explanation was added   |
-| fingerprint  | text          | Unique per household (dedup) |
-| source       | text          | manual or import             |
+| Column          | Type          | Notes                                                     |
+| --------------- | ------------- | --------------------------------------------------------- |
+| id              | uuid          | Primary key                                               |
+| household_id    | uuid          | FK to households                                          |
+| txn_date        | date          | When it occurred                                          |
+| currency        | currency_t    | USD or PEN                                                |
+| amount          | numeric(12,2) | Negative = expense                                        |
+| description     | text          | Optional                                                  |
+| category        | category_t    | Enum (10 values)                                          |
+| payer           | text          | Dynamic from household members (e.g., "Alex", "Together") |
+| is_flagged      | boolean       | Auto-set for over-threshold or import duplicates          |
+| flag_reason     | text          | Why it was flagged                                        |
+| flag_source     | text          | Origin: 'threshold', 'import', 'category_limit', 'user'   |
+| explanation     | text          | User-provided justification                               |
+| resolved_at     | timestamptz   | When explanation was added                                |
+| fingerprint     | text          | Unique per household (dedup)                              |
+| source          | text          | manual or import                                          |
+| import_batch_id | uuid          | FK to import_batches (null for manual)                    |
+| created_by      | uuid          | FK to auth.users                                          |
+| updated_by      | uuid          | FK to auth.users                                          |
+| deleted_at      | timestamptz   | Soft delete timestamp (null = active)                     |
 
 #### `month_status`
 
@@ -168,10 +172,35 @@ Tracks monthly discussion state per currency.
 | status           | month_status_t | draft or discussed |
 | discussion_notes | text           | What was agreed    |
 
+#### `recurring_transactions`
+
+User-defined recurring transaction templates.
+
+| Column       | Type          | Notes                                    |
+| ------------ | ------------- | ---------------------------------------- |
+| id           | uuid          | Primary key                              |
+| household_id | uuid          | FK to households                         |
+| frequency    | text          | daily, weekly, biweekly, monthly, yearly |
+| amount       | numeric(12,2) | Negative = expense                       |
+| currency     | currency_t    | USD or PEN                               |
+| category     | category_t    | Transaction category                     |
+| payer        | text          | Dynamic from household members           |
+| description  | text          | Template description                     |
+| start_date   | date          | First occurrence                         |
+| end_date     | date          | Optional end date                        |
+
+#### `recurring_exceptions`
+
+Skip individual occurrences of recurring transactions.
+
+| Column                   | Type | Notes                        |
+| ------------------------ | ---- | ---------------------------- |
+| recurring_transaction_id | uuid | FK to recurring_transactions |
+| exception_date           | date | Date to skip                 |
+
 ### 3.3 Enums
 
 ```sql
-payer_t: alex, adriana, together
 currency_t: USD, PEN
 month_status_t: draft, discussed
 import_status_t: staged, confirmed
@@ -180,15 +209,18 @@ category_t: Fixed Expenses, Rent/Mortgages, Food, Dogs,
             Salary, Investments, Extra
 ```
 
+**Note:** `payer` was changed from enum (`payer_t`) to dynamic text field. Payer options are derived from household member display names at runtime.
+
 ---
 
 ## 4. Security Model
 
 ### 4.1 Authentication
 
-- **Method**: Magic link (passwordless email)
-- **Provider**: Supabase Auth
+- **Method**: OAuth (Google + GitHub)
+- **Provider**: Supabase Auth with PKCE flow
 - **Session**: JWT stored in browser, auto-refreshed
+- **Callback**: `/auth/callback` handles OAuth redirect and session exchange
 
 ### 4.2 Authorization (RLS)
 
@@ -288,8 +320,10 @@ Households are completely isolated. User A in Household 1 cannot see any data fr
 **Decisions**:
 
 - CSV import creates import_batch record for grouping/tracking
-- Duplicates silently skipped (not errors) to allow re-importing same file safely
+- **In-file duplicates** (same fingerprint within one CSV) are imported and flagged as `possible_duplicate` with `flag_source: 'import'` for human review. Both copies are flagged. Fingerprints are suffixed (`_dup2`, `_dup3`) to satisfy the DB unique constraint.
+- **DB-level duplicates** (already imported) are still skipped to allow re-importing same file safely
 - Batch insert via RPC for atomicity and performance
+- Supported banks: PNC Bank (credit card + checking, auto-detected) and Interbank Peru (dual-currency PEN/USD)
 
 ### 5.3 Dashboard
 
@@ -595,11 +629,12 @@ ON month_status (household_id, month, currency);
 
 ### 9.1 Current Coverage
 
-| Type      | Framework             | Count      |
-| --------- | --------------------- | ---------- |
-| Unit      | Jest                  | 130+ tests |
-| Component | React Testing Library | Integrated |
-| E2E       | (Not implemented)     | -          |
+| Type        | Framework             | Count      |
+| ----------- | --------------------- | ---------- |
+| Unit        | Jest                  | 272+ tests |
+| Component   | React Testing Library | Integrated |
+| Integration | Jest + Supabase       | 40 tests   |
+| E2E         | Playwright            | 20+ tests  |
 
 ### 9.2 Test Structure
 
@@ -609,10 +644,19 @@ src/
 │   ├── format.test.js
 │   ├── csv.test.js
 │   ├── categories.test.js
-│   └── demoStore.test.js
-└── components/__tests__/
-    ├── QuickAddForm.test.js
-    └── TransactionList.test.js
+│   ├── demoStore.test.js
+│   ├── validation.test.js
+│   ├── comparisonUtils.test.js
+│   └── recurringUtils.test.js
+├── components/__tests__/
+│   ├── QuickAddForm.test.js
+│   ├── TransactionList.test.js
+│   ├── TransactionUpdate.test.js
+│   ├── DashboardSummary.test.js
+│   ├── PeriodComparisonSection.test.js
+│   └── ErrorBoundary.test.js
+└── __tests__/
+    └── recurring.integration.test.js
 ```
 
 ### 9.3 Running Tests
@@ -655,11 +699,10 @@ ChiriBudget intentionally avoids third-party services for:
 
 ### 11.1 Open Questions
 
-| Question                  | Context                                                     | Status                |
-| ------------------------- | ----------------------------------------------------------- | --------------------- |
-| Bank CSV formats          | Need examples from BCP, Interbank to build parsers          | Waiting on user input |
-| Threshold re-flagging UX  | How to handle existing transactions when threshold changes? | Deferred              |
-| Multi-currency households | What if household uses 3+ currencies?                       | Out of scope for v1   |
+| Question                  | Context                                                     | Status              |
+| ------------------------- | ----------------------------------------------------------- | ------------------- |
+| Threshold re-flagging UX  | How to handle existing transactions when threshold changes? | Deferred            |
+| Multi-currency households | What if household uses 3+ currencies?                       | Out of scope for v1 |
 
 ### 11.2 Known Risks
 
@@ -719,10 +762,12 @@ ChiriBudget intentionally avoids third-party services for:
 
 ### Infrastructure
 
-| File                           | Purpose            |
-| ------------------------------ | ------------------ |
-| `public/sw.js`                 | Service worker     |
-| `scripts/restore-backup.js`    | CLI restore script |
-| `.github/workflows/backup.yml` | Automated backup   |
-| `.github/workflows/ci.yml`     | CI/CD pipeline     |
-| `supabase/schema.sql`          | Database schema    |
+| File                            | Purpose                                          |
+| ------------------------------- | ------------------------------------------------ |
+| `public/sw.js`                  | Service worker                                   |
+| `scripts/restore-backup.js`     | CLI restore script                               |
+| `.github/workflows/ci.yml`      | CI pipeline (lint, test, build)                  |
+| `.github/workflows/deploy.yml`  | Deploy pipeline (CI → Backup → Migrate → Deploy) |
+| `.github/workflows/backup.yml`  | Automated backup to private repo                 |
+| `.github/workflows/release.yml` | Auto-bump version, create git tags/releases      |
+| `supabase/migrations/`          | Sequential database migrations (001–005)         |

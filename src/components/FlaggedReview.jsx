@@ -54,7 +54,7 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
     const { data: tx, error } = await supabase
       .from('transactions')
       .select(
-        'id,txn_date,description,amount,currency,category,payer,is_flagged,explanation'
+        'id,txn_date,description,amount,currency,category,payer,is_flagged,flag_source,explanation'
       )
       .eq('household_id', p.household_id)
       .eq('currency', currency)
@@ -213,6 +213,18 @@ export default function FlaggedReview({ currency, onCurrencyChange }) {
                           <div className="text-xs text-warm-gray mt-0.5">
                             {r.txn_date} &middot; {r.category} &middot;{' '}
                             {r.payer}
+                            {r.flag_source && (
+                              <span className="text-amber-600 ml-1">
+                                &middot;{' '}
+                                {r.flag_source === 'import'
+                                  ? 'Import duplicate'
+                                  : r.flag_source === 'threshold'
+                                    ? 'Over threshold'
+                                    : r.flag_source === 'category_limit'
+                                      ? 'Category limit'
+                                      : r.flag_source}
+                              </span>
+                            )}
                           </div>
                         </div>
                         <div

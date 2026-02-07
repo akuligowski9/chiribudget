@@ -27,6 +27,14 @@ export function computeFingerprint({
 }
 
 /**
+ * Create a unique fingerprint for in-file duplicate transactions.
+ * Appends _dup{counter} to satisfy the DB unique constraint while keeping both rows.
+ */
+export function makeUniqueFingerprint(baseFingerprint, counter) {
+  return `${baseFingerprint}_dup${counter}`;
+}
+
+/**
  * Normalize imported transaction data from various JSON formats
  */
 export function normalizeImported(raw, currencyFallback) {

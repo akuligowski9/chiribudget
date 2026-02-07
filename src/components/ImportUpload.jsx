@@ -15,8 +15,8 @@ import {
   BANK_MAPPINGS,
   BANKS,
   CURRENT_YEAR,
+  computeFingerprint,
   detectPncFormat,
-  generateFingerprint,
   parseAmount,
   parseDate,
   parsePncCheckingAmount,
@@ -24,6 +24,7 @@ import {
   shouldSkipPncCreditTransaction,
 } from '@/lib/csvParserUtils';
 import { toastId } from '@/lib/format';
+import { makeUniqueFingerprint } from '@/lib/importUtils';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function ImportUpload({ onClose, onSuccess }) {
@@ -84,8 +85,8 @@ export default function ImportUpload({ onClose, onSuccess }) {
 
         // Parse all transactions
         const transactions = [];
-        const fingerprintSet = new Set();
-        let fileDuplicates = 0;
+        const fingerprintMap = new Map(); // fingerprint -> count
+        let fileDuplicateFlagged = 0;
 
         for (const row of csvData) {
           const dateKey = Object.keys(row).find(
@@ -114,10 +115,10 @@ export default function ImportUpload({ onClose, onSuccess }) {
             const penAmount = parseAmount(row[penKey]);
             const usdAmount = parseAmount(row[usdKey]);
             if (usdAmount !== 0) {
-              amount = -Math.abs(usdAmount);
+              amount = -usdAmount;
               currency = 'USD';
             } else if (penAmount !== 0) {
-              amount = -Math.abs(penAmount);
+              amount = -penAmount;
               currency = 'PEN';
             }
           } else {
@@ -144,20 +145,23 @@ export default function ImportUpload({ onClose, onSuccess }) {
           const txnDate = parseDate(dateStr, mapping.dateFormat, year);
           if (!txnDate) continue;
 
-          const fingerprint = generateFingerprint(
-            profile?.household_id,
+          const baseFingerprint = computeFingerprint({
+            household_id: profile?.household_id,
             currency,
-            txnDate,
+            txn_date: txnDate,
             amount,
-            description
-          );
+            description,
+          });
 
-          // Check for duplicates within the file
-          if (fingerprintSet.has(fingerprint)) {
-            fileDuplicates++;
-            continue;
-          }
-          fingerprintSet.add(fingerprint);
+          // Track in-file duplicates: flag instead of skip
+          const count = fingerprintMap.get(baseFingerprint) || 0;
+          fingerprintMap.set(baseFingerprint, count + 1);
+          const isDuplicate = count > 0;
+          const fingerprint = isDuplicate
+            ? makeUniqueFingerprint(baseFingerprint, count + 1)
+            : baseFingerprint;
+
+          if (isDuplicate) fileDuplicateFlagged++;
 
           transactions.push({
             household_id: profile?.household_id,
@@ -167,12 +171,38 @@ export default function ImportUpload({ onClose, onSuccess }) {
             amount,
             category: 'Unexpected',
             payer: defaultPayer,
-            is_flagged: false,
+            is_flagged: isDuplicate,
+            flag_reason: isDuplicate ? 'possible_duplicate' : null,
+            flag_source: isDuplicate ? 'import' : null,
             source: 'import',
             fingerprint,
+            baseFingerprint,
             created_by: profile?.user_id,
           });
         }
+
+        // Retroactively flag the first occurrence of any duplicated fingerprint
+        const duplicatedFingerprints = new Set(
+          [...fingerprintMap.entries()]
+            .filter(([, c]) => c > 1)
+            .map(([fp]) => fp)
+        );
+
+        for (const tx of transactions) {
+          if (
+            tx.baseFingerprint &&
+            duplicatedFingerprints.has(tx.baseFingerprint) &&
+            !tx.is_flagged
+          ) {
+            tx.is_flagged = true;
+            tx.flag_reason = 'possible_duplicate';
+            tx.flag_source = 'import';
+            fileDuplicateFlagged++;
+          }
+        }
+
+        // Remove baseFingerprint before sending to DB
+        transactions.forEach((tx) => delete tx.baseFingerprint);
 
         // Check for duplicates in database (skip in demo mode)
         let dbDuplicates = 0;
@@ -204,10 +234,10 @@ export default function ImportUpload({ onClose, onSuccess }) {
         }
 
         setAnalysisResult({
-          total: transactions.length + fileDuplicates,
+          total: transactions.length,
           newCount: newTransactions.length,
           dbDuplicates,
-          fileDuplicates,
+          fileDuplicateFlagged,
           parsedTransactions: newTransactions,
         });
       } catch (err) {
@@ -400,18 +430,24 @@ export default function ImportUpload({ onClose, onSuccess }) {
       }
 
       // Show results
-      const skippedInAnalysis =
-        analysisResult.dbDuplicates + analysisResult.fileDuplicates;
+      const skippedDbDupes = analysisResult.dbDuplicates;
+      const flaggedDupes = analysisResult.fileDuplicateFlagged;
+
+      let resultMessage = t('unsorted.transactionsImported', {
+        count: insertedCount,
+      });
+      if (skippedDbDupes > 0) {
+        resultMessage += ` (${skippedDbDupes} already imported)`;
+      }
+      if (flaggedDupes > 0) {
+        resultMessage += ` (${flaggedDupes} duplicates flagged for review)`;
+      }
 
       setToast({
         id: toastId(),
         type: 'success',
         title: t('unsorted.importSuccess'),
-        message:
-          t('unsorted.transactionsImported', { count: insertedCount }) +
-          (skippedInAnalysis > 0
-            ? ` (${skippedInAnalysis} duplicates skipped)`
-            : ''),
+        message: resultMessage,
       });
       onSuccess?.();
     } catch (e) {
@@ -515,12 +551,12 @@ export default function ImportUpload({ onClose, onSuccess }) {
                       </div>
                     )}
 
-                    {analysisResult.fileDuplicates > 0 && (
+                    {analysisResult.fileDuplicateFlagged > 0 && (
                       <div className="flex items-center gap-1.5 text-amber-600">
                         <Copy className="w-3.5 h-3.5" />
                         <span>
-                          {analysisResult.fileDuplicates} duplicates in file
-                          (will skip)
+                          {analysisResult.fileDuplicateFlagged} duplicates
+                          flagged for review
                         </span>
                       </div>
                     )}

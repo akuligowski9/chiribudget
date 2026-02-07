@@ -219,7 +219,7 @@ export function parseDate(dateStr, format, year) {
     return `${fullYear}-${month}-${day}`;
   }
 
-  return `${year}-01-01`; // Fallback
+  return null; // Unparseable date
 }
 
 /**
@@ -276,20 +276,5 @@ export function shouldSkipPncCreditTransaction(description) {
   return upper.includes('THANK YOU FOR YOUR PMT');
 }
 
-/**
- * Generate fingerprint for deduplication
- */
-export function generateFingerprint(
-  householdId,
-  currency,
-  txnDate,
-  amount,
-  description
-) {
-  const base = `${householdId}|${currency}|${txnDate}|${Number(amount).toFixed(2)}|${(description || '').toLowerCase().trim()}`;
-  let h = 0;
-  for (let i = 0; i < base.length; i++) {
-    h = (h * 31 + base.charCodeAt(i)) >>> 0;
-  }
-  return `fp_${h}`;
-}
+// Re-export unified fingerprint from importUtils (single source of truth)
+export { computeFingerprint } from '@/lib/importUtils';
