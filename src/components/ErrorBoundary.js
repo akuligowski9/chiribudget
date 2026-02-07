@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import * as Sentry from '@sentry/nextjs';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -15,6 +16,9 @@ export default class ErrorBoundary extends React.Component {
   componentDidCatch(error, errorInfo) {
     // eslint-disable-next-line no-console
     console.error('ErrorBoundary caught an error:', error, errorInfo);
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo.componentStack } },
+    });
   }
 
   render() {

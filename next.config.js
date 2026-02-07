@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const { withSentryConfig } = require('@sentry/nextjs');
 const { version } = require('./package.json');
 
 const nextConfig = {
@@ -35,7 +36,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' https://*.supabase.co wss://*.supabase.co",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
               "frame-ancestors 'none'",
             ].join('; '),
           },
@@ -45,4 +46,23 @@ const nextConfig = {
   },
 };
 
-module.exports = nextConfig;
+module.exports = withSentryConfig(nextConfig, {
+  // Suppress Sentry CLI build logs
+  silent: true,
+
+  // Don't expose source maps to the browser
+  hideSourceMaps: true,
+
+  // Upload source maps only when auth token is available (Vercel builds)
+  authToken: process.env.SENTRY_AUTH_TOKEN,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Disable source map upload if no auth token (local dev, CI without token)
+  sourcemaps: {
+    disable: !process.env.SENTRY_AUTH_TOKEN,
+  },
+
+  // Disable Sentry telemetry
+  telemetry: false,
+});
