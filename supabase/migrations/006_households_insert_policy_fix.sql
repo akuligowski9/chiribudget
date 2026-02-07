@@ -6,6 +6,7 @@
 -- applied (schema exists) but the INSERT policy was never actually created.
 --
 -- This migration is idempotent - safe to run even if policy exists.
+-- NOTE: This was later superseded by 007 which adds TO authenticated
 
 drop policy if exists households_insert on households;
 create policy households_insert on households
