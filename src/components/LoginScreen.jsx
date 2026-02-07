@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { getSiteType, SITE_TYPE, getSiteUrl } from '@/lib/siteConfig';
+import { supabase } from '@/lib/supabaseClient';
 
 // Timeout for OAuth redirect (if we're still here after this, something went wrong)
 const OAUTH_TIMEOUT_MS = 15000;
@@ -124,6 +125,24 @@ export default function LoginScreen() {
     }
   }
 
+  async function handleDevLogin(email) {
+    resetSignInState();
+    setSigningIn(true);
+    setStatus(`Signing in as ${email}...`);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password: 'password123',
+    });
+
+    if (error) {
+      setSigningIn(false);
+      setShowRetry(true);
+      setStatus(error.message);
+    }
+    // On success, onAuthStateChange in AuthContext handles the rest
+  }
+
   function handleSiteNavigation(targetSiteType) {
     window.location.href = getSiteUrl(targetSiteType);
   }
@@ -211,6 +230,35 @@ export default function LoginScreen() {
             </div>
           )}
         </div>
+
+        {/* Dev Login — only in development */}
+        {process.env.NODE_ENV === 'development' && (
+          <div className="mt-4 p-3 rounded-lg bg-stone/5 border border-stone/10">
+            <p className="text-xs text-warm-gray text-center mb-2">
+              Dev Login (local only)
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-xs bg-stone/10 hover:bg-stone/20"
+                onClick={() => handleDevLogin('testuser@example.com')}
+                disabled={signingIn}
+              >
+                TestUser
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 text-xs bg-stone/10 hover:bg-stone/20"
+                onClick={() => handleDevLogin('testpartner@example.com')}
+                disabled={signingIn}
+              >
+                TestPartner
+              </Button>
+            </div>
+          </div>
+        )}
 
         {/* Navigation / Demo Mode Section */}
         {(navButtons.length > 0 || showTryDemoButton) && (
