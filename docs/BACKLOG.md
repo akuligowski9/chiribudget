@@ -183,21 +183,20 @@ The full implementation covers four areas:
 
 #### Acceptance Criteria
 
-- [x] App version displayed in Settings page or footer (reads from `package.json`)
-- [x] Git tags created for releases (e.g., `v0.2.0`)
-- [x] GitHub releases created with changelog summaries
-- [x] Version auto-increments on deploy (GitHub Actions or similar)
-- [x] Version displayed in UI matches `package.json` version
+- [ ] App version displayed in Settings page or footer (reads from `package.json`)
+- [ ] Git tags created for releases (e.g., `v0.2.0`)
+- [ ] GitHub releases created with changelog summaries
+- [ ] Version auto-increments on deploy (GitHub Actions or similar)
+- [ ] Version displayed in UI matches `package.json` version
 
 #### Metadata
 
-- **Status:** Done
+- **Status:** In Progress
 - **Priority:** Medium
 - **Type:** Maintenance
 - **Version:** v1
-- **Assignee:** Claude
+- **Assignee:** Unassigned
 - **GitHub Issue:** No
-- **Completed:** 2026-02-06
 
 ---
 

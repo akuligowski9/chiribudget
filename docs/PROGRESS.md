@@ -4,6 +4,71 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-06 (Evening) — CB-060: Version Display & Release Process
+
+### Summary
+
+Created and partially implemented CB-060. The app had no visible version indicator (package.json v0.1.2 not exposed anywhere), no git tags, no GitHub releases, and no auto-increment. Completed 3 of 5 implementation steps; release workflow creation remains.
+
+### Work Completed
+
+**CB-060: Version Display & Release Process (In Progress — 3/5 steps done)**
+
+**Step 1: Exposed version in `next.config.js`**
+
+- Added `const { version } = require('./package.json')` at top
+- Added `env: { NEXT_PUBLIC_APP_VERSION: version }` to config
+- Standard Next.js pattern — baked at build time, no runtime config needed
+
+**Step 2: Added translation keys**
+
+- English (`messages/en.json`): `"appVersion": "v{version}"` in settings section
+- Spanish (`messages/es.json`): `"appVersion": "v{version}"` in settings section
+
+**Step 3: Added version display to Settings page**
+
+- Added centered, muted `v0.1.2` text below Language Selector in Account tab
+- Uses `text-xs text-warm-gray` styling to match existing muted helper text pattern
+- Falls back to `0.0.0` if env var missing
+
+### Not Completed (Carry Forward)
+
+**Step 4: Create `.github/workflows/release.yml`**
+
+- Auto-bump patch version via `npm version patch --no-git-tag-version`
+- Commit with `[skip ci]` and push
+- Create git tag and GitHub release with auto-generated notes
+- Triple-layered infinite loop prevention: `[skip ci]` message, `GITHUB_TOKEN` behavior, `if` condition
+- Plan file with full details: `~/.claude/plans/velvety-sleeping-tulip.md`
+
+**Step 5: Create initial git tag**
+
+- Run `git tag v0.1.2 && git push origin v0.1.2` to give release notes a baseline
+
+### Files Modified
+
+- `next.config.js` — Added `NEXT_PUBLIC_APP_VERSION` env var from package.json
+- `messages/en.json` — Added `settings.appVersion` translation key
+- `messages/es.json` — Added `settings.appVersion` translation key
+- `src/app/settings/page.js` — Added version text display in Account tab
+- `docs/BACKLOG.md` — Added CB-060, updated status to In Progress
+
+### Decisions Made
+
+- **Settings page over footer**: Version displayed in Settings > Account tab, not a global footer — keeps it visible but unobtrusive
+- **No new component**: Single `<p>` tag, no need for a dedicated VersionDisplay component
+- **Patch-level auto-increment**: Only bumps patch (0.1.x), manual bumps for minor/major
+- **One-commit version lag**: Deploy and release workflows run in parallel; deployed build uses pre-bump version, next push uses bumped version. Standard and acceptable.
+
+### What's Next
+
+1. Create `.github/workflows/release.yml` (Step 4 of CB-060)
+2. Create initial git tag `v0.1.2` (Step 5 of CB-060)
+3. Run verification: `npm test` and `npm run build`
+4. Mark CB-060 as Done in BACKLOG.md
+
+---
+
 ## 2026-02-06 — Production Readiness for January Budget Discussion
 
 ### Summary

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Trash2, RotateCcw } from 'lucide-react';
+import { Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,6 +10,7 @@ import {
   CollapsibleCardContent,
   useCollapsible,
 } from '@/components/ui/collapsible-card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import { useAuth } from '@/contexts/AuthContext';
 import { useDemo } from '@/hooks/useDemo';
 import { toastId } from '@/lib/format';
@@ -24,6 +25,7 @@ export default function TrashView() {
   const [deletedRows, setDeletedRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState(null);
+  const [confirmHardDelete, setConfirmHardDelete] = useState(null);
 
   const householdId = profile?.household_id;
 
@@ -99,6 +101,41 @@ export default function TrashView() {
         message: t('settings.restoreSuccess'),
       });
     }
+  }
+
+  async function hardDeleteTransaction(id) {
+    if (isDemoMode) {
+      setToast({
+        id: toastId(),
+        type: 'info',
+        title: 'Not available in demo mode',
+      });
+      return;
+    }
+
+    // Use direct delete since we're already looking at soft-deleted items
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', id)
+      .eq('household_id', householdId);
+
+    if (error) {
+      setToast({
+        id: toastId(),
+        type: 'error',
+        title: t('settings.deleteFailed') || 'Delete failed',
+        message: error.message,
+      });
+    } else {
+      setDeletedRows((prev) => prev.filter((r) => r.id !== id));
+      setToast({
+        id: toastId(),
+        type: 'success',
+        title: t('settings.permanentlyDeleted') || 'Permanently deleted',
+      });
+    }
+    setConfirmHardDelete(null);
   }
 
   function formatDate(dateStr) {
@@ -181,20 +218,46 @@ export default function TrashView() {
                     })}
                   </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => restoreTransaction(row.id)}
-                  className="flex items-center gap-1"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t('settings.restore')}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => restoreTransaction(row.id)}
+                    className="flex items-center gap-1"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    {t('settings.restore')}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setConfirmHardDelete(row)}
+                    className="flex items-center gap-1 text-error hover:text-error hover:bg-error/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    {t('settings.deletePermanently') || 'Delete'}
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
         )}
       </CollapsibleCardContent>
+
+      {/* Hard delete confirmation dialog */}
+      <ConfirmDialog
+        open={!!confirmHardDelete}
+        onClose={() => setConfirmHardDelete(null)}
+        title={t('settings.confirmPermanentDelete') || 'Delete Permanently?'}
+        message={
+          t('settings.permanentDeleteWarning') ||
+          'This transaction will be permanently deleted and cannot be recovered.'
+        }
+        confirmText={t('settings.deletePermanently') || 'Delete Permanently'}
+        onConfirm={() => hardDeleteTransaction(confirmHardDelete?.id)}
+        variant="danger"
+      />
+
       <Toast toast={toast} onClose={() => setToast(null)} />
     </CollapsibleCard>
   );

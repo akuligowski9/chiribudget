@@ -138,6 +138,13 @@ export const YEARS = [CURRENT_YEAR, CURRENT_YEAR - 1, CURRENT_YEAR - 2];
 export function parseInterbankDate(dateStr, year) {
   if (!dateStr) return null;
 
+  // Validate year is provided and is a valid 4-digit number
+  const yearStr = String(year || '').trim();
+  if (!/^\d{4}$/.test(yearStr)) {
+    console.warn('parseInterbankDate: Invalid year provided:', year);
+    return null;
+  }
+
   const cleanDate = dateStr.trim();
   const match = cleanDate.match(/^(\d{1,2})-([A-Za-z]{3})$/);
 
@@ -149,7 +156,7 @@ export function parseInterbankDate(dateStr, year) {
 
   if (!month) return null;
 
-  return `${year}-${month}-${day}`;
+  return `${yearStr}-${month}-${day}`;
 }
 
 /**
