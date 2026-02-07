@@ -26,7 +26,7 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061). Fixed workflow triggers to prevent redundant runs. Set up local Supabase CLI for development (CB-062). Investigating household data issue in production (CB-063). Added Sentry error monitoring (CB-013).
+**Session: Feb 6–7, 2026** — Production readiness push. Fixed OAuth, login UX. Set up automated database migrations in deploy workflow. Fixed all RLS policies missing `TO authenticated` (CB-063). Implemented import duplicate detection flags (CB-061). Fixed workflow triggers to prevent redundant runs. Set up local Supabase CLI for development (CB-062). Added Sentry error monitoring (CB-013).
 
 ---
 
@@ -280,37 +280,36 @@ Set up local Supabase environment for development and testing. This allows testi
 
 ---
 
-### CB-063: Investigate Production Household Data Issue
+### CB-063: Fix RLS Policies Missing TO authenticated
 
 #### Description
 
-After deploying migrations, user's household association appears broken. Login works, but shows "Set Up Your Household" screen instead of existing household. Need to investigate whether:
+All RLS policies in the database were missing `TO authenticated`, causing them to only apply to the PUBLIC/anon role (anonymous users) instead of logged-in users. This broke all database operations for authenticated users in production.
 
-1. Household data was deleted (unlikely - migrations only add tables/policies)
-2. Profile's `household_id` was set to null
-3. RLS policy change is preventing access
-4. Some other issue
+**Root cause:** PostgreSQL RLS policies default to PUBLIC role when `TO role_name` is not specified. The original schema files didn't include this, and local development masked the issue because it uses the service role key which bypasses RLS entirely.
 
-**Investigation steps:**
+**Additional discovery:** Production database was empty (no household data) because it was intentionally set up as a separate database on Jan 26. The "missing household" was expected - user just needed to create one.
 
-- Query production database for households, profiles, household_members
-- Check if data exists but profile is disconnected
-- Review migration 004 (RLS fix) for potential issues
-- Restore from backup if data was lost
+**Fix applied:**
+
+- Migration 007: Recreated all 23+ policies with `TO authenticated`
+- Updated base schema files (001_base_schema.sql, setup_fresh_db.sql, schema.sql) to include `TO authenticated` in all policies for future setups
 
 #### Acceptance Criteria
 
-- [ ] Root cause identified
-- [ ] Data recovered or household re-created
-- [ ] Safeguards added to prevent recurrence
+- [x] Root cause identified (missing TO authenticated on all policies)
+- [x] Migration 007 applied to production
+- [x] Household creation works in production
+- [x] Base schema files updated for future setups
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Critical
 - **Type:** Bug
 - **Version:** v1
-- **Assignee:** Unassigned
+- **Assignee:** Alex
+- **Completed:** 2026-02-07
 - **GitHub Issue:** No
 - **Notes:** Blocking production use until resolved
 

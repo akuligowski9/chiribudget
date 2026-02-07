@@ -4,6 +4,58 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-07 (Late Afternoon) — Fix RLS Policies for Authenticated Users (CB-063)
+
+### Summary
+
+All RLS policies in the database were missing `TO authenticated`, causing them to only apply to anonymous users. This broke all database operations for logged-in users in production, manifesting as "new row violates row-level security policy" errors when trying to create households.
+
+### Root Cause
+
+PostgreSQL RLS policies default to the PUBLIC role when `TO role_name` is not specified. In Supabase:
+
+- `public` role = anonymous/unauthenticated users
+- `authenticated` role = logged-in users
+
+All policies were created without `TO authenticated`, so they only applied to anonymous users. Local development masked this because it uses the service role key which bypasses RLS entirely.
+
+### Work Completed
+
+**Migration 007: Fix all RLS policies**
+
+- Recreated all 23+ policies with `TO authenticated`
+- Covers: households, household_members, profiles, budget_config, transactions, month_status, import_batches, errors, recurring_transactions, recurring_exceptions
+
+**Base schema files updated**
+
+- `supabase/migrations/001_base_schema.sql`
+- `supabase/setup_fresh_db.sql`
+- `supabase/schema.sql`
+
+All future database setups will have correct policy targeting.
+
+### Files Modified
+
+| File                                                             | Action                                   |
+| ---------------------------------------------------------------- | ---------------------------------------- |
+| `supabase/migrations/006_households_insert_policy_fix.sql`       | Created (partial fix, superseded by 007) |
+| `supabase/migrations/007_fix_all_rls_policies_authenticated.sql` | Created                                  |
+| `supabase/migrations/001_base_schema.sql`                        | Modified                                 |
+| `supabase/setup_fresh_db.sql`                                    | Modified                                 |
+| `supabase/schema.sql`                                            | Modified                                 |
+
+### Decisions Made
+
+- **Always use `TO authenticated`**: All RLS policies in this app should target the authenticated role since there's no anonymous functionality
+- **Local dev should mirror production**: Use anon key + user login locally so RLS is enforced, catching these bugs before production
+
+### What's Next
+
+- User can now create households and use the app in production
+- Run `supabase db reset` locally to apply the fix to local database
+
+---
+
 ## 2026-02-07 (Evening) — Sentry Error Monitoring (CB-013)
 
 ### Summary
