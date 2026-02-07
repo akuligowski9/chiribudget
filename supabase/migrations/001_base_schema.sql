@@ -446,24 +446,24 @@ alter table errors enable row level security;
 -- Households
 drop policy if exists households_read on households;
 create policy households_read on households
-for select using (is_household_member(id));
+for select to authenticated using (is_household_member(id));
 
 drop policy if exists households_insert on households;
 create policy households_insert on households
-for insert with check (auth.uid() is not null);
+for insert to authenticated with check (auth.uid() is not null);
 
 -- Household members
 drop policy if exists members_read on household_members;
 create policy members_read on household_members
-for select using (is_household_member(household_id));
+for select to authenticated using (is_household_member(household_id));
 
 drop policy if exists members_insert on household_members;
 create policy members_insert on household_members
-for insert with check (auth.uid() = user_id);
+for insert to authenticated with check (auth.uid() = user_id);
 
 drop policy if exists members_delete on household_members;
 create policy members_delete on household_members
-for delete using (
+for delete to authenticated using (
   is_household_member(household_id)
   and auth.uid() != user_id
 );
@@ -471,7 +471,7 @@ for delete using (
 -- Profiles
 drop policy if exists profiles_self on profiles;
 create policy profiles_self on profiles
-for select using (
+for select to authenticated using (
   auth.uid() = user_id
   or exists (
     select 1 from household_members hm1, household_members hm2
@@ -483,79 +483,79 @@ for select using (
 
 drop policy if exists profiles_upsert_self on profiles;
 create policy profiles_upsert_self on profiles
-for insert with check (auth.uid() = user_id);
+for insert to authenticated with check (auth.uid() = user_id);
 
 drop policy if exists profiles_update_self on profiles;
 create policy profiles_update_self on profiles
-for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+for update to authenticated using (auth.uid() = user_id) with check (auth.uid() = user_id);
 
 -- Budget config
 drop policy if exists budget_config_read on budget_config;
 create policy budget_config_read on budget_config
-for select using (is_household_member(household_id));
+for select to authenticated using (is_household_member(household_id));
 
 drop policy if exists budget_config_upsert on budget_config;
 create policy budget_config_upsert on budget_config
-for insert with check (is_household_member(household_id));
+for insert to authenticated with check (is_household_member(household_id));
 
 drop policy if exists budget_config_update on budget_config;
 create policy budget_config_update on budget_config
-for update using (is_household_member(household_id)) with check (is_household_member(household_id));
+for update to authenticated using (is_household_member(household_id)) with check (is_household_member(household_id));
 
 -- Transactions
 drop policy if exists tx_read on transactions;
 create policy tx_read on transactions
-for select using (
+for select to authenticated using (
   is_household_member(household_id)
   AND (deleted_at IS NULL OR deleted_at > now() - interval '30 days')
 );
 
 drop policy if exists tx_insert on transactions;
 create policy tx_insert on transactions
-for insert with check (is_household_member(household_id));
+for insert to authenticated with check (is_household_member(household_id));
 
 drop policy if exists tx_update on transactions;
 create policy tx_update on transactions
-for update using (is_household_member(household_id)) with check (is_household_member(household_id));
+for update to authenticated using (is_household_member(household_id)) with check (is_household_member(household_id));
 
 drop policy if exists tx_delete on transactions;
 create policy tx_delete on transactions
-for delete using (is_household_member(household_id));
+for delete to authenticated using (is_household_member(household_id));
 
 -- Month status
 drop policy if exists ms_read on month_status;
 create policy ms_read on month_status
-for select using (is_household_member(household_id));
+for select to authenticated using (is_household_member(household_id));
 
 drop policy if exists ms_insert on month_status;
 create policy ms_insert on month_status
-for insert with check (is_household_member(household_id));
+for insert to authenticated with check (is_household_member(household_id));
 
 drop policy if exists ms_update on month_status;
 create policy ms_update on month_status
-for update using (is_household_member(household_id)) with check (is_household_member(household_id));
+for update to authenticated using (is_household_member(household_id)) with check (is_household_member(household_id));
 
 -- Import batches
 drop policy if exists ib_read on import_batches;
 create policy ib_read on import_batches
-for select using (is_household_member(household_id));
+for select to authenticated using (is_household_member(household_id));
 
 drop policy if exists ib_insert on import_batches;
 create policy ib_insert on import_batches
-for insert with check (is_household_member(household_id));
+for insert to authenticated with check (is_household_member(household_id));
 
 drop policy if exists ib_update on import_batches;
 create policy ib_update on import_batches
-for update using (is_household_member(household_id)) with check (is_household_member(household_id));
+for update to authenticated using (is_household_member(household_id)) with check (is_household_member(household_id));
 
 -- Errors
 drop policy if exists err_read on errors;
 create policy err_read on errors
-for select using (household_id is null or is_household_member(household_id));
+for select to authenticated using (household_id is null or is_household_member(household_id));
 
 drop policy if exists err_insert on errors;
 create policy err_insert on errors
-for insert with check (auth.uid() = user_id);
+for insert to authenticated with check (auth.uid() = user_id);
 
 -- -------------------------
 -- Done!

@@ -27,6 +27,7 @@ const SERVICE_ROLE_KEY =
 const SEED_ORDER = [
   'households',
   'profiles',
+  'household_members',
   'budget_config',
   'month_status',
   'import_batches',
@@ -42,6 +43,7 @@ const CLEAN_ORDER = [...SEED_ORDER].reverse();
 const PRIMARY_KEYS = {
   profiles: 'user_id',
   budget_config: 'household_id',
+  household_members: 'household_id,user_id',
 };
 
 async function checkSupabaseRunning() {
