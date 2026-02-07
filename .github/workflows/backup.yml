@@ -1,4 +1,4 @@
-name: Weekly Database Backup
+name: Database Backup (Every 3 Days)
 
 on:
   schedule:
@@ -43,7 +43,9 @@ jobs:
               'budget_config',
               'household_members',
               'month_status',
-              'import_batches'
+              'import_batches',
+              'recurring_transactions',
+              'recurring_exceptions'
             ];
 
             for (const table of tables) {

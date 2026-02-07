@@ -1,7 +1,7 @@
 name: Deploy to Vercel
 
 on:
-  workflow_dispatch:  # Manual trigger only - preserves Vercel deployment quota
+  workflow_dispatch: # Manual trigger only - preserves Vercel deployment quota
 
 jobs:
   # First run CI checks

@@ -3,7 +3,7 @@ name: CI
 on:
   pull_request:
     branches: [main, master]
-  workflow_call:  # Called by deploy.yml
+  workflow_call: # Called by deploy.yml
 
 jobs:
   lint-and-build:

@@ -1,7 +1,7 @@
 name: Release & Version Bump
 
 on:
-  workflow_dispatch:  # Manual trigger only - run when you want a new release
+  workflow_dispatch: # Manual trigger only - run when you want a new release
 
 jobs:
   release:
@@ -49,8 +49,8 @@ jobs:
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: "v${{ steps.new_version.outputs.version }}"
-          name: "v${{ steps.new_version.outputs.version }}"
+          tag_name: 'v${{ steps.new_version.outputs.version }}'
+          name: 'v${{ steps.new_version.outputs.version }}'
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
