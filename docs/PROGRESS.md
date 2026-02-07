@@ -4,6 +4,65 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-07 — Hard Delete Transactions (CB-057)
+
+### Summary
+
+Added "Delete Permanently" option to the transaction delete confirmation dialog, so users can bypass trash for transactions they know they don't want. Also enabled the Trash view in demo mode with full soft delete, restore, and permanent delete support.
+
+### Work Completed
+
+**CB-057: Hard Delete Transactions (Done)**
+
+**Step 1 — Core delete logic:**
+
+- `src/lib/demoStore.js` — Added `softDeleteDemoTransaction`, `restoreDemoTransaction`, `getDeletedDemoTransactions`. Updated `getDemoTransactions` and `getAllDemoTransactions` to exclude soft-deleted items.
+- `src/components/ui/confirm-dialog.jsx` — Added optional `onSecondaryConfirm` + `secondaryConfirmText` props. Renders third button when provided. Backwards compatible.
+- `src/components/TransactionList.jsx` — Added `hardDeleteTransaction` function (demo + auth). Changed demo delete from hard to soft. Added secondary action to ConfirmDialog.
+
+**Step 2 — Demo trash + translations:**
+
+- `src/components/TrashView.jsx` — Removed "not available in demo" placeholder. Demo mode now loads, restores, and hard-deletes via demoStore functions.
+- `messages/en.json` — Added `deletePermanently`, `permanentDeleteConfirmMessage`, `permanentlyDeleted` keys.
+- `messages/es.json` — Same keys in Spanish.
+
+**Test fixes:**
+
+- `src/components/__tests__/TransactionList.test.js` — Added `softDeleteDemoTransaction` to demoStore mock.
+- `src/components/__tests__/TransactionUpdate.test.js` — Same mock fix.
+
+### Files Modified
+
+| File                                                 | Action   |
+| ---------------------------------------------------- | -------- |
+| `src/lib/demoStore.js`                               | Modified |
+| `src/components/ui/confirm-dialog.jsx`               | Modified |
+| `src/components/TransactionList.jsx`                 | Modified |
+| `src/components/TrashView.jsx`                       | Modified |
+| `messages/en.json`                                   | Modified |
+| `messages/es.json`                                   | Modified |
+| `src/components/__tests__/TransactionList.test.js`   | Modified |
+| `src/components/__tests__/TransactionUpdate.test.js` | Modified |
+
+### Decisions Made
+
+- **Choice in dialog, not on card** — Single Trash2 icon stays clean; user decides at confirmation step
+- **Extend ConfirmDialog** — Backwards compatible secondary action, no new component
+- **Demo soft delete via `deleted_at`** — Mirrors real DB pattern, enables trash in demo
+- **No migration needed** — Hard delete uses existing `.delete()` (same as TrashView already did)
+
+### Test Results
+
+- Unit tests: 267/267 passing (improved from 265 — 2 previously failing tests fixed by mock update)
+- Build: Passes
+
+### What's Next
+
+- Manual test: delete dialog shows both options, soft delete goes to trash, hard delete removes permanently
+- Manual test demo mode: trash view shows soft-deleted items, restore works, permanent delete works
+
+---
+
 ## 2026-02-07 — Import Duplicate Detection Flags (CB-061) & Documentation Sync
 
 ### Summary

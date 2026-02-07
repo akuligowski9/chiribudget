@@ -26,7 +26,7 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061) — in-file duplicates are now imported and flagged for review instead of silently dropped. Documentation sync completed.
+**Session: Feb 6–7, 2026** — Production readiness push and import improvements. Fixed OAuth, login UX, RLS household insert policy. Set up automated database migrations in deploy workflow. Implemented import duplicate detection flags (CB-061) — in-file duplicates are now imported and flagged for review instead of silently dropped. Added hard delete option to transaction list and enabled trash in demo mode (CB-057). Documentation sync completed.
 
 ---
 
@@ -142,22 +142,32 @@ Add the ability to permanently delete transactions. Currently, the app only supp
 
 **Note:** Household notifications for deletions (CB-058) is a separate feature, deferred for now.
 
+**Implementation:**
+
+- Extended ConfirmDialog with optional secondary action (backwards compatible)
+- Delete dialog now shows "Move to Trash" and "Delete Permanently" options
+- Demo mode: added soft delete, restore, and hard delete to demoStore
+- Trash view enabled in demo mode (was previously disabled with placeholder)
+- No database migration needed — uses existing `.delete()` query
+
 #### Acceptance Criteria
 
-- [ ] "Delete permanently" action available on transactions
-- [ ] Confirmation dialog with clear warning
-- [ ] Transaction actually removed from database (not soft delete)
-- [ ] Works for both regular transactions and items in Trash
-- [ ] Demo mode support (remove from demoStore)
+- [x] "Delete permanently" action available on transactions
+- [x] Confirmation dialog with clear warning
+- [x] Transaction actually removed from database (not soft delete)
+- [x] Works for both regular transactions and items in Trash
+- [x] Demo mode support (remove from demoStore)
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Medium
 - **Type:** Feature
 - **Version:** v1
 - **Assignee:** Claude
 - **GitHub Issue:** No
+- **Completed:** 2026-02-07
+- **Files:** 8 (6 modified components/utils, 2 test fixes)
 
 ---
 
