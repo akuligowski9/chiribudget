@@ -4,6 +4,78 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-08 (Evening) — Seed Data, Dev Login, CSV Import Test (CB-064)
+
+### Summary
+
+Completed CB-064: comprehensive seed data for local development. Created `supabase/seed.sql` with realistic test data, dev login buttons for quick local testing, expanded `seed-data.json`, and built an automated CSV import test script that matches the real app flow.
+
+### Work Completed
+
+**CB-064: Comprehensive Seed Data for Local Development (Done)**
+
+**Step 1 — `supabase/seed.sql`:**
+
+- 2 auth users (testuser/testpartner with password123)
+- 1 household with 2 members, budget config with category limits
+- ~55 transactions across 3 months (Dec 2025, Jan 2026, Feb 2026) in USD and PEN
+- Edge cases: threshold-flagged, category-limit-flagged, soft-deleted, import batch with duplicates, recurring source
+- 5 recurring transaction rules, 2 recurring exceptions
+- 4 month_status entries (discussed + draft)
+
+**Step 2 — `test-fixtures/seed-data.json`:**
+
+- Expanded from 3 transactions to ~55, matching seed.sql
+- Added household_members, month_status, import_batches, recurring_exceptions
+
+**Step 3 — `scripts/seed-test-db.js`:**
+
+- Added `household_members` to SEED_ORDER
+
+**Step 4 — Dev login buttons:**
+
+- Added dev-only login buttons to LoginScreen.jsx (TestUser / TestPartner)
+- Gated by `process.env.NODE_ENV === 'development'`
+- One-click login with `signInWithPassword`
+
+**CSV Import Test Script:**
+
+- Created `scripts/test-csv-import.js` for automated CSV import testing
+- Matches real app flow: batch created with `status: 'staged'`, transactions with `category: 'Unexpected'`
+- Tested with real PNC Checking CSV: 50 transactions, 15 auto-flagged (14 threshold + 1 duplicate)
+- Reports in-file duplicates, DB duplicates, income/expense breakdown, and flagged items
+
+**Seed SQL Fixes:**
+
+- Fixed invalid UUID hex characters (j→a, p→b, i→1, u→e, trash→dead0)
+- Removed ON CONFLICT clauses (unnecessary on fresh db reset)
+- Fixed column count mismatch in Jan PEN row
+
+### Files Modified
+
+| File                             | Action               |
+| -------------------------------- | -------------------- |
+| `supabase/seed.sql`              | Created + fixed      |
+| `test-fixtures/seed-data.json`   | Modified (expanded)  |
+| `scripts/seed-test-db.js`        | Modified             |
+| `src/components/LoginScreen.jsx` | Modified (dev login) |
+| `scripts/test-csv-import.js`     | Created              |
+
+### Verification
+
+- `supabase db reset` completes without errors
+- Dev login buttons work (tested locally)
+- CSV import test produces correct output with staged batch
+- 267 tests pass
+
+### What's Next
+
+- Test January imports with real statements (PNC + Interbank)
+- Test recurring transactions functionality
+- CB-059: Demo site landing page redesign (low priority)
+
+---
+
 ## 2026-02-08 — Recharts Warnings, Local Dev Docs, ESLint Cleanup
 
 ### Summary

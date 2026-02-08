@@ -236,9 +236,8 @@ async function main() {
       date_range_end: dateRangeEnd,
       display_name: displayName,
       raw_payload: rawPayload,
-      status: 'confirmed',
+      status: 'staged',
       created_by: USER_ID,
-      confirmed_at: new Date().toISOString(),
     })
     .select('id')
     .single();
@@ -311,6 +310,15 @@ async function main() {
     console.log('');
   }
 
+  console.log('=== What happens next (real flow) ===\n');
+  console.log(
+    'Import batch is STAGED — transactions are in the DB but NOT on the dashboard.'
+  );
+  console.log('In the app, you would go to the "Unsorted" page to:');
+  console.log('  1. Review each transaction');
+  console.log('  2. Assign categories (currently all "Unexpected")');
+  console.log('  3. Assign payers');
+  console.log('  4. Confirm the batch to move transactions to the dashboard\n');
   console.log('View at http://localhost:3000 (login as TestUser)\n');
 }
 
