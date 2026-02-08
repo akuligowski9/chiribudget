@@ -4,6 +4,54 @@ This document tracks where work left off, decisions made, and what's next. Read 
 
 ---
 
+## 2026-02-08 — Recharts Warnings, Local Dev Docs, ESLint Cleanup
+
+### Summary
+
+Fixed Recharts ResponsiveContainer warnings with a proper ResizeObserver-based solution, documented local development workflow in README, and cleaned up ESLint warnings across the codebase.
+
+### Work Completed
+
+**CB-054: Fix Recharts ResponsiveContainer Warnings**
+
+- Created `useContainerDimensions` hook that uses ResizeObserver to detect valid container dimensions
+- Updated `SpendingCharts.jsx` to only render charts when container has positive dimensions
+- Eliminates "width(-1) and height(-1)" warnings at the source
+
+**CB-062: Local Development Documentation**
+
+- Added comprehensive "Local Development with Supabase CLI" section to README
+- Covers: prerequisites, quick start, local URLs, environment variables, useful commands, RLS testing guidance
+
+**ESLint Warning Cleanup**
+
+- Used `useCallback` to properly fix useEffect dependency warnings in settings components (ProfileSettings, Guidelines, ConversionRateSettings, BudgetSettings)
+- Added eslint-disable for intentional console.error in ErrorBoundary tests
+- Fixed unused parameter in test mock
+
+### Files Modified
+
+| File                                                       | Action   |
+| ---------------------------------------------------------- | -------- |
+| `src/hooks/useContainerDimensions.js`                      | Created  |
+| `src/components/SpendingCharts.jsx`                        | Modified |
+| `README.md`                                                | Modified |
+| `src/components/ProfileSettings.js`                        | Modified |
+| `src/components/Guidelines.js`                             | Modified |
+| `src/components/ConversionRateSettings.js`                 | Modified |
+| `src/components/BudgetSettings.js`                         | Modified |
+| `src/components/__tests__/ErrorBoundary.test.js`           | Modified |
+| `src/components/__tests__/PeriodComparisonSection.test.js` | Modified |
+| `src/app/auth/callback/route.js`                           | Modified |
+
+### What's Next
+
+- CB-064 (seed data) was worked on in parallel terminal
+- Test recurring transactions functionality
+- Test January imports with real bank statements
+
+---
+
 ## 2026-02-07 (Late Afternoon) — Fix RLS Policies for Authenticated Users (CB-063)
 
 ### Summary
