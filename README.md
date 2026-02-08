@@ -166,6 +166,86 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000)
 
+---
+
+## Local Development with Supabase CLI
+
+For local development and testing, you can run Supabase locally instead of connecting to a remote project. This gives you:
+
+- **Isolated test data** — Experiment without affecting production
+- **Fast iteration** — No network latency for database operations
+- **RLS testing** — Catch policy bugs before production (important: local dev with service role key bypasses RLS)
+
+### Prerequisites
+
+- [Docker](https://www.docker.com/get-started) installed and running
+- [Supabase CLI](https://supabase.com/docs/guides/cli) installed
+
+### Quick Start
+
+```bash
+# Install Supabase CLI (if not already installed)
+brew install supabase/tap/supabase
+# Or: npm install -g supabase
+
+# Start local Supabase (runs in Docker)
+supabase start
+
+# Copy local env template
+cp .env.local.example .env.local
+
+# Start the app
+npm run dev
+```
+
+### Local URLs
+
+After `supabase start`, you'll have:
+
+| Service  | URL                                                     |
+| -------- | ------------------------------------------------------- |
+| Studio   | http://127.0.0.1:54323                                  |
+| API      | http://127.0.0.1:54321                                  |
+| Database | postgresql://postgres:postgres@127.0.0.1:54322/postgres |
+
+### Local Environment Variables
+
+The `.env.local.example` file contains the default local Supabase credentials:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0
+```
+
+### Useful Commands
+
+```bash
+# Start local Supabase
+supabase start
+
+# Stop local Supabase
+supabase stop
+
+# Reset database (re-runs all migrations, clears data)
+supabase db reset
+
+# View migration status
+supabase migration list
+
+# Open Studio (database GUI)
+supabase studio
+```
+
+### Testing with Real RLS
+
+By default, local development may bypass RLS if using the service role key. To test RLS policies like production:
+
+1. Use the **anon key** (not service role) in `.env.local`
+2. Log in via OAuth to get an authenticated session
+3. Your requests will go through RLS just like production
+
+This ensures you catch RLS bugs locally before they reach production.
+
 ### 7) Create Your Household
 
 1. Click **Sign Up** and create an account

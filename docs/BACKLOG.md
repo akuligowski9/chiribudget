@@ -1,6 +1,6 @@
 # ChiriBudget Backlog
 
-**Last Updated:** February 7, 2026
+**Last Updated:** February 8, 2026
 
 ---
 
@@ -26,7 +26,7 @@ Planned → In Progress → Done
 
 ## In Progress
 
-**Session: Feb 6–7, 2026** — Production readiness push. Fixed OAuth, login UX. Set up automated database migrations in deploy workflow. Fixed all RLS policies missing `TO authenticated` (CB-063). Implemented import duplicate detection flags (CB-061). Fixed workflow triggers to prevent redundant runs. Set up local Supabase CLI for development (CB-062). Added Sentry error monitoring (CB-013).
+**Session: Feb 6–8, 2026** — Production readiness push. Fixed OAuth, login UX. Set up automated database migrations in deploy workflow. Fixed all RLS policies missing `TO authenticated` (CB-063). Implemented import duplicate detection flags (CB-061). Fixed workflow triggers to prevent redundant runs. Set up local Supabase CLI for development (CB-062). Added Sentry error monitoring (CB-013). Documented local dev workflow in README. Fixed Recharts ResponsiveContainer warnings with ResizeObserver-based hook (CB-054).
 
 ---
 
@@ -267,16 +267,17 @@ Set up local Supabase environment for development and testing. This allows testi
 - [x] Migrations apply automatically
 - [x] `.env.local.example` created with local config
 - [ ] Seed data for local testing (CB-064)
-- [ ] Document local dev workflow in README
+- [x] Document local dev workflow in README
 
 #### Metadata
 
-- **Status:** In Progress
+- **Status:** Done
 - **Priority:** High
 - **Type:** Infrastructure
 - **Version:** v1
 - **Assignee:** Claude
 - **GitHub Issue:** No
+- **Completed:** 2026-02-08
 
 ---
 
@@ -637,45 +638,38 @@ When a household member deletes a transaction that was already in the posted/con
 
 During development, recharts' ResponsiveContainer component logs console warnings about receiving -1 width/height dimensions: "The width(-1) and height(-1) of chart should be greater than 0". These warnings appear when ResponsiveContainer tries to measure its parent container before the browser has finished layout calculations.
 
-The warnings are harmless - charts render correctly and the warnings only appear in development mode, not production builds. However, they clutter the console during development and could mask other important warnings. This is a known limitation of the recharts library that many developers encounter.
+**Root cause:** ResponsiveContainer tries to render immediately, before the container element has been measured by the browser. Previous workarounds (setTimeout, useMounted) didn't verify actual dimensions.
 
-**Potential Solutions:**
+**Fix implemented:**
 
-1. Switch to a different charting library (Chart.js, Victory, Recharts alternatives)
-2. Implement a more robust delay mechanism before rendering charts
-3. Use fixed dimensions instead of ResponsiveContainer (loses responsiveness)
-4. Suppress the specific warnings in development
+Created `useContainerDimensions` hook that uses ResizeObserver to detect when container has valid positive dimensions. Charts now only render ResponsiveContainer when `ready=true`, ensuring the container has been measured.
 
-**Current Workarounds Attempted:**
+**Files changed:**
 
-- Added `min-h-[250px]` and `min-h-[120px]` to chart containers
-- Tried `requestAnimationFrame()` delay - didn't work
-- Tried 50ms `setTimeout()` delay - didn't work
-- Added `layoutReady` state with useMounted hook - still seeing warnings
+- `src/hooks/useContainerDimensions.js` (new) - ResizeObserver-based dimension hook
+- `src/components/SpendingCharts.jsx` - Updated all 3 chart components to use new hook
 
-The issue manifests in:
+**Previous workarounds removed:**
 
-- SpendingCharts.jsx:76 (ExpenseDonutChart PieChart)
-- SpendingCharts.jsx:87 (ExpenseDonutChart second instance)
-- SpendingCharts.jsx:217 (SpendingTrendChart BarChart)
-- SpendingCharts.jsx:238 (SpendingTrendChart second instance)
+- `useMounted` import
+- `layoutReady` state with 50ms setTimeout
 
 #### Acceptance Criteria
 
-- [ ] Console warnings eliminated in development mode
-- [ ] Charts still render correctly and responsively
-- [ ] Solution doesn't significantly delay chart rendering
-- [ ] No regressions in chart functionality
+- [x] Console warnings eliminated in development mode
+- [x] Charts still render correctly and responsively
+- [x] Solution doesn't significantly delay chart rendering
+- [x] No regressions in chart functionality
 
 #### Metadata
 
-- **Status:** Planned
+- **Status:** Done
 - **Priority:** Low
 - **Type:** Tech Debt
 - **Version:** v2
-- **Assignee:** Unassigned
+- **Assignee:** Claude
 - **GitHub Issue:** No
-- **Notes:** Non-blocking issue - charts work correctly, warnings are development-only
+- **Completed:** 2026-02-08
 
 ---
 

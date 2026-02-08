@@ -1,14 +1,12 @@
 'use client';
 
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo } from 'react';
 import { PieChart as PieIcon, TrendingUp } from 'lucide-react';
 import {
   PieChart,
   Pie,
   Cell,
   ResponsiveContainer,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   Tooltip,
@@ -17,7 +15,7 @@ import {
   Bar,
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { useMounted } from '@/hooks/useMounted';
+import { useContainerDimensions } from '@/hooks/useContainerDimensions';
 
 // Earth tone colors that match the app theme
 const EXPENSE_COLORS = [
@@ -37,18 +35,7 @@ const INCOME_COLORS = [
 ];
 
 export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
-  const mounted = useMounted();
-  const [layoutReady, setLayoutReady] = useState(false);
-
-  useEffect(() => {
-    if (mounted) {
-      // Use setTimeout to ensure layout is complete
-      const timer = setTimeout(() => {
-        setLayoutReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [mounted]);
+  const { ref, ready } = useContainerDimensions();
 
   const data = useMemo(() => {
     return Object.entries(expenseByCat)
@@ -57,7 +44,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
       .sort((a, b) => b.value - a.value);
   }, [expenseByCat]);
 
-  if (!layoutReady || data.length === 0) {
+  if (data.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -68,7 +55,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-warm-gray text-center py-8">
-            {!layoutReady ? 'Loading...' : 'No expenses in this period'}
+            No expenses in this period
           </p>
         </CardContent>
       </Card>
@@ -84,40 +71,42 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] min-h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={50}
-                outerRadius={80}
-                paddingAngle={2}
-                dataKey="value"
-                label={({ name, percent }) =>
-                  percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
-                }
-                labelLine={false}
-              >
-                {data.map((entry, index) => (
-                  <Cell
-                    key={entry.name}
-                    fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]}
-                  />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
-                contentStyle={{
-                  background: 'rgba(255,255,255,0.95)',
-                  border: '1px solid #e8e0d5',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+        <div ref={ref} className="h-[250px] min-h-[250px]">
+          {ready && (
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={data}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={80}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+                  }
+                  labelLine={false}
+                >
+                  {data.map((entry, index) => (
+                    <Cell
+                      key={entry.name}
+                      fill={EXPENSE_COLORS[index % EXPENSE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
+                  contentStyle={{
+                    background: 'rgba(255,255,255,0.95)',
+                    border: '1px solid #e8e0d5',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          )}
         </div>
         {/* Legend */}
         <div className="grid grid-cols-2 gap-2 mt-2">
@@ -143,17 +132,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
 }
 
 export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
-  const mounted = useMounted();
-  const [layoutReady, setLayoutReady] = useState(false);
-
-  useEffect(() => {
-    if (mounted) {
-      const timer = setTimeout(() => {
-        setLayoutReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [mounted]);
+  const { ref, ready } = useContainerDimensions();
 
   const data = useMemo(() => {
     // Group transactions by date
@@ -209,7 +188,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
     return weeks;
   }, [data]);
 
-  if (!layoutReady || rows.length === 0) {
+  if (rows.length === 0) {
     return (
       <Card>
         <CardHeader>
@@ -220,7 +199,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-warm-gray text-center py-8">
-            {!layoutReady ? 'Loading...' : 'No transactions in this period'}
+            No transactions in this period
           </p>
         </CardContent>
       </Card>
@@ -236,45 +215,47 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px] min-h-[250px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} barGap={0} barCategoryGap="20%">
-              <XAxis
-                dataKey="label"
-                tick={{ fontSize: 11, fill: '#6b6560' }}
-                axisLine={{ stroke: '#e8e0d5' }}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: '#6b6560' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(v) =>
-                  v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
-                }
-              />
-              <Tooltip
-                formatter={(value, name) => [
-                  `${currency} ${value.toFixed(2)}`,
-                  name.charAt(0).toUpperCase() + name.slice(1),
-                ]}
-                contentStyle={{
-                  background: 'rgba(255,255,255,0.95)',
-                  border: '1px solid #e8e0d5',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-                }}
-              />
-              <Legend
-                wrapperStyle={{ fontSize: '12px' }}
-                formatter={(value) => (
-                  <span className="text-stone capitalize">{value}</span>
-                )}
-              />
-              <Bar dataKey="income" fill="#5a9e6f" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="expenses" fill="#d15b4e" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+        <div ref={ref} className="h-[250px] min-h-[250px]">
+          {ready && (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData} barGap={0} barCategoryGap="20%">
+                <XAxis
+                  dataKey="label"
+                  tick={{ fontSize: 11, fill: '#6b6560' }}
+                  axisLine={{ stroke: '#e8e0d5' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 11, fill: '#6b6560' }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) =>
+                    v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
+                  }
+                />
+                <Tooltip
+                  formatter={(value, name) => [
+                    `${currency} ${value.toFixed(2)}`,
+                    name.charAt(0).toUpperCase() + name.slice(1),
+                  ]}
+                  contentStyle={{
+                    background: 'rgba(255,255,255,0.95)',
+                    border: '1px solid #e8e0d5',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                  }}
+                />
+                <Legend
+                  wrapperStyle={{ fontSize: '12px' }}
+                  formatter={(value) => (
+                    <span className="text-stone capitalize">{value}</span>
+                  )}
+                />
+                <Bar dataKey="income" fill="#5a9e6f" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="expenses" fill="#d15b4e" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -282,17 +263,7 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
 }
 
 export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
-  const mounted = useMounted();
-  const [layoutReady, setLayoutReady] = useState(false);
-
-  useEffect(() => {
-    if (mounted) {
-      const timer = setTimeout(() => {
-        setLayoutReady(true);
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [mounted]);
+  const { ref, ready } = useContainerDimensions();
 
   const data = [
     { name: 'Income', value: totalIncome, fill: '#5a9e6f' },
@@ -301,54 +272,41 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
 
   const net = totalIncome - totalExpenses;
 
-  if (!layoutReady) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Income vs Expenses</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[120px] flex items-center justify-center">
-            <p className="text-sm text-warm-gray">Loading...</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
         <CardTitle>Income vs Expenses</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[120px] min-h-[120px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data} layout="vertical" barSize={28}>
-              <XAxis type="number" hide />
-              <YAxis
-                type="category"
-                dataKey="name"
-                tick={{ fontSize: 12, fill: '#6b6560' }}
-                axisLine={false}
-                tickLine={false}
-                width={70}
-              />
-              <Tooltip
-                formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
-                contentStyle={{
-                  background: 'rgba(255,255,255,0.95)',
-                  border: '1px solid #e8e0d5',
-                  borderRadius: '12px',
-                }}
-              />
-              <Bar dataKey="value" radius={[0, 8, 8, 0]}>
-                {data.map((entry) => (
-                  <Cell key={entry.name} fill={entry.fill} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+        <div ref={ref} className="h-[120px] min-h-[120px]">
+          {ready && (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data} layout="vertical" barSize={28}>
+                <XAxis type="number" hide />
+                <YAxis
+                  type="category"
+                  dataKey="name"
+                  tick={{ fontSize: 12, fill: '#6b6560' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={70}
+                />
+                <Tooltip
+                  formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
+                  contentStyle={{
+                    background: 'rgba(255,255,255,0.95)',
+                    border: '1px solid #e8e0d5',
+                    borderRadius: '12px',
+                  }}
+                />
+                <Bar dataKey="value" radius={[0, 8, 8, 0]}>
+                  {data.map((entry) => (
+                    <Cell key={entry.name} fill={entry.fill} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
         </div>
         <div
           className={`text-center mt-2 p-2 rounded-lg ${net >= 0 ? 'bg-success/10' : 'bg-error/10'}`}
