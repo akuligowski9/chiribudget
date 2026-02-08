@@ -11,13 +11,16 @@ function ThrowError({ shouldThrow }) {
 
 describe('ErrorBoundary', () => {
   // Suppress console.error for these tests since we expect errors
+  // eslint-disable-next-line no-console
   const originalError = console.error;
 
   beforeEach(() => {
+    // eslint-disable-next-line no-console
     console.error = jest.fn();
   });
 
   afterEach(() => {
+    // eslint-disable-next-line no-console
     console.error = originalError;
   });
 
@@ -65,6 +68,7 @@ describe('ErrorBoundary', () => {
       </ErrorBoundary>
     );
 
+    // eslint-disable-next-line no-console
     expect(console.error).toHaveBeenCalled();
   });
 });

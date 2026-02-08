@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { ArrowRightLeft } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -34,11 +34,7 @@ export default function ConversionRateSettings() {
   const [fxRateInput, setFxRateInput] = useState(String(FX_USD_TO_PEN));
   const [originalFxRate, setOriginalFxRate] = useState(FX_USD_TO_PEN);
 
-  useEffect(() => {
-    loadSettings();
-  }, [isDemoMode]);
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     setLoading(true);
 
     if (isDemoMode) {
@@ -83,7 +79,11 @@ export default function ConversionRateSettings() {
     }
 
     setLoading(false);
-  }
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
 
   function handleFxBlur() {
     const val = parseFloat(fxRateInput);

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pencil, Save, X, BookOpen, ChevronDown } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -46,11 +46,7 @@ export default function Guidelines() {
   const [editing, setEditing] = useState(false);
   const [editValue, setEditValue] = useState('');
 
-  useEffect(() => {
-    loadGuidelines();
-  }, [isDemoMode]);
-
-  async function loadGuidelines() {
+  const loadGuidelines = useCallback(async () => {
     setLoading(true);
 
     if (isDemoMode) {
@@ -108,7 +104,11 @@ export default function Guidelines() {
     }
 
     setLoading(false);
-  }
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    loadGuidelines();
+  }, [loadGuidelines]);
 
   function startEditing() {
     setEditValue(guidelines);

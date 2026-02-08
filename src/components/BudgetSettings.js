@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Sliders, Calculator } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -52,18 +52,7 @@ export default function BudgetSettings() {
 
   const penThreshold = Math.round(usdThreshold * fxRate);
 
-  useEffect(() => {
-    loadSettings();
-  }, [isDemoMode]);
-
-  // Keep fxRate in sync with context
-  useEffect(() => {
-    if (!isDemoMode) {
-      setFxRate(conversionRate);
-    }
-  }, [conversionRate, isDemoMode]);
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     setLoading(true);
 
     if (isDemoMode) {
@@ -110,7 +99,18 @@ export default function BudgetSettings() {
     }
 
     setLoading(false);
-  }
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  // Keep fxRate in sync with context
+  useEffect(() => {
+    if (!isDemoMode) {
+      setFxRate(conversionRate);
+    }
+  }, [conversionRate, isDemoMode]);
 
   function handleUsdBlur() {
     const val = parseFloat(usdThresholdInput);

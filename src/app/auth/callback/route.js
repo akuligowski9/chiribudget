@@ -13,6 +13,7 @@ export async function GET(request) {
 
   // If there's an error from the OAuth provider, show it
   if (error_description) {
+    // eslint-disable-next-line no-console
     console.error('OAuth provider error:', error_description);
     return NextResponse.redirect(
       `${origin}/?error=${encodeURIComponent(error_description)}`

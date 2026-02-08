@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { User } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
@@ -33,11 +33,7 @@ export default function ProfileSettings() {
   const [originalDisplayName, setOriginalDisplayName] = useState('');
   const [originalCurrency, setOriginalCurrency] = useState('USD');
 
-  useEffect(() => {
-    loadProfile();
-  }, [isDemoMode]);
-
-  async function loadProfile() {
+  const loadProfile = useCallback(async () => {
     setLoading(true);
 
     if (isDemoMode) {
@@ -74,7 +70,11 @@ export default function ProfileSettings() {
     }
 
     setLoading(false);
-  }
+  }, [isDemoMode]);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
 
   const hasChanges =
     displayName !== originalDisplayName || defaultCurrency !== originalCurrency;

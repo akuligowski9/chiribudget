@@ -86,7 +86,7 @@ jest.mock('@/lib/categories', () => ({
 
 // Mock the currency utilities
 jest.mock('@/lib/currency', () => ({
-  formatCurrencyAmount: (amount, currency) => {
+  formatCurrencyAmount: (amount, _currency) => {
     return `$${amount.toFixed(2)}`;
   },
 }));
