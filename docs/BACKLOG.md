@@ -33,7 +33,8 @@ Planned → In Progress → Done
 ## Reminders
 
 - [x] ~~**Configure OAuth redirect URIs in Supabase**~~ — Done (CB-055). _(Feb 6, 2026)_
-- [ ] **Test January imports with real statements** — Test PNC (credit card + checking) and Interbank CSV imports with actual January 2026 statements. Duplicate detection now flags instead of skipping. _(Added: Feb 6, 2026)_
+- [x] **Test PNC import with real statement** — PNC Checking CSV tested locally via `scripts/test-csv-import.js`. 50 transactions imported as staged batch, 15 auto-flagged (14 threshold + 1 in-file duplicate). _(Added: Feb 6, 2026 · Done: Feb 8, 2026)_
+- [ ] **Test Interbank (Adriana's bank) CSV locally** — Import an Interbank Peru CSV via local Supabase to verify the parser handles real data correctly. Test dual-currency (PEN/USD), Spanish date parsing, and row filtering. _(Added: Feb 8, 2026)_
 - [ ] **Test restore backup feature** — Upload a backup JSON file via Settings > Data Backup > Restore Backup and verify data restores correctly. _(Added: Jan 22, 2026)_
 - [ ] **Test CB-035 recurring transactions** — Manually test recurring transaction creation, generation, skip functionality, and recurring indicator display in both demo and local modes. _(Added: Jan 27, 2026)_
 
