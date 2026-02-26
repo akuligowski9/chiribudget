@@ -5,8 +5,16 @@
  * @returns {string} Formatted amount string with thousand separators
  */
 export function formatCurrency(amount, fractionDigits = 2) {
-  if (amount == null || isNaN(amount)) return '0.00';
-  return Number(amount).toLocaleString('en-US', {
+  const numericAmount = Number(amount);
+
+  if (!Number.isFinite(numericAmount)) {
+    return (0).toLocaleString('en-US', {
+      minimumFractionDigits: fractionDigits,
+      maximumFractionDigits: fractionDigits,
+    });
+  }
+
+  return numericAmount.toLocaleString('en-US', {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   });
