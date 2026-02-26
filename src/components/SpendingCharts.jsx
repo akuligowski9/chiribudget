@@ -16,6 +16,7 @@ import {
 } from 'recharts';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { useContainerDimensions } from '@/hooks/useContainerDimensions';
+import { formatCurrency } from '@/lib/formatCurrency';
 
 // Earth tone colors that match the app theme
 const EXPENSE_COLORS = [
@@ -84,7 +85,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
                   paddingAngle={2}
                   dataKey="value"
                   label={({ name, percent }) =>
-                    percent > 0.05 ? `${(percent * 100).toFixed(0)}%` : ''
+                    percent > 0.05 ? `${formatCurrency(percent * 100, 0)}%` : ''
                   }
                   labelLine={false}
                 >
@@ -96,7 +97,10 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
+                  formatter={(value) => [
+                    `${currency} ${formatCurrency(value)}`,
+                    '',
+                  ]}
                   contentStyle={{
                     background: 'rgba(255,255,255,0.95)',
                     border: '1px solid #e8e0d5',
@@ -121,7 +125,7 @@ export function ExpenseDonutChart({ expenseByCat, currency, totalExpenses }) {
               />
               <span className="text-stone truncate">{entry.name}</span>
               <span className="text-charcoal font-semibold ml-auto">
-                {currency} {entry.value.toFixed(2)}
+                {currency} {formatCurrency(entry.value)}
               </span>
             </div>
           ))}
@@ -230,12 +234,12 @@ export function SpendingTrendChart({ rows, currency, startDate, endDate }) {
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) =>
-                    v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v
+                    v >= 1000 ? `${formatCurrency(v / 1000, 0)}k` : v
                   }
                 />
                 <Tooltip
                   formatter={(value, name) => [
-                    `${currency} ${value.toFixed(2)}`,
+                    `${currency} ${formatCurrency(value)}`,
                     name.charAt(0).toUpperCase() + name.slice(1),
                   ]}
                   contentStyle={{
@@ -292,7 +296,10 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
                   width={70}
                 />
                 <Tooltip
-                  formatter={(value) => [`${currency} ${value.toFixed(2)}`, '']}
+                  formatter={(value) => [
+                    `${currency} ${formatCurrency(value)}`,
+                    '',
+                  ]}
                   contentStyle={{
                     background: 'rgba(255,255,255,0.95)',
                     border: '1px solid #e8e0d5',
@@ -315,7 +322,7 @@ export function IncomeVsExpenseChart({ totalIncome, totalExpenses, currency }) {
           <span
             className={`font-bold ${net >= 0 ? 'text-success' : 'text-error'}`}
           >
-            {currency} {net.toFixed(2)}
+            {currency} {formatCurrency(net)}
           </span>
         </div>
       </CardContent>
