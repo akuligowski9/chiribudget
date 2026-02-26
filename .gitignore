@@ -1,0 +1,48 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+
+# Local environment variables
+.env.local
+.env.*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Supabase local dev (if added later)
+.supabase/
+
+# Vercel
+.vercel
+
+# Cache files
+.eslintcache
+*.tsbuildinfo
+
+# Playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+
+# Sensitive documentation (not for public repo)
+docs/OPS_PRIVATE.md
+
+# Terminal task files (for parallel Claude sessions)
+TERMINAL_A_TASKS.md
+TERMINAL_B_TASKS.md
+.env*.local
+
+# Utility scripts with credentials (not for version control)
+fix-*.js
