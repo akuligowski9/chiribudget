@@ -36,7 +36,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob:",
               "font-src 'self'",
-              "connect-src 'self' http://127.0.0.1:* https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
+              "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://*.sentry.io https://*.ingest.sentry.io",
               "frame-ancestors 'none'",
             ].join('; '),
           },
